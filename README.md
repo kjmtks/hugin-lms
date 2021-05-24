@@ -7,7 +7,7 @@
 ### Quick Start
 
 ```
-git clone https://github.com/kjmtks/Hugin.git
+git clone https://github.com/kjmtks/hugin-lms.git
 cd Hugin
 make local-up
 # Then, open http://localhost:8080
@@ -16,7 +16,7 @@ make local-up
 ### for Visual Studio
 
 ```
-git clone https://github.com/kjmtks/Hugin.git
+git clone https://github.com/kjmtks/hugin-lms.git
 cd Hugin/Hugin
 npm install
 cd ..
@@ -26,7 +26,7 @@ cd ..
 ### for Production
 
 ```
-git clone https://github.com/kjmtks/Hugin.git
+git clone https://github.com/kjmtks/hugin-lms.git
 cd Hugin
 make pfx KEY="path to your key file" CER="path to your cert. file"
 vim docker-compose.production.override.yml
