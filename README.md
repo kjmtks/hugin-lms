@@ -34,6 +34,7 @@ cd ..
 
 Requirements:
 * Docker, docker-compose
+* Server certification and its key
 
 ```
 git clone https://github.com/kjmtks/hugin-lms.git
