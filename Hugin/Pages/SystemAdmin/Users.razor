@@ -1,0 +1,416 @@
+﻿@page "/SystemAdmin/Users";
+@layout MyLayout;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+@inject PermissionProviderService PermissionProvider;
+@inject UserHandleService UserHandler;
+@inject IJSRuntime JS;
+
+@if (!string.IsNullOrWhiteSpace(NormalMessage))
+{
+    <article class="message is-primary">
+        <div class="message-body">@NormalMessage</div>
+    </article>
+}
+@if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <article class="message is-danger">
+        <div class="message-body">@ErrorMessage</div>
+    </article>
+}
+
+<AccessRestrictions Checker="p => p.CanManageUser(LoginUser)">
+
+    <Paginated Collection="users" @ref="@Pagination">
+        <nav class="panel is-info">
+            <div class="panel-heading">
+                @Localizer["Users"].Value
+            </div>
+            <div class="panel-block tt">
+                <table class="table is-fullwidth" style="font-size: small">
+                    <thead>
+                        <tr>
+                            <th class="is-2">@Localizer["Account"].Value</th>
+                            <th class="is-2">@Localizer["Name"].Value</th>
+                            <th class="is-3">@Localizer["EMail"].Value</th>
+                            <th class="is-1"></th>
+                            <th class="is-1"></th>
+                            <th class="is-1"></th>
+                            <th class="is-2"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Pagination.ShowedModels)
+                        {
+                            <tr>
+                                <td>@user.Account</td>
+                                <td>@user.DisplayName</td>
+                                <td>@user.Email</td>
+                                <td>
+                                    @if (user.IsAdmin)
+                                    {
+                                        <span><i class="fas fa-user-secret" data-tooltip="Admin"></i></span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (user.IsTeacher)
+                                    {
+                                        <span><i class="fas fa-user-tie" data-tooltip="Teacher"></i></span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (user.IsLdapUser)
+                                    {
+                                        <span><i class="fas fa-database"></i></span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (PermissionProvider.CanManageUser(LoginUser))
+                                    {
+                                        <a href="javascript: void(0)" @onclick="async () => { await editModalOnAsync(user); }"><i class="fas fa-edit"></i></a>
+                                        <a href="javascript: void(0)" @onclick="async () => { await removeAsync(user); }"><i class="fas fa-trash-alt"></i></a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    @if (PermissionProvider.CanManageUser(LoginUser))
+                    {
+                        <tfoot>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    <a @onclick="async () => { await createModalOnAsync(); }">
+                                        <span class="fa-stack">
+                                            <i class="fas fa-user fa-stack-1x"></i>
+                                            <i class="fas fa-plus fa-stack-1x" data-fa-transform="shrink-4 right-12 down-6"></i>
+                                        </span>
+                                    </a>
+                                    <a @onclick="async () => { await ldapModalOnAsync(); }">
+                                        <span class="fa-stack">
+                                            <i class="fas fa-users fa-stack-1x"></i>
+                                            <i class="fas fa-plus fa-stack-1x" data-fa-transform="shrink-4 right-12 down-6"></i>
+                                        </span>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    }
+                </table>
+            </div>
+        </nav>
+    </Paginated>
+
+
+
+    <div class="modal" id="user-modal">
+        @if (model != null && editMode != EditMode.None)
+        {
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">
+                        @if (editMode == EditMode.CreateNew)
+                        {
+                            <text>@Localizer["CreateNewUser"].Value</text>
+                        }
+                        @if (editMode == EditMode.Edit)
+                        {
+                            <text>@Localizer["EditUser"].Value</text>
+                        }
+                    </p>
+                    <button class="delete" @onclick="async () => await modalOffAsync()" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+
+                    <EditForm EditContext="@editContext" OnSubmit="@submit">
+                        <DataAnnotationsValidator />
+
+                        <div class="field">
+                            <label class="label tt">@Localizer["Account"].Value</label>
+                            <div class="control">
+                                @if (editMode == EditMode.CreateNew)
+                                {
+                                    <input class="input tt" type="text" @bind="@model.Account">
+                                    <p class="help is-danger"><ValidationMessage For="@(() => model.Account)" /></p>
+                                }
+                                @if (editMode == EditMode.Edit)
+                                {
+                                    <input class="input tt" type="text" value="@model.Account" readonly>
+                                }
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label tt">@Localizer["DisplayName"].Value</label>
+                            <div class="control">
+                                <input class="input tt" type="text" @bind="@model.DisplayName">
+                            </div>
+                            <p class="help is-danger"><ValidationMessage For="@(() => model.DisplayName)" /></p>
+                        </div>
+                        <div class="field">
+                            <label class="label tt">@Localizer["EnglishName"].Value</label>
+                            <div class="control">
+                                <input class="input tt" type="text" @bind="@model.EnglishName">
+                            </div>
+                            <p class="help is-danger"><ValidationMessage For="@(() => model.EnglishName)" /></p>
+                        </div>
+                        <div class="field">
+                            <label class="label tt">@Localizer["EMail"].Value</label>
+                            <div class="control">
+                                <input class="input tt" type="text" @bind="@model.Email">
+                            </div>
+                            <p class="help is-danger"><ValidationMessage For="@(() => model.Email)" /></p>
+                        </div>
+                        <div class="field">
+                            <label class="label tt">@Localizer["IsLdapUser"].Value</label>
+                            <div class="control">
+                                <label class="checkbox">
+                                    <input type="checkbox" @bind="model.IsLdapUser">Use LDAP
+                                </label>
+                            </div>
+                            <p class="help is-danger"><ValidationMessage For="@(() => model.IsLdapUser)" /></p>
+                        </div>
+                        @if (!model.IsLdapUser)
+                        {
+                            <div class="field">
+                                <label class="label tt">@Localizer["Password"].Value</label>
+                                <div class="control">
+                                    <input class="input tt" type="password" @bind="@model.RawPassword">
+                                </div>
+                                <p class="help is-danger"><ValidationMessage For="@(() => model.RawPassword)" /></p>
+                            </div>
+                        }
+                        <div class="field">
+                            <label class="label tt">@Localizer["Authorities"].Value</label>
+                            <div class="control">
+                                <label class="checkbox">
+                                    <input type="checkbox" @bind="model.IsAdmin">@Localizer["Admin"]
+                                </label>
+                                &nbsp;&nbsp;
+                                <label class="checkbox">
+                                    <input type="checkbox" @bind="model.IsTeacher">@Localizer["Teacher"]
+                                </label>
+                            </div>
+                            <p class="help is-danger"><ValidationMessage For="@(() => model.IsAdmin)" /></p>
+                            <p class="help is-danger"><ValidationMessage For="@(() => model.IsTeacher)" /></p>
+                        </div>
+                    </EditForm>
+
+                </section>
+
+                <footer class="modal-card-foot">
+                    <buttons>
+                        <button class="button is-success" @onclick="async () => await submit()">@Localizer["OK"].Value</button>
+                        <button class="button" @onclick="async () => await modalOffAsync()">@Localizer["Cancel"].Value</button>
+                    </buttons>
+                </footer>
+            </div>
+        }
+    </div>
+
+
+    <div class="modal" id="ldap-users-modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">
+                    @Localizer["AddNewLDAPUsers"].Value
+                </p>
+                <button class="delete" @onclick="async () => await modalOffAsync()" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+
+                <div class="field">
+                    <label class="label tt">@Localizer["Accounts"].Value</label>
+                    <div class="control">
+                        <textarea class="textarea tt" rows="6" @bind="ldapAccounts"></textarea>
+                    </div>
+                </div>
+
+            </section>
+
+            <footer class="modal-card-foot">
+                <buttons>
+                    <button class="button is-success" @onclick="async () => await submitLdapUser()">@Localizer["OK"].Value</button>
+                    <button class="button" @onclick="async () => await modalOffAsync()">@Localizer["Cancel"].Value</button>
+                </buttons>
+            </footer>
+        </div>
+    </div>
+
+
+</AccessRestrictions>
+
+
+@code
+{
+    private IEnumerable<Data.User> users;
+
+    [CascadingParameter]
+    public Data.User LoginUser { get; set; }
+
+    private enum EditMode
+    {
+        None, CreateNew, Edit
+    }
+    private EditMode editMode = EditMode.None;
+    private EditContext editContext { get; set; }
+    private ValidationMessageStore messageStore;
+    private Data.User model { get; set; }
+    private bool processing = false;
+
+    private string ErrorMessage { get; set; }
+    private string NormalMessage { get; set; }
+
+    private Paginated<Data.User> Pagination;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        updateUsers();
+    }
+
+    private void updateUsers()
+    {
+        users = UserHandler.Set.OrderBy(x => x.Uid).AsNoTracking();
+    }
+
+    private async Task removeAsync(Data.User user)
+    {
+        if (await JS.InvokeAsync<bool>("showConfirmDialog", Localizer["AreYouSureDelete"].Value))
+        {
+            UserHandler.Remove(user);
+        }
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task createModalOnAsync()
+    {
+        editMode = EditMode.CreateNew;
+        model = new Data.User { };
+        resetEdittingModel(model);
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOn", "user-modal");
+    }
+
+    private async Task editModalOnAsync(Data.User user)
+    {
+        editMode = EditMode.Edit;
+        model = user;
+        resetEdittingModel(model);
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOn", "user-modal");
+    }
+    private async Task modalOffAsync()
+    {
+        model = null;
+        editMode = EditMode.None;
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOff", "user-modal");
+        await JS.InvokeVoidAsync("modalOff", "ldap-users-modal");
+    }
+
+    private void resetEdittingModel(Data.User user)
+    {
+        editContext = new EditContext(user);
+        messageStore = new ValidationMessageStore(editContext);
+        editContext.OnValidationRequested += (s, e) => messageStore.Clear();
+        editContext.OnFieldChanged += (s, e) => messageStore.Clear(e.FieldIdentifier);
+    }
+    private void addValidationError(string fieldName, string errorMessage)
+    {
+        messageStore.Add(editContext.Field(fieldName), errorMessage);
+        editContext.NotifyValidationStateChanged();
+    }
+
+    private async Task submit()
+    {
+        if (processing) return;
+        processing = true;
+        ErrorMessage = "";
+        NormalMessage = "";
+        await InvokeAsync(() => StateHasChanged());
+
+        bool v1 = true, v2 = true;
+        v1 = editContext.Validate();
+        if (!PermissionProvider.CanEditSandboxTemplate(LoginUser))
+        {
+            v2 = false;
+            messageStore.Add(editContext.Field("Account"), "You can not edit user.");
+            editContext.NotifyValidationStateChanged();
+        }
+
+        if (v1 && v2)
+        {
+            onValid(editContext);
+            await modalOffAsync();
+            updateUsers();
+            await InvokeAsync(() => StateHasChanged());
+        }
+        processing = false;
+    }
+
+
+    protected virtual void onValid(EditContext editContext)
+    {
+        try
+        {
+            if (editMode == EditMode.CreateNew)
+            {
+                if (UserHandler.AddNew(model) == null)
+                {
+                    throw new Exception("Error");
+                }
+            }
+            if (editMode == EditMode.Edit)
+            {
+                if (UserHandler.Update(model) == null)
+                {
+                    throw new Exception("Error");
+                }
+            }
+            NormalMessage = "Success";
+        }
+        catch (Exception e)
+        {
+            ErrorMessage = e.Message;
+            NormalMessage = "";
+        }
+    }
+
+    private string ldapAccounts = "";
+    private async Task ldapModalOnAsync()
+    {
+        await JS.InvokeVoidAsync("modalOn", "ldap-users-modal");
+    }
+    private async Task submitLdapUser()
+    {
+        try
+        {
+            var errors = UserHandler.AddNewLdapUsers(ldapAccounts);
+            ldapAccounts = "";
+            if (errors.Count() == 0)
+            {
+                NormalMessage = $"Success.";
+                ErrorMessage = "";
+            }
+            else
+            {
+                ErrorMessage = "";
+                ErrorMessage = $"Failed to add following users: {Environment.NewLine}{string.Join(", ", errors)}";
+            }
+        }
+        catch (Exception e)
+        {
+            ErrorMessage = e.Message;
+            NormalMessage = "";
+        }
+        await JS.InvokeVoidAsync("modalOff", "ldap-users-modal");
+    }
+
+}

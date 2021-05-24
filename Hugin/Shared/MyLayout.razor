@@ -1,0 +1,135 @@
+﻿@inherits LoginedLayoutBase;
+@inject LectureHandleService LectureHandler
+@inject ApplicationConfigurationService Conf;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+
+<CommonMenu />
+
+<AuthorizeView>
+    <Authorized>
+
+        <div class="container" style="padding-bottom: 4em">
+            <div class="columns">
+
+                <div class="column is-3 ">
+
+                    <aside class="menu is-hidden-mobile">
+                        <p class="menu-label">
+                            @Localizer["MyMenuGeneral"].Value
+                        </p>
+                        <ul class="menu-list">
+                            <li><a href="/">@Localizer["MyMenuDashboard"].Value</a></li>
+                            <li>
+                                <a>@Localizer["MyMenuAttendances"].Value</a>
+                                @{
+                                    var myAttendances = UserHandler.GetAttendances(LoginUser).AsNoTracking().ToList();
+                                }
+                                @if (myAttendances.Count() > 0)
+                                {
+                                    <ul>
+                                        @foreach (var lecture in myAttendances)
+                                        {
+                                            <li>
+                                                <a href="/Page/@lecture.Owner.Account/@lecture.Name/@lecture.DefaultBranch/">@lecture.Subject</a>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            </li>
+                            <li><a href="/MySubmission">@Localizer["MyMenuSubmissions"].Value</a></li>
+                        </ul>
+                    </aside>
+
+                    <br />
+                    <aside class="menu is-hidden-mobile">
+                        <p class="menu-label">
+                            @Localizer["MyMenuTeaching"].Value
+                        </p>
+                        <ul class="menu-list">
+                            <li>
+                                <a href="/Teacher/Lectures">@Localizer["MyMenuLectures"].Value</a>
+                                <ul>
+                                    @foreach (var lecture in LectureHandler.GetTeachingLectures(LoginUser))
+                                    {
+                                        <li>
+                                            <a href="/LectureAdmin/@lecture.Owner.Account/@lecture.Name/">@lecture.Subject</a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        </ul>
+                    </aside>
+
+                    <br />
+                    @if (LoginUser.IsAdmin)
+                    {
+                        <aside class="menu is-hidden-mobile">
+                            <p class="menu-label">
+                                @Localizer["MyMenuSystem"].Value
+                            </p>
+                            <ul class="menu-list">
+                                <li><a href="/SystemAdmin/Dashboard">@Localizer["MyMenuSystemDashboard"].Value</a></li>
+                                <li><a href="/SystemAdmin/Users">@Localizer["MyMenuUsers"].Value</a></li>
+                                <li><a href="/SystemAdmin/SandboxTemplates">@Localizer["MyMenuSandboxTemplates"].Value</a></li>
+                                <li><a href="/SystemAdmin/Files">@Localizer["MyMenuFileExplorer"].Value</a></li>
+                            </ul>
+                        </aside>
+                    }
+                </div>
+
+                <div class="column is-9">
+                    <CascadingValue Value="@LoginUser">
+                        @Body
+                    </CascadingValue>
+                </div>
+            </div>
+        </div>
+
+    </Authorized>
+    <NotAuthorized>
+
+
+        <section class="hero is-white is-fullheight">
+            <div class="hero-body">
+                <div class="container">
+                    <div class="columns  is-vcentered reverse-columns">
+                        <div class="column
+          is-10-mobile is-offset-1-mobile
+          is-10-tablet is-offset-1-tablet
+          is-5-desktop is-offset-1-desktop
+          is-5-widescreen is-offset-1-widescreen
+          is-5-fullhd is-offset-1-fullhd" data-aos="fade-down">
+                            <h1 class="title titled is-1 mb-6">
+                                @Conf.GetAppName()
+                            </h1>
+                            <h2 class=" subtitled subtitle has-text-grey is-4 has-text-weight-normal is-family-sans-serif">
+                                @Conf.GetAppDescription()
+                            </h2>
+                            <div class="buttons">
+                                <a href="/Login" class="button is-primary">@Localizer["Login"].Value</a>
+                            </div>
+                        </div>
+                        <div data-aos="fade-right" class="column
+          is-10-mobile is-offset-1-mobile
+          is-10-tablet is-offset-1-tablet
+          is-4-desktop is-offset-1-desktop
+          is-4-widescreen is-offset-1-widescreen
+          is-4-fullhd is-offset-1-fullhd">
+                            <figure class="image is-square">
+                                <img style="display: none;" src="../images/undraw_Camera_re_cnp4.svg">
+                            </figure>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+}

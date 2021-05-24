@@ -1,0 +1,16 @@
+﻿@inherits LayoutComponentBase
+
+<CommonMenu />
+
+<AuthorizeView>
+    <Authorized>
+
+        <div class="container" style="padding-bottom: 4em">
+            @Body
+        </div>
+
+    </Authorized>
+    <NotAuthorized>
+    </NotAuthorized>
+</AuthorizeView>
+

@@ -1,0 +1,23 @@
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS base
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 443
+
+RUN ls /etc/ssl/certs/ && rm /etc/ssl/certs/*
+COPY certs/* /etc/ssl/certs/
+RUN update-ca-certificates
+
+RUN apt-get update -yq && apt-get install -yq git binutils debootstrap
+RUN apt-get update -yq && apt-get install curl gnupg -yq 
+RUN curl -sL https://deb.nodesource.com/setup_13.x | bash - && apt-get install -y nodejs
+RUN dotnet tool install --global dotnet-ef --version 5.0.5
+
+COPY *.sln .
+COPY Hugin/. /app/Hugin/
+WORKDIR "/app/Hugin"
+RUN npm install && mkdir /app/Hugin/out; mv node_modules /app/Hugin/out
+RUN dotnet restore
+RUN dotnet publish "Hugin.csproj" -c Release -o out
+
+
+ENTRYPOINT ["/bin/sh", "-c", "cd /app/Hugin; PATH=\"$PATH:/root/.dotnet/tools\" dotnet ef database update && cd /app/Hugin/out; dotnet Hugin.dll"]

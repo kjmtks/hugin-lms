@@ -1,0 +1,78 @@
+﻿
+@inject Hugin.Services.ApplicationConfigurationService Conf;
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache">
+
+    <title>@Conf.GetAppName()</title>
+    <base href="~/" />
+
+    <link rel="stylesheet" type="text/css" href="~/node_modules/@@fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="~/node_modules/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="~/node_modules/bulma/css/bulma.min.css" />
+    <link rel="stylesheet" href="~/node_modules/bulma-extensions/dist/css/bulma-extensions.min.css" />
+    <link href="~/css/site.css" rel="stylesheet" />
+
+    <script src="~/node_modules/bulma-extensions/dist/js/bulma-extensions.min.js"></script>
+    <script src="~/node_modules/@@fortawesome/fontawesome-free/js/all.min.js"></script>
+    <script src="~/node_modules/flatpickr/dist/flatpickr.min.js"></script>
+    <script src="~/js/paint.js"></script>
+    <script src="~/js/site.js"></script>
+
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          tex2jax: {
+            skipStartupTypeset: true,
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            displayMath: [['$$','$$'], ['\\[','\\]']],
+            processEscapes: true
+          },
+          CommonHTML: { matchFontHeight: false },
+          displayAlign: "left",
+          displayIndent: "2em"
+        });
+    </script>
+    <script async src="~/node_modules/mathjax/es5/tex-chtml-full.js"></script>
+
+    <script>
+        function modalOn(targetId) {
+            var modal = document.getElementById(targetId);
+            if (modal != null) {
+                modal.classList.add("is-active")
+            }
+        }
+        function modalOff(targetId) {
+            var modal = document.getElementById(targetId);
+            if (modal != null) {
+                modal.classList.remove("is-active")
+            }
+        }
+        function scrollToBottom(targetId) {
+            var obj = document.getElementById(targetId);
+            obj.scrollTop = obj.scrollHeight;
+        }
+    </script>
+
+
+    <style>
+        @Html.Raw(ViewData["Style"])
+    </style>
+    <script>
+        @Html.Raw(ViewData["Script"])
+    </script>
+
+
+</head>
+<body>
+
+    @RenderBody()
+
+
+    <script src="~/node_modules/@@aspnet/signalr/dist/browser/signalr.js"></script>
+    <script src="~/js/activityHub.js"></script>
+</body>
+</html>

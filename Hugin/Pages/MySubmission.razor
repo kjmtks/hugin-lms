@@ -1,0 +1,153 @@
+﻿@page "/MySubmission"
+@page "/MySubmission/{Account}/{LectureName}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21}/{Path22?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21}/{Path22}/{Path23?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21}/{Path22}/{Path23}/{Path24?}"
+@page "/MySubmission/{Account}/{LectureName}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21}/{Path22}/{Path23}/{Path24}/{Path25?}"
+
+@inherits FiniteDepthPathPage;
+@layout MyLayout;
+@inject NavigationManager NV;
+
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+@inject LectureHandleService LectureHandler;
+@inject SubmissionHandleService SubmissionHandler;
+@inject UserHandleService UserHandler;
+@inject RepositoryHandleService RepositoryHandler;
+
+@inject SubmissionNotifierService Notifier;
+@implements IDisposable;
+
+
+<Paginated Collection="submissionInfos" @ref="@Pagination" EntriesPerPage="20">
+    <nav class="panel is-info">
+        <div class="panel-heading">
+            @Localizer["MySubmissions"].Value
+        </div>
+        <div class="panel-block tt">
+            <table class="table is-fullwidth" style="font-size: small">
+                <thead>
+                    <tr>
+                        <th>Lecture</th>
+                        <th>Activity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Pagination.ShowedModels)
+                    {
+                        <tr>
+                            <td>
+                                <a class="tt" href="/MySubmission/@s.Item1/@s.Item2"
+                                   @onclick="() => { JumpTo(s.Item1, s.Item2); }"
+                                   @onclick:preventDefault>@s.Item4</a>
+                            </td>
+                            <td>
+                                <a class="tt" href="/MySubmission/@s.Item1/@s.Item2/@s.Item3"
+                                   @onclick="() => { JumpTo(s.Item1, s.Item2, s.Item3); }"
+                                   @onclick:preventDefault>@s.Item3</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </nav>
+</Paginated>
+
+<SubmissionList User="LoginUser" IsShowHistoryLink="false" CanMark="false" Submissions="submissions" />
+
+
+@code
+{
+    [CascadingParameter]
+    public Data.User LoginUser { get; set; }
+
+
+    [Parameter]
+    public string Account { get; set; }
+    [Parameter]
+    public string LectureName { get; set; }
+
+    private IEnumerable<(string, string, string, string)> submissionInfos = null;
+    private Paginated<(string, string, string, string)> Pagination;
+
+    private Data.Lecture Lecture;
+
+    private IEnumerable<Data.Submission> submissions = null;
+
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Notifier.Notify += OnNotify;
+        update();
+    }
+
+    private void JumpTo(string a, string b, string c = null)
+    {
+        if (c == null)
+        {
+            NV.NavigateTo($"/MySubmission/{a}/{b}", true);
+        }
+        else
+        {
+            NV.NavigateTo($"/MySubmission/{a}/{b}/{c}", true);
+        }
+    }
+
+    private void update()
+    {
+        IQueryable<Data.Submission> xs;
+        if (!string.IsNullOrWhiteSpace(Path))
+        {
+            xs = SubmissionHandler.Set.Where(x => x.UserId == LoginUser.Id && x.ActivityName == Path).Include(x => x.Lecture).ThenInclude(x => x.Owner).Include(x => x.User).Include(x => x.MarkerUser);
+        }
+        else
+        {
+            xs = SubmissionHandler.MyLatestSubmissions(LoginUser).Include(x => x.Lecture).ThenInclude(x => x.Owner).Include(x => x.User).Include(x => x.MarkerUser);
+        }
+
+        Lecture = LectureHandler.Set.Include(x => x.Owner).Where(x => x.Owner.Account == Account && x.Name == LectureName).FirstOrDefault();
+        if (Lecture != null)
+        {
+            xs = xs.Where(x => x.LectureId == Lecture.Id);
+        }
+
+        submissionInfos = SubmissionHandler.MyLatestSubmissions(LoginUser).Include(x => x.Lecture).ThenInclude(x => x.Owner).Include(x => x.User).Include(x => x.MarkerUser)
+            .Select(x => new { x.Lecture.Owner.Account, x.Lecture.Name, x.ActivityName, x.Lecture.Subject })
+            .Distinct().AsNoTracking().ToList().Select(x => (x.Account, x.Name, x.ActivityName, x.Subject));
+        submissions = xs.AsNoTracking().ToList().OrderByDescending(x => !x.MarkedAt.HasValue ? x.SubmittedAt.Ticks : new DateTime[] { x.MarkedAt.Value, x.SubmittedAt }.Max(x => x.Ticks));
+    }
+
+    public async Task OnNotify()
+    {
+        update();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    void IDisposable.Dispose()
+    {
+        Notifier.Notify -= OnNotify;
+    } }

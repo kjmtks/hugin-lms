@@ -1,0 +1,360 @@
+﻿@model Hugin.ViewModels.ActivityViewModel
+@using Microsoft.EntityFrameworkCore;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+@inject Hugin.Services.PermissionProviderService PermissionProvider;
+@inject Hugin.Services.SubmissionHandleService SubmissionHandler;
+
+<div id="@Model.Activity.Name" style="padding: 1em;">
+    <div class="activity box" id="@Model.Id" data-profile="@Model.EncryptedProfile" data-directory="@Model.Activity.Directory">
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item">
+                    <h4 id="const" class="title tt">
+                        @if (!string.IsNullOrWhiteSpace(Model.Activity.Subject))
+                        {
+                            @Model.Activity.Subject
+                        }
+                        <span class="tag tt is-info label-for-submitted" style="display: none;">@Localizer["Submitted"]</span>
+                        <span class="tag tt is-danger label-for-require-resubmit" style="display: none;">@Localizer["RequiredResubmit"]</span>
+                        <span class="tag tt is-success label-for-accepting-resubmit" style="display: none;">@Localizer["AcceptingResubmit"]</span>
+                        <span class="tag tt is-success label-for-confirmed" style="display: none;">@Localizer["Confirmed"]</span>
+                    </h4>
+                </div>
+            </div>
+            <div class="level-right">
+                <div class="level-item">
+                    <span class="deadline-indicator">@Localizer["Deadline"]: <span class="deadline-value"></span></span>
+                    <span class="no-deadline-indicator">@Localizer["NoDeadline"]</span>
+                </div>
+                <div class="level-item">
+                    <span class="connected-indicator"><i class="fas fa-wifi" style="color: lawngreen"></i></span>
+                    <span class="disconnected-indicator">
+                        <span class="fa-layers">
+                            <i class="fas fa-wifi" style="color: gray"></i>
+                            <i class="fas fa-slash" style="color: Tomato"></i>
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(@Model.Description))
+        {
+            <div class="block">@Html.Raw(@Model.Description)</div>
+        }
+
+        <nav class="level" style="margin-bottom: 0;">
+            <div class="level-left">
+                <div class="level-item is-8">
+                    <div class="tabs is-blocked is-small">
+                        <ul>
+                            @foreach (var (file, i) in Model.Activity.Files.Children.Select((x, i) => (x, i)))
+                            {
+                                <li class="tab @(i == 0 ? "is-active" : "")" data-tab-name="@file.Name">
+                                    <a data-tab-name="@file.Name" onclick='selectTab("@Model.Id", this)'>
+                                        @(string.IsNullOrWhiteSpace(file.Label) ? file.Name : file.Label)
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="level-right">
+                <p class="level-item">
+                    <div class="buttons" style="margin-bottom: 0;">
+                        <button class="button is-outlined is-rounded activity-action-button is-small" data-tooltip="Dismiss Messages" onclick='hideMessages("@Model.Id")'><i class="fas fa-eraser"></i>&nbsp;@Localizer["DismissMessages"]</button>
+                        &nbsp;
+                        @if (Model.Activity.UseSave())
+                        {
+                            <button class="button is-outlined is-primary is-rounded activity-action-button activity-save is-small" data-tooltip="Save"><i class="fas fa-save"></i>&nbsp;@Localizer["Save"]</button>
+                        }
+                        @if (Model.Activity.UseRun())
+                        {
+                            <button class="button is-outlined is-primary is-rounded activity-action-button activity-run is-small" data-tooltip="Save &amp; Run"><i class="fas fa-play"></i>&nbsp;@Localizer["Run"]</button>
+                        }
+                        @if (Model.Activity.UseValidate())
+                        {
+                            <button data-allow="false" class="button is-outlined is-primary is-rounded activity-action-button activity-validate is-small" data-tooltip="Save &amp; Validate"><i class="fas fa-bug"></i>&nbsp;@Localizer["Validate"]</button>
+                        }
+                        @if (Model.Profile.CanUseSubmit)
+                        {
+                            <button data-allow="false" class="button is-outlined is-primary is-rounded activity-action-button activity-submit-button is-small" onclick='modalOn("submit-modal-@Model.Id")' data-tooltip="Save &amp; Submit"><i class="fas fa-upload"></i>&nbsp;@Localizer["Submit"]</button>
+                        }
+                        <div class="dropdown is-hoverable is-right is-small">
+                            <div class="dropdown-trigger">
+                                <button class="button is-small" aria-haspopup="true" aria-controls="dropdown-menu4">
+                                    <span>@Localizer["Menu"]</span>
+                                    <span class="icon is-small">
+                                        <i class="fas fa-angle-down" aria-hidden="true"></i>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="dropdown-menu" id="dropdown-menu4" role="menu">
+                                <div class="dropdown-content">
+                                    <a class="dropdown-item activity-action-text activity-discard">@Localizer["Discard"]</a>
+                                    @if (Model.Activity.UseReset())
+                                    {
+                                        <a class="dropdown-item activity-action-text activity-reset">@Localizer["Reset"]</a>
+                                    }
+
+                                    <hr class="dropdown-divider">
+                                    <a class="dropdown-item button-for-show-feedback" style="display: none;" href="javascript: void(0);" onclick='modalOn("feedback-modal-@Model.Id")'>@Localizer["ShowSubmissions"]</a>
+                                    <a class="dropdown-item" href="/MySubmission/@Model.Profile.LectureOwnerAccount/@Model.Profile.LectureName/@Model.Activity.Name">@Localizer["ShowHistory"]</a>
+                                    @if (Model.Profile.CanUseAnswer)
+                                    {
+                                        <a class="dropdown-item activity-action-text activity-answer">@Localizer["ShowAnswer"]</a>
+                                    }
+                                    @if (PermissionProvider.CanMarkSubmission(Model.Profile.LectureOwnerAccount, Model.Profile.LectureName, Model.Profile.UserAccount))
+                                    {
+                                        <a class="dropdown-item" target="_blank" href="/LectureAdmin/@(Model.Profile.LectureOwnerAccount)/@(Model.Profile.LectureName)/Submissions/@(Model.Activity.Name)">@Localizer["GoToFeedback"]</a>
+                                    }
+                                    @if (PermissionProvider.CanReadLectureContentsRepository(Model.Profile.LectureOwnerAccount, Model.Profile.LectureName, Model.Profile.UserAccount))
+                                    {
+                                        <a class="dropdown-item activity-action-text activity-activity-xml">@Localizer["ShowActualActivityXML"]</a>
+                                    }
+                                    @if (PermissionProvider.CanWriteLectureContentsRepository(Model.Profile.LectureOwnerAccount, Model.Profile.LectureName, Model.Profile.UserAccount))
+                                    {
+                                        <a class="dropdown-item" href="/LectureAdmin/@(Model.Profile.LectureOwnerAccount)/@(Model.Profile.LectureName)/ContentsRepository/@(Model.Profile.Rivision)/activities/@(Model.Profile.ActivityRef)">@Localizer["EditActivityXML"]</a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </p>
+                <p class="level-item"></p>
+            </div>
+        </nav>
+        <div class="tab-contents">
+            @foreach (var (file, i) in Model.Activity.Files.Children.Select((x, i) => (x, i)))
+            {
+                <div class="content tab-content @(i == 0 ? "is-active" : "")" data-content-name="@file.Name">
+                    @if (file is Hugin.Models.ActivityFilesText text)
+                    {
+                        @if (text.ReadOnly)
+                        {
+                            <textarea class="textarea tt activity-file" data-name="@text.Name" maxlength="@text.Maxlength" readonly rows="6"></textarea>
+                        }
+                        else
+                        {
+                            <textarea class="textarea tt activity-file" data-name="@text.Name" maxlength="@text.Maxlength" rows="6"></textarea>
+                        }
+                    }
+                    @if (file is Hugin.Models.ActivityFilesCode code)
+                    {
+                        @if (code.ReadOnly)
+                        {
+                            <textarea class="textarea tt activity-file" data-name="@code.Name" maxlength="@code.Maxlength" readonly rows="6"></textarea>
+                        }
+                        else
+                        {
+                            <textarea class="textarea tt activity-file" data-name="@code.Name" maxlength="@code.Maxlength" rows="6"></textarea>
+                        }
+                    }
+                    @if (file is Hugin.Models.ActivityFilesUpload fileUpload)
+                    {
+                        <div class="control m-5">
+                            <div class="file has-name is-boxed activity-file-upload">
+                                <label class="file-label">
+                                    <input class="file-input tt" data-name="@fileUpload.Name" type="file" accept="@fileUpload.Accept" onchange="setFileNameToFileUpload(this);">
+                                    <span class="file-cta">
+                                        <span class="file-icon">
+                                            <i class="fas fa-upload"></i>
+                                        </span>
+                                        <span class="file-label">
+                                            @Localizer["ChooseAFile"]
+                                        </span>
+                                    </span>
+                                    <span class="file-name" style="display: none;"></span>
+                                </label>
+                            </div>
+                        </div>
+                    }
+                    @if (file is Hugin.Models.ActivityFilesString str)
+                    {
+                        <div class="control m-5">
+                            @if (str.ReadOnly)
+                            {
+                                <input type="text" class="input tt activity-file" data-name="@str.Name" maxlength="@str.Maxlength" readonly />
+                            }
+                            else
+                            {
+                                <input type="text" class="input tt activity-file" data-name="@str.Name" maxlength="@str.Maxlength" />
+                            }
+                        </div>
+                    }
+                    @if (file is Hugin.Models.ActivityFilesForm form)
+                    {
+                        <form class="activity-file-form" data-name="@form.Name">
+                            @foreach (var inp in form.Children)
+                            {
+                                <div class="field is-horizontal">
+                                    @if (inp is Hugin.Models.ActivityFilesFormText tx)
+                                    {
+                                        <div class="field-label is-normal">
+                                        </div>
+                                        <div class="field-body">
+                                            <div class="field">
+                                                @tx.Text
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (inp is Hugin.Models.ActivityFilesFormTextarea ta)
+                                    {
+                                        <div class="field-label is-normal">
+                                            <label class="label">@ta.Label</label>
+                                        </div>
+                                        <div class="field-body">
+                                            <div class="field">
+                                                <div class="control">
+                                                    <textarea class="activity-form-input textarea" type="text" name="@ta.Name" maxlength="@ta.Maxlength" rows="@ta.Rows"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (inp is Hugin.Models.ActivityFilesFormString st)
+                                    {
+                                        <div class="field-label is-normal">
+                                            <label class="label">@st.Label</label>
+                                        </div>
+                                        <div class="field-body">
+                                            <div class="field">
+                                                <div class="control">
+                                                    <input class="activity-form-input input" type="text" name="@st.Name" maxlength="@st.Maxlength">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (inp is Hugin.Models.ActivityFilesFormSelect se)
+                                    {
+                                        <div class="field-label is-normal">
+                                            <label class="label">@se.Label</label>
+                                        </div>
+                                        <div class="field-body">
+                                            <div class="field">
+                                                <div class="control">
+                                                    <div class="select is-fullwidth">
+                                                        <select class="activity-form-input" name="@se.Name">
+                                                            @foreach (var opt in se.Options)
+                                                            {
+                                                                <option value="@opt.Value">@opt.Label</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (inp is Hugin.Models.ActivityFilesFormRadio ra)
+                                    {
+                                        <div class="field-label is-normal">
+                                            <label class="label">@ra.Label</label>
+                                        </div>
+                                        <div class="field-body">
+                                            <div class="field">
+                                                <div class="control">
+                                                    @foreach (var opt in ra.Options)
+                                                    {
+                                                        <label class="radio">
+                                                            <input class="activity-form-input" type="radio" name="@ra.Name" value="@opt.Value" />
+                                                            @opt.Label
+                                                        </label>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (inp is Hugin.Models.ActivityFilesFormCheckbox ch)
+                                    {
+                                        <div class="field-label is-normal">
+                                        </div>
+                                        <div class="field-body">
+                                            <div class="field">
+                                                <div class="control">
+                                                    <label class="checkbox">
+                                                        <input class="activity-form-input" type="checkbox" name="@ch.Name" value="@ch.True" data-false-value="@ch.False">
+                                                        @ch.Label
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </form>
+                    }
+                </div>
+            }
+            <div class="content tab-content"></div>
+        </div>
+        <div class="block messages" style="display: none;">
+            <article class="message meesage-activity-message" style="display: none;">
+                <pre class="message-body activity-message"></pre>
+            </article>
+            <article class="message meesage-activity-error-message is-danger" style="display: none;">
+                <pre class="message-body activity-error-message"></pre>
+            </article>
+            <article class="message meesage-activity-stdout is-primary" style="display: none;">
+                <pre class="message-body activity-stdout"></pre>
+            </article>
+            <article class="message meesage-activity-stderr is-warning" style="display: none;">
+                <pre class="message-body activity-stderr"></pre>
+            </article>
+            <article class="message activity-figures" style="background-color: white; display: none;">
+            </article>
+        </div>
+
+        <div class="modal" id="submit-modal-@Model.Id">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">@Localizer["Submit"] - @Model.Activity.Subject?.Trim()</p>
+                </header>
+                <section class="modal-card-body">
+                    <div class="field">
+                        <label class="label tt">@Localizer["Comment"]</label>
+                        <div class="control">
+                            <textarea class="textarea tt submit-comment" rows="3"></textarea>
+                        </div>
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button is-success activity-submit">@Localizer["Submit"]</button>
+                    <button class="button" onclick='modalOff("submit-modal-@Model.Id")'>@Localizer["Cancel"]</button>
+                </footer>
+            </div>
+        </div>
+
+        <div class="modal" id="feedback-modal-@Model.Id">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">@Localizer["Feedback"] - @Model.Activity.Subject?.Trim()</p>
+                </header>
+                <section class="modal-card-body">
+                    <div class="field field-grade">
+                        <label class="label tt">@Localizer["Grade"]</label>
+                        <div class="tt grade" style="font-size: 1.5em"></div>
+                        <br />
+                    </div>
+                    <div class="field field-feedback-comment">
+                        <label class="label tt">@Localizer["FeedbackComment"]</label>
+                        <div class="control">
+                            <textarea class="textarea tt feedback-comment" readonly rows="6"></textarea>
+                            <br />
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label tt">@Localizer["MarkedAt"]</label>
+                        <div class="tt marked-at"></div>
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button" onclick='modalOff("feedback-modal-@Model.Id")'>@Localizer["Close"]</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+</div>

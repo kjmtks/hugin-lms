@@ -1,0 +1,88 @@
+﻿@page "/"
+@namespace Hugin.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject Hugin.Services.ApplicationConfigurationService Conf;
+
+@{ Layout = null; }
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@Conf.GetAppName()</title>
+    <base href="~/" />
+
+    <link rel="stylesheet" type="text/css" href="/node_modules/@@fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="/node_modules/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="/node_modules/bulma/css/bulma.min.css" />
+    <link rel="stylesheet" href="/node_modules/bulma-extensions/dist/css/bulma-extensions.min.css" />
+    <link href="/css/site.css" rel="stylesheet" />
+
+    <script src="/node_modules/bulma-extensions/dist/js/bulma-extensions.min.js"></script>
+    <script src="/node_modules/@@fortawesome/fontawesome-free/js/all.min.js"></script>
+    <script src="/node_modules/flatpickr/dist/flatpickr.min.js"></script>
+    <script src="/node_modules/chart.js/dist/chart.min.js"></script>
+
+    <script src="_content/BlazorInputFile/inputfile.js"></script>
+    <script src="/js/activityActionChart.js"></script>
+    <script src="/js/paint.js"></script>
+    <script src="/js/site.js"></script>
+
+
+    <script>
+        function modalOn(targetId) {
+            var modal = document.getElementById(targetId);
+            if (modal != null) {
+                modal.classList.add("is-active")
+            }
+        }
+        function modalOff(targetId) {
+            var modal = document.getElementById(targetId);
+            if (modal != null) {
+                modal.classList.remove("is-active")
+            }
+        }
+        function scrollToBottom(targetId) {
+            var obj = document.getElementById(targetId);
+            obj.scrollTop = obj.scrollHeight;
+        }
+    </script>
+
+    <script>
+
+        function setDateTimePicker(selector) {
+            flatpickr(selector, {
+                enableTime: true,
+                dateFormat: "Y/m/d H:i:00",
+                timezone: "+0900",
+                showTimezone: true
+            });
+        }
+
+        function showConfirmDialog(message) {
+            return window.confirm(message);
+        }
+
+    </script>
+
+</head>
+<body>
+
+    <component type="typeof(App)" render-mode="ServerPrerendered" />
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+
+    <script src="_framework/blazor.server.js"></script>
+</body>
+</html>

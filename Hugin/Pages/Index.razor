@@ -1,0 +1,20 @@
+﻿@page "/";
+@layout MyLayout;
+
+@inject AuthenticationStateProvider Auth;
+@inject UserHandleService UserHandler;
+
+
+<UserDashboard User="LoginUser" LoginUser="LoginUser" />
+
+<AccessRestrictions Checker="p => p.CanShowAllSubmission(LoginUser)">
+    <Hugin.Components.SubmissionObserver Lecture="null" User="LoginUser" />
+</AccessRestrictions>
+
+
+@code
+{ 
+    [CascadingParameter]
+    private Data.User LoginUser { get; set; }
+    
+}

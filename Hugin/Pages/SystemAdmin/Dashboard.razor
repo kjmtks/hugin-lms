@@ -1,0 +1,85 @@
+﻿@page "/SystemAdmin";
+@page "/SystemAdmin/Dashboard";
+@layout MyLayout;
+@inject UserHandleService UserHandler;
+@inject LectureHandleService LectureHandler;
+@inject SandboxHandleService SandboxHandler;
+@inject ActivityActionHandleService ActivityActionHandler;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+@inject OnlineStatusService OnlineStatus;
+@implements IDisposable;
+
+<section class="hero is-info welcome is-small">
+    <div class="hero-body">
+        <div class="container">
+            <h1 class="title">
+                @Localizer["SystemAdministration"].Value
+            </h1>
+        </div>
+    </div>
+</section>
+
+<section class="info-tiles">
+    <div class="tile is-ancestor has-text-centered">
+        <div class="tile is-parent">
+            <article class="tile is-child box">
+                <p class="title">@UserHandler.Set.Count()</p>
+                <p class="subtitle">Users</p>
+            </article>
+        </div>
+        <div class="tile is-parent">
+            <article class="tile is-child box">
+                <p class="title">@LectureHandler.Set.Count()</p>
+                <p class="subtitle">Lectures</p>
+            </article>
+        </div>
+        <div class="tile is-parent">
+            <article class="tile is-child box">
+                <p class="title">@OnlineStatus.GetNumOfActiveUser()</p>
+                <p class="subtitle">Active Users</p>
+            </article>
+        </div>
+        <div class="tile is-parent">
+            <article class="tile is-child box">
+                <p class="title">@numOfActions</p>
+                <p class="subtitle">Actions</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<AccessRestrictions Checker="p => p.CanShowJobQueue(LoginUser)">
+    <section>
+        <Hugin.Components.JobQueueViewer />
+    </section>
+</AccessRestrictions>
+
+<ActivityActionChart Title="@Localizer["ActivityActionChartOfSystem"].Value" />
+
+
+@code {
+
+
+    [CascadingParameter]
+    public Data.User LoginUser { get; set; }
+
+    private int numOfActions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        numOfActions = ActivityActionHandler.Set.Count();
+        OnlineStatus.Notify += OnNotify;
+    }
+
+    public async Task OnNotify()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    void IDisposable.Dispose()
+    {
+        OnlineStatus.Notify -= OnNotify;
+    }
+}

@@ -1,0 +1,101 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+@inject SubmissionHandleService SubmissionHandler;
+@inject SubmissionNotifierService Notifier;
+@implements IDisposable;
+
+<section class="card-section">
+    <Paginated Collection="collection" EntriesPerPage="40" @ref="Pagination">
+        <div class="card events-card">
+            <header class="card-header">
+                <p class="card-header-title">
+                    @Localizer["Submissions"].Value (@collection.Count())
+                </p>
+            </header>
+            <div class="card-table" style="height: 30em">
+                <div class="content">
+                    <table class="table is-fullwidth is-striped">
+                        <thead>
+                            <tr>
+                                @if (Lecture == null)
+                                {
+                                    <td>@Localizer["Lecture"].Value</td>
+                                }
+                                <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Localizer["Name"].Value</td>
+                                <td>@Localizer["User"].Value</td>
+                                <td>@Localizer["Tags"].Value</td>
+                                <td>@Localizer["SubmittedAt"].Value</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            @foreach (var submission in Pagination.ShowedModels.ToList())
+                            {
+                                <tr>
+                                    @if (Lecture == null)
+                                    {
+                                        <td><a href="/LectureAdmin/@submission.Lecture.Owner.Account/@submission.Lecture.Name">@submission.Lecture.Subject</a></td>
+                                    }
+                                    <td class="tt">
+                                        <a target="_blank" href="/Page/@submission.Lecture.Owner.Account/@submission.Lecture.Name/@submission.Lecture.DefaultBranch/@submission.Page#@submission.ActivityName"><i class="fas fa-link"></i></a>
+                                        <a href="/LectureAdmin/@submission.Lecture.Owner.Account/@submission.Lecture.Name/Submissions/@submission.ActivityName">@submission.ActivityName</a>
+                                    </td>
+                                    <td><a href="/LectureAdmin/@submission.Lecture.Owner.Account/@submission.Lecture.Name/UserSubmissions/@submission.User.Account/@submission.ActivityName">@submission.User.DisplayName</a></td>
+                                    <td><p class="long-text" style="width: 10em;">@submission.Tags</p></td>
+                                    <td>
+                                        @if (!submission.Deadline.HasValue || submission.SubmittedAt <= submission.Deadline)
+                                        {
+                                            <span>@submission.SubmittedAt</span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color: red">@submission.SubmittedAt</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </Paginated>
+</section>
+
+@code {
+
+    [Parameter]
+    public Data.Lecture Lecture { get; set; }
+    [Parameter]
+    public Data.User User { get; set; }
+
+    private IEnumerable<Data.Submission> collection;
+    private Paginated<Data.Submission> Pagination;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        Notifier.Notify += OnNotify;
+
+        if (Lecture == null)
+        {
+            collection = SubmissionHandler.UnmarkedLatestEntries(User).AsNoTracking();
+        }
+        else
+        {
+            collection = SubmissionHandler.UnmarkedLatestEntries(Lecture).AsNoTracking();
+        }
+    }
+
+    public async Task OnNotify()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    void IDisposable.Dispose()
+    {
+        Notifier.Notify -= OnNotify;
+    }
+}

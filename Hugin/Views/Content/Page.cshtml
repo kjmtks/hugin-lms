@@ -1,0 +1,85 @@
+﻿@model Tuple<Hugin.Data.Lecture, Hugin.Data.User, string, string, string>
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+@inject Hugin.Services.RepositoryHandleService RepositoryHandler;
+@inject Hugin.Services.PermissionProviderService PermissionProvider;
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var repository = RepositoryHandler.GetLectureContentsRepository(Model.Item1);
+    if (RepositoryHandler.IsInitialized(repository))
+    {
+        if (RepositoryHandler.Exists(repository, "script.js", Model.Item3))
+        {
+            ViewData["Script"] = RepositoryHandler.ReadTextFile(repository, "script.js", Model.Item3);
+        }
+        if (RepositoryHandler.Exists(repository, "style.css", Model.Item3))
+        {
+            ViewData["Style"] = RepositoryHandler.ReadTextFile(repository, "style.css", Model.Item3);
+        }
+    }
+}
+
+
+
+<nav class="navbar is-black">
+    <div class="container">
+        <div id="navMenu" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" href="/">
+                    @Localizer["Home"]
+                </a>
+                <a class="navbar-item" href="/Page/@Model.Item1.Owner.Account/@Model.Item1.Name/@Model.Item3">
+                    @Model.Item1.Subject
+                </a>
+            </div>
+            <div class="navbar-end">
+
+                @if (PermissionProvider.CanShowLectureDashboard(Model.Item1, Model.Item2))
+                {
+                    <a class="navbar-item" href="/LectureAdmin/@Model.Item1.Owner.Account/@Model.Item1.Name">
+                        <i class="fas fa-tachometer-alt"></i>&nbsp; @Localizer["GoToLectureDashboard"]
+                    </a>
+                }
+
+                @if (PermissionProvider.CanWriteLectureContentsRepository(Model.Item1, Model.Item2))
+                {
+                    <a class="navbar-item" href="/LectureAdmin/@Model.Item1.Owner.Account/@Model.Item1.Name/ContentsRepository/@Model.Item3/pages/@Model.Item4">
+                        <i class="fas fa-edit"></i>&nbsp; @Localizer["GoToEditPage"]
+                    </a>
+                }
+
+                <a class="navbar-item" href="/">
+                    <i class="fas fa-user-circle"></i>&nbsp; @User.Identity.Name
+                </a>
+
+                <a class="navbar-item" href="/Logout">
+                    <i class="fas fa-sign-out-alt"></i>&nbsp;@Localizer["Logout"]
+                </a>
+
+            </div>
+
+        </div>
+    </div>
+</nav>
+<div style="min-height: 1000px;">
+
+
+    @(await Html.RenderComponentAsync<Hugin.Components.Drawer>(RenderMode.ServerPrerendered,
+        new { Colors = new string[] { "rgb(0, 0, 0)", "rgb(255, 0, 0)", "rgb(0, 127, 0)", "rgb(0, 0, 255)", "rgb(255, 127, 0)", "rgb(255, 0, 255)", "rgb(0, 127, 255)", } }))
+
+    <div id="page-contents" class="container" style="padding-bottom: 4em">
+        <div class="content page" id="content-page"
+             data-lecture-owner="@Model.Item1.Owner.Account"
+             data-lecture-name="@Model.Item1.Name"
+             data-lecture-subject="@Model.Item1.Subject"
+             data-page="@Model.Item4"
+             data-user-account="@Model.Item2.Account"
+             data-rivision="@Model.Item3">
+
+            @Html.Raw(Model.Item5)
+
+        </div>
+    </div>
+</div>

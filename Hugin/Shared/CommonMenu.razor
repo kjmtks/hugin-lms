@@ -1,0 +1,18 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+
+<nav class="navbar is-black">
+    <div class="container">
+        <div id="navMenu" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" href="/">
+                    @Localizer["Home"].Value
+                </a>
+            </div>
+            <div class="navbar-end">
+                <LoginDisplay />
+            </div>
+
+        </div>
+    </div>
+</nav>

@@ -1,0 +1,29 @@
+﻿@inject PermissionProviderService PermissionProvider;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+
+@if (Checker(PermissionProvider))
+{
+    @ChildContent
+}
+else if(ShowErrorMessage)
+{
+    <article class="message is-danger">
+        <div class="message-body">@Localizer["AccessDenied"].Value</div>
+    </article>
+}
+
+
+
+@code{
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public Func<PermissionProviderService, bool> Checker { get; set; }
+
+    [Parameter]
+    public bool ShowErrorMessage { get; set; } = false;
+
+}

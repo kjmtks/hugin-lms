@@ -1,0 +1,128 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+@inject OnlineStatusService OnlineStatus;
+@inject ActivityActionStatusService ActivityActionStatus;
+
+@implements IDisposable;
+
+
+<section class="card-section">
+    <div class="card events-card">
+        <header class="card-header">
+            <p class="card-header-title">
+                @Localizer["UserStatus"].Value
+            </p>
+        </header>
+        <div class="card-table" style="height: 30em">
+            <div class="content">
+                <table class="table is-fullwidth is-striped" style="font-size: smaller">
+                    <thead>
+                        <tr>
+                            <td>User</td>
+                            <td colspan="2">@Localizer["OnlineStatus"].Value</td>
+                            <td colspan="3">@Localizer["ActivityActionStatus"].Value</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Users)
+                        {
+                            var status = OnlineStatus.GetStatus(user.Account);
+                            var action = ActivityActionStatus.GetStatus(user.Account);
+
+                            <tr>
+                                @if (status == null)
+                                {
+                                    <td>
+                                        <span style="color: lightcoral">●</span>&nbsp;@user.DisplayName
+                                    </td>
+                                    <td colspan="2"></td>
+                                }
+                                else
+                                {
+                                    <td>
+                                        @if (status.IsOnline)
+                                        {
+                                            if (Lecture.Owner.Account == status.LectureOwner && Lecture.Name == status.LectureName)
+                                            {
+                                                <text><span style="color: lightgreen">●</span>&nbsp;@user.DisplayName</text>
+                                            }
+                                            else
+                                            {
+                                                <text><span style="color: gold">●</span>&nbsp;@user.DisplayName</text>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <text><span style="color: lightcoral">●</span>&nbsp;@user.DisplayName</text>
+                                        }
+                                    </td>
+                                    <td>
+                                        @status.LectureSubject
+                                        &nbsp;
+                                        @status.PageName
+                                    </td>
+                                    <td>@ToDiffTime(status.UpdatedAt, DateTime.Now)</td>
+                                }
+                                @if (action != null && action.LectureOwner == Lecture.Owner.Account && action.LectureName == Lecture.Name)
+                                {
+                                    <td>
+                                        @action.LectureSubject
+                                        &nbsp;
+                                        @action.ActivityName
+                                        &nbsp;
+                                        @action.ActionType.ToString()
+                                    </td>
+                                    <td><p class="long-text" style="width: 15em;">@action.Summary</p></td>
+                                    <td>@ToDiffTime(action.UpdatedAt, DateTime.Now)</td>
+                                }
+                                else
+                                {
+                                    <td colspan="3"></td>
+
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+@code {
+
+    [Parameter]
+    public Data.Lecture Lecture { get; set; }
+
+    [Parameter]
+    public IEnumerable<Data.User> Users { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        OnlineStatus.Notify += OnNotify;
+        ActivityActionStatus.Notify += OnNotify;
+    }
+
+    public async Task OnNotify()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    void IDisposable.Dispose()
+    {
+        OnlineStatus.Notify -= OnNotify;
+        ActivityActionStatus.Notify -= OnNotify;
+    }
+
+
+    private string ToDiffTime(DateTime t1, DateTime t2)
+    {
+        var s = t2 - t1;
+        if (s.TotalSeconds <= 60) return "within 1 min. ";
+        if (s.TotalSeconds > 60 * 60 * 24) return $"within {(int)s.TotalSeconds / (60 * 60 * 24)} days";
+        return $"{(int)s.TotalSeconds / 60} min. ago";
+    }
+}

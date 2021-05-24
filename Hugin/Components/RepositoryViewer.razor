@@ -1,0 +1,540 @@
+﻿@inject RepositoryHandleService RepositoryHandler;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+@inject NavigationManager NV;
+@inject IJSRuntime JS;
+
+
+@if (!string.IsNullOrWhiteSpace(normalMessage))
+{
+    <article class="message is-primary">
+        <div class="message-body">@normalMessage</div>
+    </article>
+}
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <article class="message is-danger">
+        <div class="message-body">@errorMessage</div>
+    </article>
+}
+
+<nav class="panel is-info">
+    @if (!string.IsNullOrWhiteSpace(Subject))
+    {
+        <div class="panel-heading">
+            @Subject
+        </div>
+    }
+
+
+    @if (RepositoryHandler.IsInitialized(Repository))
+    {
+        @if (!string.IsNullOrWhiteSpace(RemoteUrl))
+        {
+            <div class="panel-block">
+                <p class="control has-icons-left has-icons-right">
+                    <input class="input tt" type="text" value="@RemoteUrl">
+                    <span class="icon is-small is-left">
+                        <i class="fab fa-git"></i>
+                    </span>
+                </p>
+            </div>
+        }
+
+        <p class="panel-tabs tt">
+            @foreach (var branch in RepositoryHandler.GetBranches(Repository))
+            {
+                <a class="@(Rivision == branch ? "is-active" : "")" href="@(UrlBuilder(Account, LectureName, branch, ""))" @onclick="@(() => Goto("", branch))" @onclick:preventDefault>@branch</a>
+            }
+        </p>
+
+        @if (RepositoryHandler.Exists(Repository, Current, Rivision))
+        {
+            var hierarchy = Hierarchy(Current);
+            var children = GetChildren(Current);
+
+
+            <div class="panel-block tt">
+                <div class="level" style="width: 100%">
+                    <div class="level-left">
+                        <div class="level-item">
+                            <nav class="breadcrumb is-small" aria-label="breadcrumbs">
+                                <ul>
+                                    <li>
+                                        <a href="@(UrlBuilder(Account, LectureName, Rivision, ""))" @onclick="@(() => Goto(""))" @onclick:preventDefault>~</a>
+                                    </li>
+                                    @foreach (var (entry, i) in hierarchy.Select((x, i) => (x, i)))
+                                    {
+                                        <li><a href="@(UrlBuilder(Account, LectureName, Rivision, entry))" @onclick="@(() => Goto(entry))" @onclick:preventDefault>@(entry.Split("/").Last())</a></li>
+                                    }
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                    @if (canEdit && children.Count() > 0)
+                    {
+                        <div class="level-right">
+                            <div class="level-item">
+                                <button class="button is-small" onclick="modalOn('repository-upload-modal')"><i class="fas fa-upload"></i></button>
+                                &nbsp;
+                                <button class="button is-small" onclick="modalOn('repository-add-new-modal')"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+
+            @if (children.Count() > 0)
+            {
+                <div class="panel-block tt">
+                    <table class="table is-fullwidth" style="font-size: small">
+                        @foreach (var name in children)
+                        {
+                            var fullname = string.IsNullOrWhiteSpace(Current) ? name : $"{Current}/{name}";
+                            var commitInfo = RepositoryHandler.ReadCommitInfo(Repository, fullname, Rivision);
+                            var isDir = GetChildren(fullname).Count() > 0;
+                            <tr>
+                                <td class="is-4">
+                                    <i class="@(isDir ? "fas fa-folder" : "fas fa-file")"></i>
+                                    <a href="@(UrlBuilder(Account, LectureName, Rivision, fullname))" @onclick="@(() => Goto(fullname))" @onclick:preventDefault>@name</a>
+                                </td>
+                                <td class="is-4 long-text" style="width: 15em;"><small>@ToShortText(commitInfo.Message, 64)</small></td>
+                                <td class="is-4"><small>@commitInfo.AuthorName</small></td>
+                                <td class="is-4 right"><small>@commitInfo.Date</small></td>
+                                @if (canEdit)
+                                {
+                                    <td><a @onclick="async () => { await removeAsync(fullname); }"><i class="fas fa-trash is-small"></i></a></td>
+                                }
+                            </tr>
+                        }
+                    </table>
+                </div>
+            }
+            else
+            {
+                @if (ChildContent != null)
+                {
+                    @ChildContent
+                }
+
+                if (isTextFile)
+                {
+                    <div class="panel-block">
+                        <div class="control">
+                            @if (canEdit)
+                            {
+                                <textarea class="textarea tt" rows="30" @bind="textBody"></textarea>
+                            }
+                            else
+                            {
+                                <textarea class="textarea tt" readonly rows="30" @bind="textBody"></textarea>
+                            }
+                        </div>
+                    </div>
+
+                    @if (Editable && canEdit)
+                    {
+                        <div class="panel-block">
+                            <div class="columns">
+                                <div class="column is-10">
+                                    <form class="control is-expanded">
+                                        <div class="field is-fullwidth">
+                                            @if (updating)
+                                            {
+                                                <div class="control">
+                                                    <textarea class="textarea tt" rows="1" placeholder="@Localizer["CommitMessage"].Value" @bind="commitMessage" readonly></textarea>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="control">
+                                                    <textarea class="textarea tt" rows="1" placeholder="@Localizer["CommitMessage"].Value" @bind="commitMessage"></textarea>
+                                                </div>
+                                            }
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="column is-2">
+                                    <p class="control">
+                                        @if (updating)
+                                        {
+                                        <button class="button is-info" @onclick="commitChange" disabled>@Localizer["Commit"].Value</button>
+                                        }
+                                        else
+                                        {
+                                    <button class="button is-info" @onclick="commitChange">@Localizer["Commit"].Value</button>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+
+                    <div class="panel-block tt">
+                        <a class="" href="@RawFileUrlBuilder(Account, LectureName, Rivision, Current)" target="_blank">@Localizer["ShowRawFile"].Value</a>
+                    </div>
+                }
+            }
+        }
+
+    }
+    else
+    {
+        if (InitializeCommandsBuilder != null)
+        {
+            var init = InitializeCommandsBuilder();
+            if (!string.IsNullOrWhiteSpace(init))
+            {
+                <div class="panel-block">
+                    <div class="control">
+                        <textarea class="textarea tt" rows="15" readonly>@init</textarea>
+                    </div>
+                </div>
+            }
+        }
+        if (OnCreateInitial != null)
+        {
+            <div class="panel-block">
+                <div class="buttons">
+                    <button class="button is-primary is-outlined" @onclick="createInitial">@Localizer["CreateInitialRepository"].Value</button>
+                </div>
+            </div>
+
+        }
+        if (OnCreateInitial == null && InitializeCommandsBuilder == null)
+        {
+            <div class="panel-block">
+                <p>@Localizer["EmptyContent"].Value</p>
+            </div>
+
+        }
+    }
+
+</nav>
+
+<div class="modal" id="repository-add-new-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">@Localizer["AddNewTextFile"].Value</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="field">
+                <label class="label tt">@Localizer["FileName"].Value</label>
+                <div class="control">
+                    <input class="input tt submit-comment" @bind="addNewTextFileName" />
+                </div>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-success activity-submit" @onclick="createNewTextFileAsync">@Localizer["Create"].Value</button>
+            <button class="button" onclick="modalOff('repository-add-new-modal')">@Localizer["Cancel"].Value</button>
+        </footer>
+    </div>
+</div>
+
+<div class="modal" id="repository-upload-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">@Localizer["UploadFile"].Value</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="field">
+                <label class="label tt">@Localizer["File"].Value</label>
+                <div class="control">
+                    <BlazorInputFile.InputFile OnChange="uploadFile" MaxBufferSize="@(1024*1024*1024)" />
+                </div>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button" onclick="modalOff('repository-upload-modal')">@Localizer["Cancel"].Value</button>
+        </footer>
+    </div>
+</div>
+
+
+@code {
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public string Subject { get; set; }
+
+    [Parameter]
+    public Models.Repository Repository { get; set; }
+
+    [Parameter]
+    public string RemoteUrl { get; set; }
+
+    [Parameter]
+    public string Account { get; set; }
+    [Parameter]
+    public string LectureName { get; set; }
+
+    [Parameter]
+    public Data.User LoginUser { get; set; }
+
+    [Parameter]
+    public string DefaultBranch { get; set; }
+
+    [Parameter]
+    public string Current { get; set; }
+
+    [Parameter]
+    public string Rivision { get; set; }
+
+    protected Models.CommitInfo CurrentCommitInfo { get; set; }
+    protected IEnumerable<string> Files { get; set; }
+
+    [Parameter]
+    public Func<string, string, string, string, string> UrlBuilder { get; set; }
+    [Parameter]
+    public Func<string, string, string, string, string> RawFileUrlBuilder { get; set; }
+    [Parameter]
+    public Func<string> InitializeCommandsBuilder { get; set; }
+    [Parameter]
+    public Action<Models.Repository, string> OnCreateInitial { get; set; }
+
+    [Parameter]
+    public bool Editable { get; set; }
+
+    private string normalMessage;
+    private string errorMessage;
+
+    private string addNewTextFileName;
+    private bool canEdit = false;
+    private bool isTextFile = false;
+    private bool updating = false;
+    private string textBody;
+    private string commitMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        update();
+    }
+
+    private void update()
+    {
+
+        try
+        {
+            Files = RepositoryHandler.GetFileNames(Repository, "", Rivision);
+            CurrentCommitInfo = RepositoryHandler.ReadCommitInfo(Repository, Current, Rivision);
+
+            isTextFile = RepositoryHandler.TypeCheck(Repository, Current, Rivision);
+            if (isTextFile)
+            {
+                textBody = RepositoryHandler.ReadTextFile(Repository, Current, Rivision);
+            }
+
+            canEdit = Editable && RepositoryHandler.GetBranches(Repository).Contains(Rivision);
+
+            addNewTextFileName = string.IsNullOrEmpty(Current) ? Current : $"{Current}/";
+        }
+        catch
+        {
+            CurrentCommitInfo = null;
+        }
+    }
+
+
+    private void createInitial()
+    {
+        normalMessage = "";
+        errorMessage = "";
+        updating = true;
+        StateHasChanged();
+
+        OnCreateInitial(Repository, DefaultBranch);
+
+        NV.NavigateTo(UrlBuilder(Account, LectureName, DefaultBranch, ""), true);
+    }
+
+    private async Task removeAsync(string fullname)
+    {
+        updating = true;
+        if (await JS.InvokeAsync<bool>("showConfirmDialog", Localizer["AreYouSureDelete"].Value))
+        {
+
+            if (!RepositoryHandler.Exists(Repository, fullname, Rivision))
+            {
+                errorMessage = "File does not exist.";
+                return;
+            }
+            await RepositoryHandler.DoWithLock(Repository, async r =>
+            {
+                try
+                {
+                    RepositoryHandler.RemoveAndSync(r, Rivision, new string[] { fullname }, $"Remove file `{fullname}'", LoginUser.DisplayName, LoginUser.Email);
+                }
+                catch (Exception e)
+                {
+                    errorMessage = e.Message;
+                }
+            });
+        }
+        updating = false;
+        await InvokeAsync(() => StateHasChanged());
+        update();
+        StateHasChanged();
+    }
+
+    private async Task uploadFile(BlazorInputFile.IFileListEntry[] entries)
+    {
+        normalMessage = "";
+        errorMessage = "";
+        StateHasChanged();
+
+        var entry = entries.FirstOrDefault();
+        if (entry == null)
+        {
+            return;
+        }
+
+        var path = $"{Current}/{entry.Name}";
+
+        if (RepositoryHandler.Exists(Repository, path, Rivision))
+        {
+            errorMessage = "Already exist.";
+            await JS.InvokeVoidAsync("modalOff", "repository-upload-modal");
+            return;
+        }
+        updating = true;
+        var file = $"{Repository.GetNonBaredFullPath(Rivision)}{addNewTextFileName}";
+        await RepositoryHandler.DoWithLock(Repository, async r =>
+        {
+            try
+            {
+
+                using (var ms = new System.IO.MemoryStream())
+                {
+                    var seek = 0; var count = 0;
+                    byte[] buffer = new byte[1024];
+                    while (seek < entry.Size)
+                    {
+                        count = await entry.Data.ReadAsync(buffer, 0, buffer.Length);
+                        await ms.WriteAsync(buffer, 0, count);
+                        seek += count;
+                    }
+                    RepositoryHandler.SaveBinaryAndSync(r, Rivision, path, ms.ToArray(), $"Upload file `{path}'", LoginUser.DisplayName, LoginUser.Email);
+                }
+            }
+            catch (Exception e)
+            {
+                errorMessage = e.Message;
+            }
+        });
+
+        updating = false;
+        await JS.InvokeVoidAsync("modalOff", "repository-upload-modal");
+        update();
+        StateHasChanged();
+    }
+
+
+
+    private async Task createNewTextFileAsync()
+    {
+        normalMessage = "";
+        errorMessage = "";
+        StateHasChanged();
+
+        if (RepositoryHandler.Exists(Repository, addNewTextFileName, Rivision))
+        {
+            errorMessage = "Already exist.";
+            await JS.InvokeVoidAsync("modalOff", "repository-add-new-modal");
+            return;
+        }
+
+        updating = true;
+        var file = $"{Repository.GetNonBaredFullPath(Rivision)}{addNewTextFileName}";
+        var msg = $"Add new text file `{addNewTextFileName}'";
+        RepositoryHandler.DoWithLock(Repository, r =>
+        {
+            try
+            {
+                normalMessage = RepositoryHandler.SaveTextAndSync(r, Rivision, addNewTextFileName, "", msg, LoginUser.DisplayName, LoginUser.Email);
+            }
+            catch (Exception e)
+            {
+                errorMessage = e.Message;
+            }
+        });
+
+        updating = false;
+        await JS.InvokeVoidAsync("modalOff", "repository-add-new-modal");
+        update();
+        StateHasChanged();
+    }
+
+    private void commitChange()
+    {
+        normalMessage = "";
+        errorMessage = "";
+        updating = true;
+        StateHasChanged();
+
+        var file = $"{Repository.GetNonBaredFullPath(Rivision)}{Current}";
+        var msg = string.IsNullOrEmpty(commitMessage) ? "No commit message." : commitMessage;
+        commitMessage = "";
+        RepositoryHandler.DoWithLock(Repository, r =>
+        {
+            try
+            {
+                normalMessage = RepositoryHandler.SaveTextAndSync(r, Rivision, Current, textBody, msg, LoginUser.DisplayName, LoginUser.Email);
+            }
+            catch (Exception e)
+            {
+                errorMessage = e.Message;
+            }
+        });
+
+        updating = false;
+        StateHasChanged();
+    }
+
+
+
+    protected IEnumerable<string> GetChildren(string path)
+    {
+        return Files == null ? new string[] { } : Files.Where(x => x.Length >= path.Length && x.Substring(0, path.Length) == path)
+            .Where(x => string.IsNullOrWhiteSpace(path) ? true : (!(x.Length >= path.Length + 1) || x[path.Length] == '/'))
+            .Select(x => x.Substring(path.Length).Split("/")?.Where(x => !string.IsNullOrWhiteSpace(x))?.FirstOrDefault())
+            .Where(x => !string.IsNullOrWhiteSpace(x)).Distinct();
+    }
+
+    protected IEnumerable<string> Hierarchy(string path)
+    {
+        var entries = path.Split("/").Where(x => !string.IsNullOrWhiteSpace(x));
+        return entries.Aggregate(new string[] { }, (acc, x) =>
+        {
+            var names = new string[acc.Length + 1];
+            var last = acc.LastOrDefault();
+            acc.CopyTo(names, 0);
+            names[acc.Length] = string.IsNullOrWhiteSpace(last) ? x : $"{last}/{x}";
+            return names;
+        });
+    }
+
+    protected string ToShortText(string text, int max)
+    {
+        return (text.Length > max) ? $"{text.Substring(0, max)}..." : text;
+    }
+
+
+    private void Goto(string path, string rivision = null)
+    {
+        if (rivision == null)
+        {
+            rivision = Rivision;
+        }
+        NV.NavigateTo(UrlBuilder(Account, LectureName, rivision, path), true);
+    }
+}

@@ -1,0 +1,174 @@
+﻿@page "/SystemAdmin/Files/{Path1?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21}/{Path22?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21}/{Path22}/{Path23?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21}/{Path22}/{Path23}/{Path24?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21}/{Path22}/{Path23}/{Path24}/{Path25?}";
+@page "/SystemAdmin/Files/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21}/{Path22}/{Path23}/{Path24}/{Path25}/{Path26?}";
+
+@inherits FiniteDepthPathPage;
+@layout MyLayout;
+@inject UserHandleService  UserHandler;
+@inject ApplicationConfigurationService  Conf;
+@inject NavigationManager NV;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+
+<AccessRestrictions Checker="p => p.CanShowSystemRawFile(LoginUser)">
+    <nav class="panel is-info">
+        <div class="panel-heading">
+            @Localizer["FileExplorer"].Value
+        </div>
+        @if (directoryIsNotFound)
+        {
+            <div class="panel-block tt">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="content">
+                            <h4>@Localizer["NotFound"].Value</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="panel-block tt">
+
+                @foreach (var p in parents)
+                {
+                    <a href="@($"{BaseUrl}{p.FullName}")" @onclick="@(() => Goto(p))" @onclick:preventDefault>@p.Name</a>
+                    if (p.Name != "/")
+                    {
+                        <span>/</span>
+                    }
+                }
+                <span>@currentDir.Name</span>
+            </div>
+            <div class="panel-block tt">
+                <table class="table is-fullwidth" style="font-size: small">
+                    @foreach (var entry in entries)
+                    {
+                        <tr>
+                            @if (entry.IsDirectory)
+                            {
+                                <td class="is-4"><a href="@($"{BaseUrl}{entry.FullName}")" @onclick="@(() => Goto(entry))" @onclick:preventDefault><i class="fas fa-folder"></i>&nbsp;@entry.Name</a></td>
+                                <td align="right" class="is-4"></td>
+                            }
+                            else if (entry.IsFile)
+                            {
+                                <td class="is-4"><a href="@($"{RawFileUrl}{entry.FullName}")" @onclick="@(() => Goto(entry))" @onclick:preventDefault><i class="fas fa-file"></i>&nbsp;@entry.Name</a></td>
+                                <td align="right" class="is-4">@entry.FileSize bytes</td>
+                            }
+                            else
+                            {
+                                <td class="is-4"><i class="fas fa-question"></i>&nbsp;@entry.Name</td>
+                                <td align="right" class="is-4"></td>
+                            }
+                            <td class="is-3">@entry.LastModifiedAt.ToString()</td>
+                            <td align="right" class="is-1"></td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        }
+    </nav>
+</AccessRestrictions>
+
+
+@code {
+
+    public string BaseUrl { get; set; }
+    public string RawFileUrl { get; set; }
+    public string Current { get; set; }
+
+    private bool directoryIsNotFound = false;
+
+    private IEnumerable<System.IO.DirectoryInfo> parents = new List<System.IO.DirectoryInfo>();
+    private System.IO.DirectoryInfo currentDir;
+    private IEnumerable<EntryInfo> entries = new List<EntryInfo>();
+
+
+    [CascadingParameter]
+    public Data.User LoginUser { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Current = $"/{Path}";
+        BaseUrl = "/SystemAdmin/Files";
+        RawFileUrl = "/RawFile/SystemFile";
+        updateEntries();
+    }
+
+    private void updateEntries()
+    {
+        currentDir = new System.IO.DirectoryInfo(Current);
+        directoryIsNotFound = !currentDir.Exists;
+        if (currentDir.Exists)
+        {
+            var dirs = currentDir.GetDirectories().Select(x => new EntryInfo { Name = x.Name, FullName = x.FullName, FileSize = 0, IsDirectory = true, IsFile = false, LastModifiedAt = x.LastWriteTime });
+            var files = currentDir.GetFiles().Select(x => new EntryInfo { Name = x.Name, FullName = x.FullName, FileSize = x.Length, IsDirectory = false, IsFile = true, LastModifiedAt = x.LastWriteTime });
+            entries = dirs.Concat(files);
+
+            parents = GetParents(currentDir, new List<System.IO.DirectoryInfo>()).Reverse();
+        }
+    }
+
+    private IEnumerable<System.IO.DirectoryInfo> GetParents(System.IO.DirectoryInfo dir, List<System.IO.DirectoryInfo> parents)
+    {
+        if (dir.Parent == null)
+        {
+            return parents;
+        }
+        parents.Add(dir.Parent);
+        return GetParents(dir.Parent, parents);
+
+    }
+
+    private void Goto(System.IO.DirectoryInfo dir)
+    {
+        NV.NavigateTo($"{BaseUrl}{dir.FullName}", true);
+    }
+    private void Goto(EntryInfo entry)
+    {
+        if (entry.IsDirectory)
+        {
+            NV.NavigateTo($"{BaseUrl}{entry.FullName}", true);
+        }
+        else if (entry.IsFile)
+        {
+            NV.NavigateTo($"{RawFileUrl}{entry.FullName}", true);
+        }
+    }
+
+    public class EntryInfo
+    {
+        public string Name { get; set; }
+        public string FullName { get; set; }
+        public bool IsDirectory { get; set; }
+        public bool IsFile { get; set; }
+        public long FileSize { get; set; }
+        public DateTime LastModifiedAt { get; set; }
+    }
+
+}

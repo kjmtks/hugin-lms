@@ -1,0 +1,73 @@
+version: '3.4'
+
+services:
+  hugin:
+    image: hugin-production
+    ports:
+    - 443:443
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    environment:
+      LANG: ja_JP.UTF-8
+      TZ: Asia/Tokyo
+      DB_CONNECTION_STR: "Host=db; Database=hugin-production; Port=5432; Username=hugin; Password=password"
+      APP_SECRET_KEY: "your-secret-key(need-32-characters)"
+      APP_DATA_PATH: /app-data
+      APP_NAME: Hugin
+      APP_DESCRIPTION: ""
+      
+      # SUB_DIR: "/hugin"
+      
+      ### for Production
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: https://+:443
+      APP_URL: https://localhost
+      ASPNETCORE_Kestrel__Certificates__Default__Password: password
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /server.pfx
+      
+      ### for LDAP
+      # LDAP_HOST: ldap.****.**
+      # LDAP_PORT: 636
+      # LDAP_BASE: dc=***,dc=***,...
+      # LDAP_ID_ATTR: uid
+      # LDAP_MAIL_ATTR: mail
+      # LDAP_NAME_ATTR: displayName;lang-ja
+      # LDAP_ENGNAME_ATTR: displayName
+
+    volumes:
+    - app-data:/app-data
+    - ./keys/server.pfx:/server.pfx
+    - ~/.aspnet/https:/root/.aspnet/https:ro
+    - ~/.microsoft/usersecrets:/root/.microsoft/usersecrets:ro
+    cap_add:
+    - SYS_ADMIN
+    networks:
+    - nw-hugin-production
+    depends_on:
+    - db
+
+  db:
+    image: postgres:latest
+    restart: always
+    ports:
+    - 5432:5432
+    volumes:
+    - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: hugin-production
+      POSTGRES_USER: hugin
+      POSTGRES_PASSWORD: password
+      TZ: Asia/Tokyo
+    networks:
+    - nw-hugin-production
+
+networks:
+  nw-hugin-production:
+    driver: bridge
+
+volumes:
+  app-data:
+    driver: local
+  db-data:
+    driver: local

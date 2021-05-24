@@ -1,0 +1,140 @@
+﻿@page "/LectureAdmin/{Account}/{LectureName}/";
+@page "/LectureAdmin/{Account}/{LectureName}/Dashboard";
+@layout LectureAdminLayout;
+@inject LectureHandleService LectureHandler;
+@inject ActivityActionHandleService ActivityActionHandler;
+@inject SubmissionHandleService SubmissionHandler;
+@inject SandboxHandleService SandboxHandler;
+@inject RepositoryHandleService RepositoryHandler;
+@inject FilePathResolveService FilePathResolver;
+@inject NavigationManager NV;
+
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+<section class="hero is-info welcome is-small">
+    <div class="hero-body">
+        <div class="container">
+            <h1 class="title">
+                <span class="tt">@Lecture.Name</span> / @Lecture.Subject
+            </h1>
+            <h2 class="subtitle">
+                @Lecture.Description
+            </h2>
+            <div class="columns">
+                <div class="column is-10"></div>
+                <div class="column is-2">
+                    @if (Lecture.IsActived)
+                    {
+                        <a @onclick:preventDefault href="/Page/@Lecture.Owner.Account/@Lecture.Name/@Lecture.DefaultBranch" class="button is-primary is-fullwidth" @onclick="GoToPage">
+                            @Localizer["GoToLecturePage"].Value
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="info-tiles">
+    <div class="tile is-ancestor has-text-centered">
+        <div class="tile is-parent">
+            <article class="tile is-child box">
+                <p class="title">@LectureHandler.GetStudents(Lecture).Count()</p>
+                <p class="subtitle">Students</p>
+            </article>
+        </div>
+        <div class="tile is-parent">
+            <article class="tile is-child box">
+                <p class="title">@LectureHandler.GetStaffs(Lecture).Count()</p>
+                <p class="subtitle">Staffs</p>
+            </article>
+        </div>
+        <div class="tile is-parent">
+            <article class="tile is-child box">
+                <p class="title">@numOfActions</p>
+                <p class="subtitle">Actions</p>
+            </article>
+        </div>
+        <div class="tile is-parent">
+            <article class="tile is-child box">
+                <p class="title">@numOfSubmissions</p>
+                <p class="subtitle">Submissions</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<AccessRestrictions Checker="p => p.CanEditSandbox(Lecture, LoginUser)">
+    @if (SandboxHandler.GetUninstalledXmlSandboxes(Lecture, Lecture.DefaultBranch).Any())
+    {
+        <Hugin.Pages.LectureAdmin.Sandboxes Account="@Account" LectureName="@LectureName" Name="" />
+    }
+</AccessRestrictions>
+
+
+<ActivityActionChart Lecture="Lecture" Title="@Localizer["ActivityActionChartOfLecture"].Value" />
+
+<AccessRestrictions Checker="p => p.CanShowSubmission(Lecture, LoginUser)">
+    @if (SubmissionHandler.Set.Where(x => x.LectureId == Lecture.Id).Any())
+    {
+        <Hugin.Components.SubmissionObserver Lecture="Lecture" User="LoginUser" />
+    }
+</AccessRestrictions>
+
+
+<AccessRestrictions Checker="p => p.CanReadLectureContentsRepository(Lecture, LoginUser)">
+    @if (!RepositoryHandler.IsInitialized(RepositoryHandler.GetLectureContentsRepository(Lecture)))
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"git clone --origin github https://github.com/kjmtks/hugin-initial-lecture.git {LectureName}");
+        sb.AppendLine($"cd {LectureName}");
+        sb.AppendLine($"git remote add origin {FilePathResolver.GetLectureContentsGitApiURL(Account, LectureName)}");
+        sb.AppendLine($"git remote rm github");
+        sb.AppendLine($"git push origin master:{Lecture.DefaultBranch}");
+
+        <nav class="panel is-info">
+            <div class="panel-block">
+                <div class="control">
+                    <textarea class="textarea tt" rows="6" readonly>@sb.ToString()</textarea>
+                </div>
+            </div>
+        </nav>
+    }
+</AccessRestrictions>
+
+
+<AccessRestrictions Checker="p => p.CanShowSubmission(Lecture, LoginUser)">
+    <UserStatusViewer Lecture="Lecture" Users="LectureHandler.GetUsers(Lecture).OrderBy(x => x.Account).AsNoTracking().ToList()" />
+</AccessRestrictions>
+
+
+@code
+{
+    [CascadingParameter]
+    public Data.User LoginUser { get; set; }
+    [CascadingParameter]
+    public Data.User LectureUser { get; set; }
+    [CascadingParameter]
+    public Data.Lecture Lecture { get; set; }
+
+    [Parameter]
+    public string Account { get; set; }
+    [Parameter]
+    public string LectureName { get; set; }
+
+    private int numOfSubmissions;
+    private int numOfActions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        numOfSubmissions = SubmissionHandler.Set.Where(x => x.LectureId == Lecture.Id).Count();
+        numOfActions = ActivityActionHandler.Set.Where(x => x.LectureId == Lecture.Id).Count();
+    }
+
+    private void GoToPage()
+    {
+
+        NV.NavigateTo($"/Page/{Account}/{LectureName}/{Lecture.DefaultBranch}", true);
+    }
+}

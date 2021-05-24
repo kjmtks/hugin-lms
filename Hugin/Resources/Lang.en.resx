@@ -1,0 +1,642 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Accept" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+  <data name="AcceptingResubmit" xml:space="preserve">
+    <value>Accepting Resubmit</value>
+  </data>
+  <data name="AcceptResubmit" xml:space="preserve">
+    <value>Accept Resubmit</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Access Denied</value>
+  </data>
+  <data name="Account" xml:space="preserve">
+    <value>Account</value>
+  </data>
+  <data name="Accounts" xml:space="preserve">
+    <value>Accounts</value>
+  </data>
+  <data name="ActivityActionChartOfLecture" xml:space="preserve">
+    <value>Activity Action Chart Of Lecture</value>
+  </data>
+  <data name="ActivityActionChartOfSystem" xml:space="preserve">
+    <value>Activity Action Chart Of System</value>
+  </data>
+  <data name="ActivityActionChartOfUserOf" xml:space="preserve">
+    <value>Activity Action Chart os {0}</value>
+  </data>
+  <data name="ActivityActionStatus" xml:space="preserve">
+    <value>Action Status</value>
+  </data>
+  <data name="AddNewLDAPUsers" xml:space="preserve">
+    <value>Add New LDAP Users</value>
+  </data>
+  <data name="AddNewLectureUser" xml:space="preserve">
+    <value>Add New Lecture User</value>
+  </data>
+  <data name="AddNewLectureUsers" xml:space="preserve">
+    <value>Add New Lecture Users</value>
+  </data>
+  <data name="AddNewTextFile" xml:space="preserve">
+    <value>Add New TextFile</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>Admin</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="AreYouSureDelete" xml:space="preserve">
+    <value>Are You Sure?</value>
+  </data>
+  <data name="Assistant" xml:space="preserve">
+    <value>Assistant</value>
+  </data>
+  <data name="Authorities" xml:space="preserve">
+    <value>Authorities</value>
+  </data>
+  <data name="Banned" xml:space="preserve">
+    <value>Banned</value>
+  </data>
+  <data name="Boolean" xml:space="preserve">
+    <value>Boolean</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ChooseAFile" xml:space="preserve">
+    <value>Choose a file...</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Command" xml:space="preserve">
+    <value>Command</value>
+  </data>
+  <data name="Commands" xml:space="preserve">
+    <value>Commands</value>
+  </data>
+  <data name="Comment" xml:space="preserve">
+    <value>Comment</value>
+  </data>
+  <data name="Commit" xml:space="preserve">
+    <value>Commit</value>
+  </data>
+  <data name="CommitMessage" xml:space="preserve">
+    <value>Commit Message</value>
+  </data>
+  <data name="Confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="ConfirmAutomatically" xml:space="preserve">
+    <value>Confirm automatically.</value>
+  </data>
+  <data name="Confirmed" xml:space="preserve">
+    <value>Confirmed</value>
+  </data>
+  <data name="ContentsRepository" xml:space="preserve">
+    <value>Contents Repository</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="CreateInitialRepository" xml:space="preserve">
+    <value>Create Initial Repository</value>
+  </data>
+  <data name="CreateNewLecture" xml:space="preserve">
+    <value>Create New Lecture</value>
+  </data>
+  <data name="CreateNewParameter" xml:space="preserve">
+    <value>Create New Parameter</value>
+  </data>
+  <data name="CreateNewSandbox" xml:space="preserve">
+    <value>Create New Sandbox</value>
+  </data>
+  <data name="CreateNewSandboxTemplate" xml:space="preserve">
+    <value>Create New Sandbox Template</value>
+  </data>
+  <data name="CreateNewUser" xml:space="preserve">
+    <value>Create New User</value>
+  </data>
+  <data name="CurrentJobStatus" xml:space="preserve">
+    <value>Current Job Status</value>
+  </data>
+  <data name="DataType" xml:space="preserve">
+    <value>Data Type</value>
+  </data>
+  <data name="DateTime" xml:space="preserve">
+    <value>DateTime</value>
+  </data>
+  <data name="Deadline" xml:space="preserve">
+    <value>Deadline</value>
+  </data>
+  <data name="DefaultBranch" xml:space="preserve">
+    <value>Default Branch</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Discard" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="DismissMessages" xml:space="preserve">
+    <value>Dismiss Messages</value>
+  </data>
+  <data name="DisplayName" xml:space="preserve">
+    <value>Display Name</value>
+  </data>
+  <data name="Double" xml:space="preserve">
+    <value>Double</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="EditActivityXML" xml:space="preserve">
+    <value>Edit Activity XML</value>
+  </data>
+  <data name="EditLecture" xml:space="preserve">
+    <value>Edit Lecture</value>
+  </data>
+  <data name="EditLectureUser" xml:space="preserve">
+    <value>Edit Lecture User</value>
+  </data>
+  <data name="Editor" xml:space="preserve">
+    <value>Editor</value>
+  </data>
+  <data name="EditParameter" xml:space="preserve">
+    <value>Edit Parameter</value>
+  </data>
+  <data name="EditParameterValue" xml:space="preserve">
+    <value>Edit Parameter Value</value>
+  </data>
+  <data name="EditSandbox" xml:space="preserve">
+    <value>Edit Sandbox</value>
+  </data>
+  <data name="EditSandboxTemplate" xml:space="preserve">
+    <value>Edit Sandbox Template</value>
+  </data>
+  <data name="EditUser" xml:space="preserve">
+    <value>Edit User</value>
+  </data>
+  <data name="EMail" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+  <data name="EmptyContent" xml:space="preserve">
+    <value>Empty Content</value>
+  </data>
+  <data name="EnglishName" xml:space="preserve">
+    <value>English Name</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="Feedback" xml:space="preserve">
+    <value>Feedback</value>
+  </data>
+  <data name="FeedbackComment" xml:space="preserve">
+    <value>Feedback Comment</value>
+  </data>
+  <data name="File" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="FileExplorer" xml:space="preserve">
+    <value>File Explorer</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>File Name</value>
+  </data>
+  <data name="GoEditParameters" xml:space="preserve">
+    <value>Go Edit Parameters</value>
+  </data>
+  <data name="GoToEditPage" xml:space="preserve">
+    <value>Edit Page</value>
+  </data>
+  <data name="GoToFeedback" xml:space="preserve">
+    <value>Feedback</value>
+  </data>
+  <data name="GoToLectureDashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="GoToLecturePage" xml:space="preserve">
+    <value>Go Page</value>
+  </data>
+  <data name="Grade" xml:space="preserve">
+    <value>Grade</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Install" xml:space="preserve">
+    <value>Install</value>
+  </data>
+  <data name="Installed" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+  <data name="Installing" xml:space="preserve">
+    <value>Installing</value>
+  </data>
+  <data name="Integer" xml:space="preserve">
+    <value>Integer</value>
+  </data>
+  <data name="IsActive" xml:space="preserve">
+    <value>Is Active?</value>
+  </data>
+  <data name="IsLdapUser" xml:space="preserve">
+    <value>Is Ldap User?</value>
+  </data>
+  <data name="JobQueue" xml:space="preserve">
+    <value>Job Queues</value>
+  </data>
+  <data name="Lecture" xml:space="preserve">
+    <value>Lecture</value>
+  </data>
+  <data name="LectureMenuActivities" xml:space="preserve">
+    <value>Activities</value>
+  </data>
+  <data name="LectureMenuContents" xml:space="preserve">
+    <value>Contents</value>
+  </data>
+  <data name="LectureMenuDashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="LectureMenuPages" xml:space="preserve">
+    <value>Pages</value>
+  </data>
+  <data name="LectureMenuParameters" xml:space="preserve">
+    <value>Parameters</value>
+  </data>
+  <data name="LectureMenuRepository" xml:space="preserve">
+    <value>Repository</value>
+  </data>
+  <data name="LectureMenuSandboxes" xml:space="preserve">
+    <value>Sandboxes</value>
+  </data>
+  <data name="LectureMenuSubmissions" xml:space="preserve">
+    <value>Submissions</value>
+  </data>
+  <data name="LectureMenuUsers" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="Lectures" xml:space="preserve">
+    <value>Lectures</value>
+  </data>
+  <data name="LectureUserDataRepositoryOf" xml:space="preserve">
+    <value>Lecture User Data Repository of {0}</value>
+  </data>
+  <data name="LectureUsers" xml:space="preserve">
+    <value>Lecture Users</value>
+  </data>
+  <data name="Lecurer" xml:space="preserve">
+    <value>Lecurer</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>Logout</value>
+  </data>
+  <data name="MarkedAt" xml:space="preserve">
+    <value>Marked at</value>
+  </data>
+  <data name="Menu" xml:space="preserve">
+    <value>Menu</value>
+  </data>
+  <data name="MyMenuDashboard" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="MyMenuFileExplorer" xml:space="preserve">
+    <value>File Explorer</value>
+  </data>
+  <data name="MyMenuGeneral" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="MyMenuLectures" xml:space="preserve">
+    <value>Lectures</value>
+  </data>
+  <data name="MyMenuSandboxTemplates" xml:space="preserve">
+    <value>Sandbox Templates</value>
+  </data>
+  <data name="MyMenuSubmissions" xml:space="preserve">
+    <value>Submissions</value>
+  </data>
+  <data name="MyMenuSystem" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="MyMenuSystemDashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="MyMenuTeaching" xml:space="preserve">
+    <value>Teaching</value>
+  </data>
+  <data name="MyMenuUsers" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="MySubmissions" xml:space="preserve">
+    <value>My Submissions</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Need" xml:space="preserve">
+    <value>Need</value>
+  </data>
+  <data name="NoDeadline" xml:space="preserve">
+    <value>No-deadline</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Not Found</value>
+  </data>
+  <data name="NumOfAccepts" xml:space="preserve">
+    <value>#accepts</value>
+  </data>
+  <data name="NumOfActions" xml:space="preserve">
+    <value>Num. of Actions</value>
+  </data>
+  <data name="NumOfQueued" xml:space="preserve">
+    <value>Wait</value>
+  </data>
+  <data name="NumOfRejects" xml:space="preserve">
+    <value>#rejects</value>
+  </data>
+  <data name="NumOfRuns" xml:space="preserve">
+    <value>#runs</value>
+  </data>
+  <data name="NumOfSaves" xml:space="preserve">
+    <value>#saves</value>
+  </data>
+  <data name="Observer" xml:space="preserve">
+    <value>Observer</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="OnlineStatus" xml:space="preserve">
+    <value>Online Status</value>
+  </data>
+  <data name="Parameters" xml:space="preserve">
+    <value>Parameters</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Pending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="Reject" xml:space="preserve">
+    <value>Reject</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>Remember me</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="RequiredResubmit" xml:space="preserve">
+    <value>Require Resubmit</value>
+  </data>
+  <data name="RequireResubmit" xml:space="preserve">
+    <value>Require Resubmit</value>
+  </data>
+  <data name="Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="ResubmitDeadline" xml:space="preserve">
+    <value>Resubmit deadline</value>
+  </data>
+  <data name="Run" xml:space="preserve">
+    <value>Run</value>
+  </data>
+  <data name="Sandbox" xml:space="preserve">
+    <value>Sandboxe</value>
+  </data>
+  <data name="Sandboxes" xml:space="preserve">
+    <value>Sandboxes</value>
+  </data>
+  <data name="SandboxTemplates" xml:space="preserve">
+    <value>Sandbox Templates</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SaveError" xml:space="preserve">
+    <value>Save error.</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>Send</value>
+  </data>
+  <data name="ShowActualActivityXML" xml:space="preserve">
+    <value>Show Actual Activity XML</value>
+  </data>
+  <data name="ShowAnswer" xml:space="preserve">
+    <value>Show Answer</value>
+  </data>
+  <data name="ShowHistory" xml:space="preserve">
+    <value>Show Submit History</value>
+  </data>
+  <data name="ShowPage" xml:space="preserve">
+    <value>Show Page</value>
+  </data>
+  <data name="ShowRawFile" xml:space="preserve">
+    <value>Show Raw File</value>
+  </data>
+  <data name="ShowSubmissions" xml:space="preserve">
+    <value>Show Submission</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="String" xml:space="preserve">
+    <value>String</value>
+  </data>
+  <data name="String1MyMenuAttendances" xml:space="preserve">
+    <value>Attendances</value>
+  </data>
+  <data name="Student" xml:space="preserve">
+    <value>Student</value>
+  </data>
+  <data name="Subject" xml:space="preserve">
+    <value>Subject</value>
+  </data>
+  <data name="Submission" xml:space="preserve">
+    <value>Submission</value>
+  </data>
+  <data name="Submissions" xml:space="preserve">
+    <value>Submissions</value>
+  </data>
+  <data name="SubmissionsOf" xml:space="preserve">
+    <value>Submissions of:</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>Submit</value>
+  </data>
+  <data name="Submitted" xml:space="preserve">
+    <value>Submitted</value>
+  </data>
+  <data name="SubmittedAt" xml:space="preserve">
+    <value>Submitted at</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="SystemAdministration" xml:space="preserve">
+    <value>System Administration</value>
+  </data>
+  <data name="Tags" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="Teacher" xml:space="preserve">
+    <value>Teacher</value>
+  </data>
+  <data name="TheActivityHasBeenConfirmed" xml:space="preserve">
+    <value>The activity has been confirmed.</value>
+  </data>
+  <data name="TheDeadlineHasBeenPassed" xml:space="preserve">
+    <value>The deadline has been passed.</value>
+  </data>
+  <data name="TheResubmitDeadlineHasBeenPassed" xml:space="preserve">
+    <value>The resubmit deadline has been passed.</value>
+  </data>
+  <data name="ThSandboxDoesNotExist" xml:space="preserve">
+    <value>The sandbox `{0}' does not exists.</value>
+  </data>
+  <data name="Uninstalled" xml:space="preserve">
+    <value>Uninstalled</value>
+  </data>
+  <data name="UploadFile" xml:space="preserve">
+    <value>Upload File</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>User</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="UserStatus" xml:space="preserve">
+    <value>User Status</value>
+  </data>
+  <data name="Validate" xml:space="preserve">
+    <value>Validate</value>
+  </data>
+  <data name="Value" xml:space="preserve">
+    <value>Value</value>
+  </data>
+</root>

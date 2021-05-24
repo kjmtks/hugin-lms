@@ -1,0 +1,23 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+
+<AuthorizeView>
+    <Authorized>
+        <a class="navbar-item" href="/">
+            <i class="fas fa-user-circle"></i>&nbsp; @context.User.Identity.Name
+        </a>
+
+        <a class="navbar-item" href="/Logout">
+            <i class="fas fa-sign-out-alt"></i>&nbsp;@Localizer["Logout"].Value
+        </a>
+
+    </Authorized>
+    <NotAuthorized>
+        <a class="navbar-item" href="/Login">
+            <i class="fas fa-sign-in-alt"></i>&nbsp;@Localizer["Login"].Value
+        </a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+}

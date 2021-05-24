@@ -1,0 +1,505 @@
+﻿@page "/LectureAdmin/{Account}/{LectureName}/Sandboxes"
+@page "/LectureAdmin/{Account}/{LectureName}/Sandboxes/{Name}"
+@layout LectureAdminLayout
+@inject PermissionProviderService PermissionProvider;
+@inject LectureHandleService LectureHandler
+@inject SandboxHandleService SandboxHandler
+@inject SandboxTemplateHandleService SandboxTemplateHandler
+@inject SandboxExecutionService Executor;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+@inject IJSRuntime JS;
+@inject NavigationManager NV;
+
+@inject SandboxNotifierService Notifier;
+@implements IDisposable;
+
+
+<Paginated Collection="SandboxHandler.Set.Where(x => x.LectureId == Lecture.Id).Include(x => x.Lecture).ThenInclude(x => x.Owner).OrderBy(x => x.Name).AsNoTracking()" @ref="@Pagination">
+    <nav class="panel is-info">
+        <div class="panel-heading">
+            @Localizer["Sandboxes"].Value
+        </div>
+        <div class="panel-block tt">
+            <table class="table is-fullwidth" style="font-size: small">
+                <thead>
+                    <tr>
+                        <th class="is-2">@Localizer["Name"].Value</th>
+                        <th class="is-2">@Localizer["Status"].Value</th>
+                        <th class="is-6">@Localizer["Description"].Value</th>
+                        <th class="is-2"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sandbox in SandboxHandler.GetUninstalledXmlSandboxes(Lecture, Lecture.DefaultBranch))
+                    {
+                        <tr>
+                            <td>@sandbox.Name</td>
+                            <td><span class="tag tt is-danger">@Localizer["Need"].Value</span> </td>
+                            <td><p class="long-text" style="width: 15em">@sandbox.Description</p></td>
+                            <td>
+                                @if (PermissionProvider.CanEditSandbox(Lecture, LoginUser))
+                                {
+                                    <a class="button is-primary is-small" @onclick="() => { installXmlSandbox(sandbox); }">@Localizer["Install"].Value</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var sandbox in Pagination.ShowedModels.ToList())
+                    {
+                        <tr>
+                            <td>
+                                @if (PermissionProvider.CanEditSandbox(Lecture, LoginUser))
+                                {
+                                    <a href="@($"/LectureAdmin/{Account}/{LectureName}/Sandboxes/{sandbox.Name}")" @onclick="@(() => Show(sandbox.Name))" @onclick:preventDefault>@sandbox.Name</a>
+                                }
+                            </td>
+                            <td>
+                                @if (sandbox.State == Data.Sandbox.SandboxState.Installing)
+                                {
+                                    <span class="tag tt is-info">@Localizer["Installing"].Value</span>
+                                }
+                                @if (sandbox.State == Data.Sandbox.SandboxState.Installed)
+                                {
+                                    <span class="tag tt is-success">@Localizer["Installed"].Value</span>
+                                }
+                                @if (sandbox.State == Data.Sandbox.SandboxState.Uninstalled)
+                                {
+                                    <span class="tag tt is-dark">@Localizer["Uninstalled"].Value</span>
+                                }
+                            </td>
+                            <td><p class="long-text" style="width: 15em">@sandbox.Description</p></td>
+                            <td>
+                                @if (PermissionProvider.CanEditSandbox(Lecture, LoginUser))
+                                {
+                                    <a href="javascript: void(0)" @onclick="async () => { await editModalOnAsync(sandbox); }"><i class="fas fa-edit"></i></a>
+                                    <a href="javascript: void(0)" @onclick="async () => { await removeAsync(sandbox); }"><i class="fas fa-trash-alt"></i></a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+                <tfoot>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            @if (PermissionProvider.CanEditSandbox(Lecture, LoginUser))
+                            {
+                                <a @onclick="async () => { await createModalOnAsync(); }"><i class="fas fa-plus"></i></a>
+                            }
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </nav>
+</Paginated>
+
+@if (Sandbox != null && PermissionProvider.CanEditSandbox(Lecture, LoginUser))
+{
+    <div class="box">
+        <div class="columns">
+            <div class="column is-8">
+                <h4 id="const" class="title tt">
+                    @if (!string.IsNullOrWhiteSpace(Sandbox.Name))
+                    {
+                        @Sandbox.Name
+                    }
+                    &nbsp;
+                    @if (Sandbox.State == Data.Sandbox.SandboxState.Installing)
+                    {
+                        <span class="tag tt is-info">@Localizer["Installing"].Value</span>
+                    }
+                    @if (Sandbox.State == Data.Sandbox.SandboxState.Installed)
+                    {
+                        <span class="tag tt is-success">@Localizer["Installed"].Value</span>
+                    }
+                    @if (Sandbox.State == Data.Sandbox.SandboxState.Uninstalled)
+                    {
+                        <span class="tag tt is-dark">@Localizer["Uninstalled"].Value</span>
+                    }
+                </h4>
+            </div>
+            <div class="column is-4">
+                <div class="field has-addons">
+                    <div class="control is-expanded">
+                        <div class="select is-fullwidth">
+                            <select class="tt" @bind="@sandboxTemplateId">
+                                <option value="-1" class="tt">base</option>
+                                @foreach (var template in templates)
+                                {
+                                    <option value="@template.Id" class="tt">@template.Name</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <button type="submit" class="button is-primary" @onclick="install">@Localizer["Install"].Value</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <article class="panel is-info">
+            <div class="panel-block">
+                <div class="control">
+                    <textarea id="simple-terminal-output" class="textarea tt" rows="20" readonly>@output.ToString()</textarea>
+                </div>
+            </div>
+            <div class="panel-block">
+                <form class="control" @onsubmit='run'>
+                    <div class="field is-fullwidth">
+                        <div class="control has-icons-left @(isRunning ? "is-loading" : "")">
+                            <input class="input is-fullwidth is-info tt" type="text" placeholder="@Localizer["Command"].Value" @bind-value="command">
+                            <span class="icon is-left">
+                                <i class="fas fa-terminal" aria-hidden="true"></i>
+                            </span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </article>
+    </div>
+}
+
+<div class="modal" id="user-modal">
+    @if (model != null && editMode != EditMode.None)
+    {
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">
+                    @if (editMode == EditMode.CreateNew)
+                    {
+                        <text>@Localizer["CreateNewSandbox"].Value</text>
+                    }
+                    @if (editMode == EditMode.Edit)
+                    {
+                        <text>@Localizer["EditSandbox"].Value</text>
+                    }
+                </p>
+                <button class="delete" @onclick="async () => await modalOffAsync()" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+
+                <EditForm EditContext="@editContext" OnSubmit="@submit">
+                    <DataAnnotationsValidator />
+
+                    <div class="field">
+                        <label class="label tt">@Localizer["Name"].Value</label>
+                        <div class="control">
+                            @if (editMode == EditMode.CreateNew)
+                            {
+                                <input class="input tt" type="text" @bind="@model.Name">
+                                <p class="help is-danger"><ValidationMessage For="@(() => model.Name)" /></p>
+                            }
+                            @if (editMode == EditMode.Edit)
+                            {
+                                <input class="input tt" type="text" value="@model.Name" readonly>
+                            }
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label tt">@Localizer["Description"].Value</label>
+                        <div class="control">
+                            <textarea class="textarea tt" @bind="@model.Description"></textarea>
+                        </div>
+                        <p class="help is-danger"><ValidationMessage For="@(() => model.Description)" /></p>
+                    </div>
+
+                </EditForm>
+
+            </section>
+
+            <footer class="modal-card-foot">
+                <buttons>
+                    <button class="button is-success" @onclick="async () => await submit()">@Localizer["OK"].Value</button>
+                    <button class="button" @onclick="async () => await modalOffAsync()">@Localizer["Cancel"].Value</button>
+                </buttons>
+            </footer>
+        </div>
+    }
+</div>
+
+
+
+@code
+{
+    [CascadingParameter]
+    public Data.User LoginUser { get; set; }
+    [CascadingParameter]
+    public Data.User LectureUser { get; set; }
+    [CascadingParameter]
+    public Data.Lecture Lecture { get; set; }
+
+    public Data.User User { get; set; }
+
+    [Parameter]
+    public string Account { get; set; }
+    [Parameter]
+    public string LectureName { get; set; }
+    [Parameter]
+    public string Name { get; set; }
+
+    private Data.Sandbox Sandbox = null;
+
+    private IEnumerable<Data.SandboxTemplate> templates;
+
+    protected async override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        User = LoginUser;
+        Notifier.Notify += OnNotify;
+        templates = SandboxTemplateHandler.Set.OrderBy(x => x.Name).AsNoTracking().ToList();
+
+        if (!string.IsNullOrWhiteSpace(Name))
+        {
+            Sandbox = SandboxHandler.Set.Where(x => x.LectureId == Lecture.Id && x.Name == Name).Include(x => x.Lecture).ThenInclude(x => x.Owner).AsNoTracking().FirstOrDefault();
+        }
+        else
+        {
+            Sandbox = null;
+        }
+    }
+
+    public async Task OnNotify()
+    {
+        if (!string.IsNullOrWhiteSpace(Name))
+        {
+            Sandbox = SandboxHandler.Set.Where(x => x.LectureId == Lecture.Id && x.Name == Name).Include(x => x.Lecture).ThenInclude(x => x.Owner).AsNoTracking().FirstOrDefault();
+        }
+        else
+        {
+            Sandbox = null;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+    private bool isAlived = true;
+    void IDisposable.Dispose()
+    {
+        Notifier.Notify -= OnNotify;
+        isAlived = false;
+    }
+
+    #region Commands
+
+    private string command;
+    private bool isRunning = false;
+    private string output = "";
+
+    private void run()
+    {
+        if (isRunning || User == null || Sandbox == null && !PermissionProvider.CanEditSandbox(Lecture, LoginUser)) { return; }
+        isRunning = true;
+        output = "";
+        var description = $"Run command ";
+        output += $"$ {command}{Environment.NewLine}";
+        Executor.EnqueueExecution(User, Sandbox, description, sudo: true, program: "/bin/bash", stdin: command, stdoutCallback: stdoutCallback, stderrCallback: stderrCallback, doneCallback: (_) => doneCallback());
+        command = null;
+        StateHasChanged();
+    }
+
+    private int? sandboxTemplateId = null;
+    private void install()
+    {
+        if (User == null || Sandbox == null || Sandbox.State == Data.Sandbox.SandboxState.Installing && !PermissionProvider.CanEditSandbox(Lecture, LoginUser)) { return; }
+        Data.SandboxTemplate tmpl = null;
+
+        if (sandboxTemplateId > 0 && sandboxTemplateId != null)
+        {
+            tmpl = SandboxTemplateHandler.Set.Where(x => x.Id == sandboxTemplateId).AsNoTracking().FirstOrDefault();
+            if (tmpl == null) { return; }
+        }
+
+        isRunning = true;
+        output = "";
+        var s = Sandbox;
+        Executor.Install(User, s, tmpl, stdoutCallback: stdoutCallback, stderrCallback: stderrCallback, doneCallback: doneCallback);
+        command = null;
+        StateHasChanged();
+    }
+
+    private void installXmlSandbox(SandboxHandleService.XmlSandbox sandbox)
+    {
+        if (User == null && !PermissionProvider.CanEditSandbox(Lecture, LoginUser)) { return; }
+        var s = SandboxHandler.AddNew(new Data.Sandbox
+        {
+            Name = sandbox.Name,
+            Description = sandbox.Description,
+            State = Data.Sandbox.SandboxState.Uninstalled,
+            LectureId = Lecture.Id,
+        });
+        s = SandboxHandler.Set.Where(x => x.Id == s.Id).Include(x => x.Lecture).ThenInclude(x => x.Owner).AsNoTracking().FirstOrDefault();
+
+        var tmpl = string.IsNullOrWhiteSpace(sandbox.Installation) ? null : new Data.SandboxTemplate
+        {
+            Commands = sandbox.Installation
+        };
+
+        isRunning = true;
+        output = "";
+        Sandbox = s;
+        Executor.Install(User, s, tmpl, stdoutCallback: stdoutCallback, stderrCallback: stderrCallback, doneCallback: doneCallback);
+        command = null;
+        StateHasChanged();
+    }
+
+    public async Task stdoutCallback(string data)
+    {
+        if (data != null && isAlived)
+        {
+            output += $"{data}{Environment.NewLine}";
+            await InvokeAsync(() => { StateHasChanged(); });
+            await JS.InvokeVoidAsync("scrollToBottom", $"simple-terminal-output");
+        }
+    }
+    public async Task stderrCallback(string data)
+    {
+        if (data != null && isAlived)
+        {
+            output += $"{data}{Environment.NewLine}";
+            await InvokeAsync(() => { StateHasChanged(); });
+            await JS.InvokeVoidAsync("scrollToBottom", $"simple-terminal-output");
+        }
+    }
+    private async Task doneCallback()
+    {
+        if (isAlived)
+        {
+            isRunning = false;
+            await InvokeAsync(() => StateHasChanged());
+        }
+    }
+
+    #endregion
+
+
+    #region Sandbox
+
+    private enum EditMode
+    {
+        None, CreateNew, Edit
+    }
+    private EditMode editMode = EditMode.None;
+    private EditContext editContext { get; set; }
+    private ValidationMessageStore messageStore;
+    private Data.Sandbox model { get; set; }
+    private bool processing = false;
+
+    private string ErrorMessage { get; set; }
+    private string NormalMessage { get; set; }
+
+    private Paginated<Data.Sandbox> Pagination;
+
+    private void Show(string name)
+    {
+        NV.NavigateTo($"/LectureAdmin/{Account}/{LectureName}/Sandboxes/{name}", true);
+    }
+
+
+    private async Task removeAsync(Data.Sandbox sandbox)
+    {
+        if (isRunning && !PermissionProvider.CanEditSandbox(Lecture, LoginUser)) { return; }
+        if (Sandbox != null && Sandbox.Id == sandbox.Id)
+        {
+            Sandbox = null;
+            await InvokeAsync(() => StateHasChanged());
+        }
+        if (await JS.InvokeAsync<bool>("showConfirmDialog", Localizer["AreYouSureDelete"].Value))
+        {
+            SandboxHandler.Remove(sandbox);
+        }
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task createModalOnAsync()
+    {
+        if (isRunning) { return; }
+        editMode = EditMode.CreateNew;
+        model = new Data.Sandbox { LectureId = Lecture.Id };
+        resetEdittingModel(model);
+        await JS.InvokeVoidAsync("modalOn", "user-modal");
+    }
+
+    private async Task editModalOnAsync(Data.Sandbox lecture)
+    {
+        if (isRunning) { return; }
+        editMode = EditMode.Edit;
+        model = lecture;
+        resetEdittingModel(model);
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOn", "user-modal");
+    }
+    private async Task modalOffAsync()
+    {
+        model = null;
+        editMode = EditMode.None;
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOff", "user-modal");
+    }
+
+    private void resetEdittingModel(Data.Sandbox sandbox)
+    {
+        editContext = new EditContext(sandbox);
+        messageStore = new ValidationMessageStore(editContext);
+        editContext.OnValidationRequested += (s, e) => messageStore.Clear();
+        editContext.OnFieldChanged += (s, e) => messageStore.Clear(e.FieldIdentifier);
+    }
+    private void addValidationError(string fieldName, string errorMessage)
+    {
+        messageStore.Add(editContext.Field(fieldName), errorMessage);
+        editContext.NotifyValidationStateChanged();
+    }
+
+    private async Task submit()
+    {
+        if (processing && !PermissionProvider.CanEditSandbox(Lecture, LoginUser)) return;
+        processing = true;
+        ErrorMessage = "";
+        NormalMessage = "";
+        await InvokeAsync(() => StateHasChanged());
+
+
+        if (editContext.Validate())
+        {
+            onValid(editContext);
+            await modalOffAsync();
+            await InvokeAsync(() => StateHasChanged());
+        }
+        processing = false;
+    }
+
+
+    protected virtual void onValid(EditContext editContext)
+    {
+        try
+        {
+            if (editMode == EditMode.CreateNew)
+            {
+                if (SandboxHandler.AddNew(model) == null)
+                {
+                    throw new Exception("Error");
+                }
+            }
+            if (editMode == EditMode.Edit)
+            {
+                if (SandboxHandler.Update(model) == null)
+                {
+                    throw new Exception("Error");
+                }
+            }
+            NormalMessage = "Success";
+        }
+        catch (Exception e)
+        {
+            ErrorMessage = e.Message;
+            NormalMessage = "";
+        }
+    }
+    #endregion
+}

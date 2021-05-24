@@ -1,0 +1,62 @@
+﻿
+@inject IJSRuntime JS;
+
+<canvas id="page-draw-area" width="0" height="0" style="display: none;"></canvas>
+
+<div id="page-draw-menu" class="buttons are-small"
+     style="position:-webkit-sticky; position: sticky; display: inline; top:0; padding: 1em; float: left; text-align: center; font-size: x-small;">
+    <button class="button paint-on" style="width: 3em;">
+        <i class="fas fa-paint-brush"></i>
+    </button><button class="button paint-button paint-off" style="width: 3em; display: none;">
+        <i class="fas fa-mouse-pointer"></i>
+    </button>
+    <br />
+
+    <button class="button paint-button paint-undo" style="width: 3em; display: none;">
+        <i class="fas fa-undo"></i>
+    </button>
+    <br />
+    <button class="button paint-button paint-redo" style="width: 3em; display: none;">
+        <i class="fas fa-redo"></i>
+    </button>
+    <br />
+
+    <button class="button paint-button paint-erase-all" style="width: 3em; display: none;">
+        <i class="fas fa-eraser"></i>
+    </button>
+    <br/>
+
+    <button class="button paint-button paint-eraser" data-size="40" style="width: 3em; display: none;">
+        <span style="font-size: 1em;"><i class="far fa-circle"></i></span>
+    </button>
+    <br />
+
+    <button class="button paint-button paint-drawer" data-size="1" style="width: 3em; display: none;">
+        <span class="paint-pen" style="font-size: 0.25em;"><i class="fas fa-circle"></i></span>
+    </button>
+    <br />
+
+    <button class="button paint-button paint-drawer" data-size="4" style="width: 3em; display: none;">
+        <span class="paint-pen" style="font-size: 0.5em;"><i class="fas fa-circle"></i></span>
+    </button>
+    <br />
+
+    <button class="button paint-button paint-drawer" data-size="8" style="width: 3em; display: none;">
+        <span class="paint-pen" style="font-size: 0.75em;"><i class="fas fa-circle"></i></span>
+    </button>
+    <br />
+
+    @foreach (var c in Colors)
+    {
+        <button class="button paint-button paint-drawer" data-color="@c" style="width: 3em; display: none;">
+            <i class="fas fa-palette" style="color: @c"></i>
+        </button>
+        <br />
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public string[] Colors { get; set; }
+}

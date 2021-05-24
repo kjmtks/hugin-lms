@@ -1,0 +1,642 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Accept" xml:space="preserve">
+    <value>合格</value>
+  </data>
+  <data name="AcceptingResubmit" xml:space="preserve">
+    <value>再提出可</value>
+  </data>
+  <data name="AcceptResubmit" xml:space="preserve">
+    <value>再提出可</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>アクセスが禁止されています．</value>
+  </data>
+  <data name="Account" xml:space="preserve">
+    <value>アカウント</value>
+  </data>
+  <data name="Accounts" xml:space="preserve">
+    <value>アカウント</value>
+  </data>
+  <data name="ActivityActionChartOfLecture" xml:space="preserve">
+    <value>講義のアクション数の時間変化</value>
+  </data>
+  <data name="ActivityActionChartOfSystem" xml:space="preserve">
+    <value>システムのアクション数の時間変化</value>
+  </data>
+  <data name="ActivityActionChartOfUserOf" xml:space="preserve">
+    <value>{0} のアクション数の時間変化</value>
+  </data>
+  <data name="ActivityActionStatus" xml:space="preserve">
+    <value>学習行動状況</value>
+  </data>
+  <data name="AddNewLDAPUsers" xml:space="preserve">
+    <value>LDAPユーザーの複数追加</value>
+  </data>
+  <data name="AddNewLectureUser" xml:space="preserve">
+    <value>新しいユーザーの割り当て</value>
+  </data>
+  <data name="AddNewLectureUsers" xml:space="preserve">
+    <value>新しい複数のユーザーの割り当て</value>
+  </data>
+  <data name="AddNewTextFile" xml:space="preserve">
+    <value>新しいテキストファイルの追加</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>管理者</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>すべて</value>
+  </data>
+  <data name="AreYouSureDelete" xml:space="preserve">
+    <value>本当に削除しますか？</value>
+  </data>
+  <data name="Assistant" xml:space="preserve">
+    <value>アシスタント</value>
+  </data>
+  <data name="Authorities" xml:space="preserve">
+    <value>権限</value>
+  </data>
+  <data name="Banned" xml:space="preserve">
+    <value>禁止</value>
+  </data>
+  <data name="Boolean" xml:space="preserve">
+    <value>真偽値</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="ChooseAFile" xml:space="preserve">
+    <value>アップロードするファイルを選択</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>閉じる</value>
+  </data>
+  <data name="Command" xml:space="preserve">
+    <value>コマンド</value>
+  </data>
+  <data name="Commands" xml:space="preserve">
+    <value>コマンド</value>
+  </data>
+  <data name="Comment" xml:space="preserve">
+    <value>コメント</value>
+  </data>
+  <data name="Commit" xml:space="preserve">
+    <value>コミット</value>
+  </data>
+  <data name="CommitMessage" xml:space="preserve">
+    <value>コミットメッセージ</value>
+  </data>
+  <data name="Confirm" xml:space="preserve">
+    <value>提出完了</value>
+  </data>
+  <data name="ConfirmAutomatically" xml:space="preserve">
+    <value>提出を受け付けました．</value>
+  </data>
+  <data name="Confirmed" xml:space="preserve">
+    <value>提出完了</value>
+  </data>
+  <data name="ContentsRepository" xml:space="preserve">
+    <value>講義コンテンツのリポジトリ</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>作成</value>
+  </data>
+  <data name="CreateInitialRepository" xml:space="preserve">
+    <value>リポジトリを生成</value>
+  </data>
+  <data name="CreateNewLecture" xml:space="preserve">
+    <value>新しい講義の追加</value>
+  </data>
+  <data name="CreateNewParameter" xml:space="preserve">
+    <value>新しいパラメーターの追加</value>
+  </data>
+  <data name="CreateNewSandbox" xml:space="preserve">
+    <value>新しいサンドボックスを作成</value>
+  </data>
+  <data name="CreateNewSandboxTemplate" xml:space="preserve">
+    <value>新しいサンドボックスのひな形を追加</value>
+  </data>
+  <data name="CreateNewUser" xml:space="preserve">
+    <value>新しいユーザーの追加</value>
+  </data>
+  <data name="CurrentJobStatus" xml:space="preserve">
+    <value>現在のジョブの状態</value>
+  </data>
+  <data name="DataType" xml:space="preserve">
+    <value>データ型</value>
+  </data>
+  <data name="DateTime" xml:space="preserve">
+    <value>日時</value>
+  </data>
+  <data name="Deadline" xml:space="preserve">
+    <value>締め切り日時</value>
+  </data>
+  <data name="DefaultBranch" xml:space="preserve">
+    <value>デフォルトのブランチ</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>説明</value>
+  </data>
+  <data name="Discard" xml:space="preserve">
+    <value>編集をリセット</value>
+  </data>
+  <data name="DismissMessages" xml:space="preserve">
+    <value>メッセージの消去</value>
+  </data>
+  <data name="DisplayName" xml:space="preserve">
+    <value>氏名</value>
+  </data>
+  <data name="Double" xml:space="preserve">
+    <value>倍精度浮動小数</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>ダウンロード</value>
+  </data>
+  <data name="EditActivityXML" xml:space="preserve">
+    <value>このアクティビティのベースとなるXMLを編集</value>
+  </data>
+  <data name="EditLecture" xml:space="preserve">
+    <value>講義の編集</value>
+  </data>
+  <data name="EditLectureUser" xml:space="preserve">
+    <value>ユーザーの割り当ての編集</value>
+  </data>
+  <data name="Editor" xml:space="preserve">
+    <value>エディター</value>
+  </data>
+  <data name="EditParameter" xml:space="preserve">
+    <value>パラメーターの編集</value>
+  </data>
+  <data name="EditParameterValue" xml:space="preserve">
+    <value>パラメーターの値の編集</value>
+  </data>
+  <data name="EditSandbox" xml:space="preserve">
+    <value>サンドボックスの編集</value>
+  </data>
+  <data name="EditSandboxTemplate" xml:space="preserve">
+    <value>サンドボックスのひな形を編集</value>
+  </data>
+  <data name="EditUser" xml:space="preserve">
+    <value>ユーザーの編集</value>
+  </data>
+  <data name="EMail" xml:space="preserve">
+    <value>Eメールアドレス</value>
+  </data>
+  <data name="EmptyContent" xml:space="preserve">
+    <value>表示するべきものがありません．</value>
+  </data>
+  <data name="EnglishName" xml:space="preserve">
+    <value>英語氏名</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>失敗</value>
+  </data>
+  <data name="Feedback" xml:space="preserve">
+    <value>採点コメント</value>
+  </data>
+  <data name="FeedbackComment" xml:space="preserve">
+    <value>採点コメント</value>
+  </data>
+  <data name="File" xml:space="preserve">
+    <value>ファイル</value>
+  </data>
+  <data name="FileExplorer" xml:space="preserve">
+    <value>ファイルエクスプローラー</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>ファイル名</value>
+  </data>
+  <data name="GoEditParameters" xml:space="preserve">
+    <value>パラメーターの編集へ</value>
+  </data>
+  <data name="GoToEditPage" xml:space="preserve">
+    <value>ページの編集へ</value>
+  </data>
+  <data name="GoToFeedback" xml:space="preserve">
+    <value>このアクティビティの採点へ</value>
+  </data>
+  <data name="GoToLectureDashboard" xml:space="preserve">
+    <value>講義管理画面へ</value>
+  </data>
+  <data name="GoToLecturePage" xml:space="preserve">
+    <value>講義ページへ</value>
+  </data>
+  <data name="Grade" xml:space="preserve">
+    <value>得点</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>ホーム</value>
+  </data>
+  <data name="Install" xml:space="preserve">
+    <value>インストール</value>
+  </data>
+  <data name="Installed" xml:space="preserve">
+    <value>インストール済み</value>
+  </data>
+  <data name="Installing" xml:space="preserve">
+    <value>インストール中</value>
+  </data>
+  <data name="Integer" xml:space="preserve">
+    <value>整数</value>
+  </data>
+  <data name="IsActive" xml:space="preserve">
+    <value>アクティブ</value>
+  </data>
+  <data name="IsLdapUser" xml:space="preserve">
+    <value>LDAPによる認証を行う</value>
+  </data>
+  <data name="JobQueue" xml:space="preserve">
+    <value>ジョブキュー</value>
+  </data>
+  <data name="Lecture" xml:space="preserve">
+    <value>講義</value>
+  </data>
+  <data name="LectureMenuActivities" xml:space="preserve">
+    <value>アクティビティ</value>
+  </data>
+  <data name="LectureMenuContents" xml:space="preserve">
+    <value>コンテンツ</value>
+  </data>
+  <data name="LectureMenuDashboard" xml:space="preserve">
+    <value>ダッシュボード</value>
+  </data>
+  <data name="LectureMenuPages" xml:space="preserve">
+    <value>ページ</value>
+  </data>
+  <data name="LectureMenuParameters" xml:space="preserve">
+    <value>パラメータ</value>
+  </data>
+  <data name="LectureMenuRepository" xml:space="preserve">
+    <value>リポジトリ</value>
+  </data>
+  <data name="LectureMenuSandboxes" xml:space="preserve">
+    <value>サンドボックス</value>
+  </data>
+  <data name="LectureMenuSubmissions" xml:space="preserve">
+    <value>提出物</value>
+  </data>
+  <data name="LectureMenuUsers" xml:space="preserve">
+    <value>ユーザー</value>
+  </data>
+  <data name="Lectures" xml:space="preserve">
+    <value>講義</value>
+  </data>
+  <data name="LectureUserDataRepositoryOf" xml:space="preserve">
+    <value>{0} の講義データリポジトリ</value>
+  </data>
+  <data name="LectureUsers" xml:space="preserve">
+    <value>講義に参加しているユーザー</value>
+  </data>
+  <data name="Lecurer" xml:space="preserve">
+    <value>講師</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>ログイン</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>ログアウト</value>
+  </data>
+  <data name="MarkedAt" xml:space="preserve">
+    <value>採点日時</value>
+  </data>
+  <data name="Menu" xml:space="preserve">
+    <value>メニュー</value>
+  </data>
+  <data name="MyMenuAttendances" xml:space="preserve">
+    <value>受講講義</value>
+  </data>
+  <data name="MyMenuDashboard" xml:space="preserve">
+    <value>プロフィール</value>
+  </data>
+  <data name="MyMenuFileExplorer" xml:space="preserve">
+    <value>ファイルエクスプローラー</value>
+  </data>
+  <data name="MyMenuGeneral" xml:space="preserve">
+    <value>一般</value>
+  </data>
+  <data name="MyMenuLectures" xml:space="preserve">
+    <value>講義</value>
+  </data>
+  <data name="MyMenuSandboxTemplates" xml:space="preserve">
+    <value>サンドボックスのひな形</value>
+  </data>
+  <data name="MyMenuSubmissions" xml:space="preserve">
+    <value>提出物</value>
+  </data>
+  <data name="MyMenuSystem" xml:space="preserve">
+    <value>システム管理</value>
+  </data>
+  <data name="MyMenuSystemDashboard" xml:space="preserve">
+    <value>ダッシュボード</value>
+  </data>
+  <data name="MyMenuTeaching" xml:space="preserve">
+    <value>担当</value>
+  </data>
+  <data name="MyMenuUsers" xml:space="preserve">
+    <value>ユーザー管理</value>
+  </data>
+  <data name="MySubmissions" xml:space="preserve">
+    <value>自分の提出物</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>名前</value>
+  </data>
+  <data name="Need" xml:space="preserve">
+    <value>必須</value>
+  </data>
+  <data name="NoDeadline" xml:space="preserve">
+    <value>期限なし</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>ファイルが見つかりません．</value>
+  </data>
+  <data name="NumOfAccepts" xml:space="preserve">
+    <value>#アクセプト</value>
+  </data>
+  <data name="NumOfActions" xml:space="preserve">
+    <value>アクション数</value>
+  </data>
+  <data name="NumOfQueued" xml:space="preserve">
+    <value>Q</value>
+  </data>
+  <data name="NumOfRejects" xml:space="preserve">
+    <value>#リジェクト</value>
+  </data>
+  <data name="NumOfRuns" xml:space="preserve">
+    <value>#実行</value>
+  </data>
+  <data name="NumOfSaves" xml:space="preserve">
+    <value>#保存</value>
+  </data>
+  <data name="Observer" xml:space="preserve">
+    <value>監視者</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="OnlineStatus" xml:space="preserve">
+    <value>接続状況</value>
+  </data>
+  <data name="Parameters" xml:space="preserve">
+    <value>パラメーター</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>パスワード</value>
+  </data>
+  <data name="Pending" xml:space="preserve">
+    <value>保留</value>
+  </data>
+  <data name="Reject" xml:space="preserve">
+    <value>不合格</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>ログイン情報を記憶する</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="RequiredResubmit" xml:space="preserve">
+    <value>要再提出</value>
+  </data>
+  <data name="RequireResubmit" xml:space="preserve">
+    <value>要再提出</value>
+  </data>
+  <data name="Reset" xml:space="preserve">
+    <value>初期状態にリセット</value>
+  </data>
+  <data name="ResubmitDeadline" xml:space="preserve">
+    <value>再提出期限</value>
+  </data>
+  <data name="Run" xml:space="preserve">
+    <value>実行</value>
+  </data>
+  <data name="Sandbox" xml:space="preserve">
+    <value>サンドボックス</value>
+  </data>
+  <data name="Sandboxes" xml:space="preserve">
+    <value>サンドボックス</value>
+  </data>
+  <data name="SandboxTemplates" xml:space="preserve">
+    <value>サンドボックスのひな形</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="SaveError" xml:space="preserve">
+    <value>保存に失敗しました．</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>送信</value>
+  </data>
+  <data name="ShowActualActivityXML" xml:space="preserve">
+    <value>このアクティビティのXMLを表示</value>
+  </data>
+  <data name="ShowAnswer" xml:space="preserve">
+    <value>解答をセット</value>
+  </data>
+  <data name="ShowHistory" xml:space="preserve">
+    <value>提出履歴を確認</value>
+  </data>
+  <data name="ShowPage" xml:space="preserve">
+    <value>ページを表示</value>
+  </data>
+  <data name="ShowRawFile" xml:space="preserve">
+    <value>生ファイルを表示</value>
+  </data>
+  <data name="ShowSubmissions" xml:space="preserve">
+    <value>採点結果を確認</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>状態</value>
+  </data>
+  <data name="String" xml:space="preserve">
+    <value>文字列</value>
+  </data>
+  <data name="Student" xml:space="preserve">
+    <value>学生</value>
+  </data>
+  <data name="Subject" xml:space="preserve">
+    <value>講義の表示名</value>
+  </data>
+  <data name="Submission" xml:space="preserve">
+    <value>提出物</value>
+  </data>
+  <data name="Submissions" xml:space="preserve">
+    <value>提出物</value>
+  </data>
+  <data name="SubmissionsOf" xml:space="preserve">
+    <value>ユーザーの提出物:</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>提出</value>
+  </data>
+  <data name="Submitted" xml:space="preserve">
+    <value>提出中</value>
+  </data>
+  <data name="SubmittedAt" xml:space="preserve">
+    <value>提出日時</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="SystemAdministration" xml:space="preserve">
+    <value>システム管理</value>
+  </data>
+  <data name="Tags" xml:space="preserve">
+    <value>タグ</value>
+  </data>
+  <data name="Teacher" xml:space="preserve">
+    <value>教員</value>
+  </data>
+  <data name="TheActivityHasBeenConfirmed" xml:space="preserve">
+    <value>このアクティビティは既に提出が完了しているので再提出はできません．</value>
+  </data>
+  <data name="TheDeadlineHasBeenPassed" xml:space="preserve">
+    <value>このアクティビティは提出期限を過ぎているので提出はできません．</value>
+  </data>
+  <data name="TheResubmitDeadlineHasBeenPassed" xml:space="preserve">
+    <value>このアクティビティは再提出期限を過ぎているので再提出はできません．</value>
+  </data>
+  <data name="ThSandboxDoesNotExist" xml:space="preserve">
+    <value>サンドボックス "{0}" の準備ができていません．</value>
+  </data>
+  <data name="Uninstalled" xml:space="preserve">
+    <value>未インストール</value>
+  </data>
+  <data name="UploadFile" xml:space="preserve">
+    <value>ファイルのアップロード</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>ユーザー</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>ユーザー</value>
+  </data>
+  <data name="UserStatus" xml:space="preserve">
+    <value>ユーザーの状態</value>
+  </data>
+  <data name="Validate" xml:space="preserve">
+    <value>検証</value>
+  </data>
+  <data name="Value" xml:space="preserve">
+    <value>値</value>
+  </data>
+</root>

@@ -1,0 +1,63 @@
+﻿@inject IBackgroundTaskQueueSet Queues;
+@inject JobQueueNotifierService Notifier;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+@implements IDisposable;
+
+<nav class="panel is-info">
+    <div class="panel-heading">
+        @Localizer["JobQueue"].Value
+    </div>
+    <div class="panel-block tt">
+        <table class="table is-fullwidth" style="font-size: small">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@Localizer["NumOfQueued"].Value</th>
+                    <th colspan="3">@Localizer["CurrentJobStatus"].Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var (queue, i) in Queues.GetPrioritiedQueues().Select((x, i) => (x, i)))
+                {
+                    <tr>
+                        <td class="is-narrow"><i class="fas fa-user-tie"></i> Teacher's Queue #@(i + 1)</td>
+                        <td>@queue.Count</td>
+                        <td><p class="tt long-text" style="width: 25em;">@queue.Description</p></td>
+                        <td>@queue.User?.DisplayName</td>
+                        <td>@(queue.IsRunning ? queue.StartedAt.ToString() : "")</td>
+                    </tr>
+                }
+                @foreach (var (queue, i) in Queues.GetQueues().Select((x, i) => (x, i)))
+                {
+                    <tr>
+                        <td class="is-narrow"><i class="fas fa-user"></i> Student's Queue #@(i + 1)</td>
+                        <td class="is-narrow">@queue.Count</td>
+                        <td><p class="tt long-text" style="width: 25em;">@queue.Description</p></td>
+                        <td>@queue.User?.DisplayName</td>
+                        <td>@(queue.IsRunning ? queue.StartedAt.ToString() : "")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</nav>
+
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Notifier.Notify += OnNotify;
+    }
+
+    public async Task OnNotify()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+    public void Dispose()
+    {
+        Notifier.Notify -= OnNotify;
+    }
+}

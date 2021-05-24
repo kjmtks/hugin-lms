@@ -1,0 +1,84 @@
+﻿@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21?}";
+@page "/LectureAdmin/{Account}/{LectureName}/UserDataRepository/{UserAccount}/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21}/{Path22?}";
+
+@inherits FiniteDepthPathPage;
+@layout LectureAdminLayout;
+@inject ApplicationConfigurationService Conf;
+@inject RepositoryHandleService RepositoryHandler;
+@inject FilePathResolveService FilePathResolver;
+@inject UserHandleService UserHandler;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+
+<AccessRestrictions Checker="p => p.CanReadLectureUserDataRepository(Lecture.Owner.Account, LectureName, UserAccount, LoginUser.Account)">
+    <section>
+        <RepositoryViewer Subject="@(string.Format(Localizer["LectureUserDataRepositoryOf"].Value, User.DisplayName))" @ref="RepositoryViewer"
+                          Account="@Account" LectureName="@LectureName" LoginUser="LoginUser" Editable="false"
+                          DefaultBranch="@Lecture.DefaultBranch" Rivision="@Rivision" Current="@Current"
+                          UrlBuilder="UrlBuilder" RawFileUrlBuilder="RawFileUrlBuilder"
+                          Repository="@RepositoryHandler.GetLectureUserDataRepository(Account, LectureName, UserAccount)"
+                          RemoteUrl="@FilePathResolver.GetLectureUserDataGitApiURL(Account, LectureName, UserAccount)" />
+    </section>
+</AccessRestrictions>
+
+
+@code
+{
+    [Parameter]
+    public string Account { get; set; }
+    [Parameter]
+    public string LectureName { get; set; }
+    [Parameter]
+    public string UserAccount { get; set; }
+    [Parameter]
+    public string Rivision { get; set; }
+
+    [CascadingParameter]
+    public Data.User LoginUser { get; set; }
+    [CascadingParameter]
+    public Data.User LectureUser { get; set; }
+    [CascadingParameter]
+    public Data.Lecture Lecture { get; set; }
+
+    public Data.User User { get; set; }
+
+
+    private string BaseUrl { get; set; }
+    private Func<string, string, string, string, string> UrlBuilder { get; set; }
+    private Func<string, string, string, string, string> RawFileUrlBuilder { get; set; }
+    private string Current { get; set; }
+
+    private RepositoryViewer RepositoryViewer;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        Current = $"{Path}";
+        User = UserHandler.Set.Where(x => x.Account == UserAccount).FirstOrDefault();
+        UrlBuilder = (account, lectureName, rivision, path) => $"/LectureAdmin/{account}/{lectureName}/UserDataRepository/{UserAccount}/{rivision}/{path}";
+        RawFileUrlBuilder = (account, lectureName, rivision, path) => $"/RawFile/LectureUserData/{account}/{lectureName}/{UserAccount}/{rivision}/{path}";
+    }
+
+}

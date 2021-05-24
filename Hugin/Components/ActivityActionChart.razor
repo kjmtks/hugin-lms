@@ -1,0 +1,140 @@
+﻿@inject ActivityActionHandleService ActivityActionHandler;
+@inject IJSRuntime JS;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+
+
+<section style="padding-bottom: 1em; padding-top: 1em;">
+    <canvas id="activity-action-chart"></canvas>
+    <div class="level">
+        <div class="level-left">
+            <div class="level-item"></div>
+        </div>
+        <div class="level-right">
+
+            @if (Lecture != null)
+            {
+                <div class="level-item">
+                    <div class="control">
+                        <span class="select">
+                            <select class="tt" @bind="activityName">
+                                <option value="" selected>@Localizer["All"].Value</option>
+                                @foreach (var name in activityNames)
+                                {
+                                    <option value="@name">@name</option>
+                                }
+                            </select>
+                        </span>
+                    </div>
+                </div>
+            }
+
+            <div class="level-item">
+                <div class="control">
+                    <span class="select">
+                        <select class="tt" @bind="filter">
+                            <option value="@ActivityActionHandleService.StateFilter.All" selected>@Localizer["All"].Value</option>
+                            <option value="@ActivityActionHandleService.StateFilter.Save">@Localizer["Save"].Value</option>
+                            <option value="@ActivityActionHandleService.StateFilter.Run">@Localizer["Run"].Value</option>
+                            <option value="@ActivityActionHandleService.StateFilter.Validate">@Localizer["Validate"].Value</option>
+                            <option value="@ActivityActionHandleService.StateFilter.Reject">@Localizer["Reject"].Value</option>
+                            <option value="@ActivityActionHandleService.StateFilter.Accept">@Localizer["Accept"].Value</option>
+                            <option value="@ActivityActionHandleService.StateFilter.Submit">@Localizer["Submit"].Value</option>
+                        </select>
+                    </span>
+                </div>
+            </div>
+
+            <div class="level-item">
+                <div class="control">
+                    <span class="select">
+                        <select class="tt" @bind="timeSpan">
+                            <option value="@(new TimeSpan(24,0,0).Ticks)" selected>24h</option>
+                            <option value="@(new TimeSpan(72,0,0).Ticks)">72h</option>
+                            <option value="@(new TimeSpan(7,0,0,0).Ticks)">1 week</option>
+                            <option value="@(new TimeSpan(30,0,0,0).Ticks)">30 days</option>
+                        </select>
+                    </span>
+                </div>
+            </div>
+
+            <div class="level-item">
+                <button class="button is-primary" @onclick="async () => { await redrawAsync(); }">Show</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+
+    [Parameter]
+    public Data.Lecture Lecture { get; set; }
+
+    [Parameter]
+    public Data.User User { get; set; }
+
+    [Parameter]
+    public string Title { get; set; }
+
+
+    public string activityName { get; set; }
+
+    private bool rendered;
+
+    private long timeSpan = new TimeSpan(24, 0, 0).Ticks;
+
+    private ActivityActionHandleService.StateFilter filter;
+
+    private IEnumerable<string> activityNames = new string[] { };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        if (Lecture != null)
+        {
+            activityNames = ActivityActionHandler.Set.Where(x => x.LectureId == Lecture.Id).Select(x => x.ActivityName).Distinct().OrderBy(x => x);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            rendered = true;
+            await RedrawChartAsync(Lecture, User, null);
+        }
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        if (rendered)
+        {
+            await RedrawChartAsync(Lecture, User, null);
+        }
+    }
+
+    public async Task RedrawChartAsync(Data.Lecture lecture, Data.User user, string activityName)
+    {
+        var ts = new TimeSpan(timeSpan);
+
+        var end = DateTime.Now;
+        var start = end - ts;
+        var m = ts.Ticks / 1000 / 60 / 24 / 4 / 10000;
+
+
+        var data = ActivityActionHandler.GetRequestCounts(activityName, lecture, user, start, end, m, filter).ToList();
+
+        var xs = data.Select(x => $"{x.Item1.Month}/{x.Item1.Day} {x.Item1.Hour}:{x.Item1.Minute}");
+        var ys = data.Select(x => x.Item2);
+
+        await JS.InvokeVoidAsync("drawActivityActionChart", "activity-action-chart", Title, xs, ys, Localizer["NumOfActions"].Value);
+    }
+
+    protected async Task redrawAsync()
+    {
+        await RedrawChartAsync(Lecture, User, activityName);
+    }
+
+}

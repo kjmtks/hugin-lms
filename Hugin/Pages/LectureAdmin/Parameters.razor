@@ -1,0 +1,579 @@
+﻿@page "/LectureAdmin/{Account}/{LectureName}/Parameters/{Rivision}";
+@layout LectureAdminLayout;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+@inject PermissionProviderService PermissionProvider;
+@inject IJSRuntime JS;
+@inject RepositoryHandleService RepositoryHandler;
+@inject LectureHandleService LectureHandler;
+
+@if (!string.IsNullOrWhiteSpace(normalMessage))
+{
+    <article class="message is-primary">
+        <div class="message-body">@normalMessage</div>
+    </article>
+}
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <article class="message is-danger">
+        <div class="message-body">@errorMessage</div>
+    </article>
+}
+
+<AccessRestrictions Checker="p => p.CanReadLectureContentsRepository(Lecture, LoginUser)">
+    <section>
+        <nav class="panel is-info">
+
+            <div class="panel-heading">
+                @Localizer["Parameters"].Value
+            </div>
+
+            <div class="panel-block tt">
+                <table class="table is-fullwidth" style="font-size: small">
+                    <thead>
+                        <tr>
+                            <th>@Localizer["DataType"].Value</th>
+                            <th>@Localizer["Name"].Value</th>
+                            <th>@Localizer["Value"].Value</th>
+                            <th>@Localizer["Description"].Value</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var parameter in parameters)
+                        {
+                            <tr>
+                                <td>
+                                    @if(parameter.DataType == Models.ParameterTypes.Boolean)
+                                    {
+                                        <span>@Localizer["Boolean"].Value</span>
+                                    }
+                                    @if(parameter.DataType == Models.ParameterTypes.DateTime)
+                                    {
+                                        <span>@Localizer["DateTime"].Value</span>
+                                    }
+                                    @if(parameter.DataType == Models.ParameterTypes.Double)
+                                    {
+                                        <span>@Localizer["Double"].Value</span>
+                                    }
+                                    @if(parameter.DataType == Models.ParameterTypes.Integer)
+                                    {
+                                        <span>@Localizer["Integer"].Value</span>
+                                    }
+                                    @if(parameter.DataType == Models.ParameterTypes.String)
+                                    {
+                                        <span>@Localizer["String"].Value</span>
+                                    }
+                                </td>
+                                <td>@parameter.Name</td>
+                                <td>
+                                    <p class="long-text" style="width: 20em;">
+                                        @if (PermissionProvider.CanWriteLectureContentsRepository(Lecture, LoginUser))
+                                        {
+                                            <a href="javascript: void(0)" @onclick="async () => { await valueModalOnAsync(parameter); }"><i class="fas fa-edit"></i></a>
+                                        }
+                                        @parameter.Value
+                                    </p>
+                                </td>
+                                <td>@parameter.Description</td>
+                                <td>
+                                    @if (PermissionProvider.CanWriteLectureContentsRepository(Lecture, LoginUser))
+                                    {
+                                        <a href="javascript: void(0)" @onclick="async () => { await editModalOnAsync(parameter); }"><i class="fas fa-edit"></i></a>
+                                        <a href="javascript: void(0)" @onclick="async () => { await removeAsync(parameter); }"><i class="fas fa-trash-alt"></i></a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <a target="_blank" href="/LectureAdmin/@Lecture.Owner.Account/@Lecture.Name/ContentsRepository/@Rivision/parameters.xml">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                &nbsp;
+                                &nbsp;
+                                @if (PermissionProvider.CanWriteLectureContentsRepository(Lecture, LoginUser))
+                                {
+                                    <a @onclick="async () => { await createModalOnAsync(); }">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </nav>
+    </section>
+
+
+    <div class="modal" id="parameter-modal">
+        @if (model != null && editMode != EditMode.None)
+        {
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">
+                        @if (editMode == EditMode.CreateNew)
+                        {
+                            <text>@Localizer["CreateNewParameter"].Value</text>
+                        }
+                        @if (editMode == EditMode.Edit)
+                        {
+                            <text>@Localizer["EditParameter"].Value</text>
+                        }
+                    </p>
+                    <button class="delete" @onclick="async () => await modalOffAsync()" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+
+                    <EditForm EditContext="@editContext" OnSubmit="@submit">
+                        <DataAnnotationsValidator />
+
+                        <div class="field">
+                            <label class="label tt">@Localizer["Name"].Value</label>
+                            <div class="control">
+                                @if (editMode == EditMode.CreateNew)
+                                {
+                                    <input class="input tt" type="text" @bind="@model.Name" />
+                                    <p class="help is-danger"><ValidationMessage For="@(() => model.Name)" /></p>
+                                }
+                                @if (editMode == EditMode.Edit)
+                                {
+                                    <input class="input tt" type="text" value="@model.Name" readonly=readonly />
+                                }
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label tt">@Localizer["DataType"].Value</label>
+                            <div class="control is-expanded">
+                                <div class="select is-fullwidth">
+                                    <select class="tt" @bind="@model.DataType">
+                                        <option value="@Models.ParameterTypes.String" class="tt">@Localizer["String"].Value</option>
+                                        <option value="@Models.ParameterTypes.Integer" class="tt">@Localizer["Integer"].Value</option>
+                                        <option value="@Models.ParameterTypes.Double" class="tt">@Localizer["Double"].Value</option>
+                                        <option value="@Models.ParameterTypes.Boolean" class="tt">@Localizer["Boolean"].Value</option>
+                                        <option value="@Models.ParameterTypes.DateTime" class="tt">@Localizer["DateTime"].Value</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label tt">@Localizer["Description"].Value</label>
+                            <div class="control">
+                                <input class="input tt" type="text" @bind="@model.Description" />
+                            </div>
+                            <p class="help is-danger"><ValidationMessage For="@(() => model.Description)" /></p>
+                        </div>
+                    </EditForm>
+
+                </section>
+
+                <footer class="modal-card-foot">
+                    <buttons>
+                        <button class="button is-success" @onclick="async () => await submit()">@Localizer["OK"].Value</button>
+                        <button class="button" @onclick="async () => await modalOffAsync()">@Localizer["Cancel"].Value</button>
+                    </buttons>
+                </footer>
+            </div>
+        }
+    </div>
+
+
+    <div class="modal" id="edit-value-param-modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">
+                    @Localizer["EditParameterValue"].Value
+                </p>
+                <button class="delete" @onclick="async () => await valueModalOffAsync()" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+
+                <div class="field">
+                    <label class="label tt">@editFor?.Name</label>
+                    <div class="control has-icons-left">
+                        <div class="control has-icons-left">
+                            @if (editFor != null && editFor.DataType == Models.ParameterTypes.DateTime)
+                            {
+                                <input class="input datatimepicker tt" type="text" placeholder="@Localizer["DateTime"].Value" @bind="@editFor.Value" />
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </span>
+                            }
+                            @if (editFor != null && editFor.DataType == Models.ParameterTypes.String)
+                            {
+                                <input class="input tt" type="text" placeholder="@Localizer["String"].Value" @bind="@editFor.Value" />
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </span>
+                            }
+                            @if (editFor != null && editFor.DataType == Models.ParameterTypes.Integer)
+                            {
+                                <input class="input tt" type="number" placeholder="@Localizer["Integer"].Value" @bind="@editFor.Value" />
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </span>
+                            }
+                            @if (editFor != null && editFor.DataType == Models.ParameterTypes.Double)
+                            {
+                                <input class="input tt" type="number" step="0.1" placeholder="@Localizer["Double"].Value" @bind="@editFor.Value" />
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </span>
+                            }
+                            @if (editFor != null && editFor.DataType == Models.ParameterTypes.Boolean)
+                            {
+                                <div class="select is-fullwidth">
+                                    <select class="tt" @bind="@editFor.Value">
+                                        <option value="true" class="tt">true</option>
+                                        <option value="false" class="tt">false</option>
+                                    </select>
+                                </div>
+                            }
+                        </div>
+                        <p class="help">@editFor?.Description</p>
+                    </div>
+                </div>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" @onclick="async () => { await valueSubmit(); }">@Localizer["OK"].Value</button>
+                <button class="button" @onclick="async () => { await valueModalOffAsync(); }">@Localizer["Cancel"].Value</button>
+            </footer>
+        </div>
+    </div>
+</AccessRestrictions>
+
+
+@code
+{
+    [CascadingParameter]
+    public Data.User LoginUser { get; set; }
+    [CascadingParameter]
+    public Data.User LectureUser { get; set; }
+    [CascadingParameter]
+    public Data.Lecture Lecture { get; set; }
+
+    [Parameter]
+    public string Account { get; set; }
+    [Parameter]
+    public string LectureName { get; set; }
+    [Parameter]
+    public string Rivision { get; set; }
+
+    private string normalMessage;
+    private string errorMessage;
+
+    private Parameter editFor { get; set; }
+
+    private Models.Repository Repository;
+
+
+    public class Parameter
+    {
+        public string Name;
+        public string Description;
+        public string Value;
+        public Models.ParameterTypes DataType;
+    }
+    private enum EditMode
+    {
+        None, CreateNew, Edit
+    }
+    private EditMode editMode = EditMode.None;
+    private EditContext editContext;
+    private ValidationMessageStore messageStore;
+    private Parameter model { get; set; }
+    private bool processing = false;
+
+
+    private async Task removeAsync(Parameter parameter)
+    {
+        if (await JS.InvokeAsync<bool>("showConfirmDialog", Localizer["AreYouSureDelete"].Value))
+        {
+
+            if (PermissionProvider.CanWriteLectureContentsRepository(Lecture, LoginUser))
+            {
+                saveParameters(parameters.Where(x => x.Name != parameter.Name));
+                readParameters();
+            }
+        }
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task createModalOnAsync()
+    {
+        editMode = EditMode.CreateNew;
+        model = new Parameter
+        {
+            DataType = Models.ParameterTypes.String
+        };
+        resetEdittingModel(model);
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOn", "parameter-modal");
+    }
+
+    private async Task editModalOnAsync(Parameter parameter)
+    {
+        editMode = EditMode.Edit;
+        model = parameter;
+        resetEdittingModel(parameter);
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOn", "parameter-modal");
+    }
+    private async Task modalOffAsync()
+    {
+        model = null;
+        editMode = EditMode.None;
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOff", "parameter-modal");
+    }
+
+    private void resetEdittingModel(Parameter parameter)
+    {
+        editContext = new EditContext(parameter);
+        messageStore = new ValidationMessageStore(editContext);
+        editContext.OnValidationRequested += (s, e) => messageStore.Clear();
+        editContext.OnFieldChanged += (s, e) => messageStore.Clear(e.FieldIdentifier);
+    }
+    private void addValidationError(string fieldName, string errorMessage)
+    {
+        messageStore.Add(editContext.Field(fieldName), errorMessage);
+        editContext.NotifyValidationStateChanged();
+    }
+
+    private async Task submit()
+    {
+        if (processing) return;
+        processing = true;
+        errorMessage = "";
+        normalMessage = "";
+        await InvokeAsync(() => StateHasChanged());
+
+        var v2 = true;
+
+        if (v2 && string.IsNullOrWhiteSpace(model.Name))
+        {
+            v2 = false;
+            messageStore.Add(editContext.Field("Name"), $"Name is required.");
+            editContext.NotifyValidationStateChanged();
+        }
+        if (v2 && !System.Text.RegularExpressions.Regex.IsMatch(model.Name, @"[a-zA-Z_][a-zA-Z0-9_]*"))
+        {
+            v2 = false;
+            messageStore.Add(editContext.Field("Name"), $"Only [a-zA-Z_][a-zA-Z0-9_]* is allowed");
+            editContext.NotifyValidationStateChanged();
+        }
+        if (v2 && parameters.Select(x => x.Name).Contains(model.Name))
+        {
+            v2 = false;
+            messageStore.Add(editContext.Field("Name"), $"Name `{model.Name}' is not unique.");
+            editContext.NotifyValidationStateChanged();
+        }
+        if(!PermissionProvider.CanWriteLectureContentsRepository(Lecture, LoginUser))
+        {
+            v2 = false;
+            messageStore.Add(editContext.Field("Name"), "You can not edit contents.");
+            editContext.NotifyValidationStateChanged();
+        }
+        if (v2)
+        {
+            onValid(editContext);
+            await modalOffAsync();
+            await InvokeAsync(() => StateHasChanged());
+        }
+        readParameters();
+        processing = false;
+    }
+
+
+    protected virtual void onValid(EditContext editContext)
+    {
+        try
+        {
+            if (editMode == EditMode.CreateNew)
+            {
+                saveParameters(parameters.Append(model));
+            }
+            if (editMode == EditMode.Edit)
+            {
+                saveParameters(parameters.Select(x => x.Name == model.Name ? model : x));
+            }
+            normalMessage = "Success";
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+            normalMessage = "";
+        }
+    }
+
+
+
+
+
+
+
+    private async Task valueModalOnAsync(Parameter parameter)
+    {
+        editFor = parameter;
+        await JS.InvokeVoidAsync("modalOn", "edit-value-param-modal");
+        await JS.InvokeVoidAsync("setDateTimePicker", ".datatimepicker");
+    }
+    private async Task valueModalOffAsync()
+    {
+        await JS.InvokeVoidAsync("modalOff", "edit-value-param-modal");
+        editFor = null;
+    }
+
+
+    private async Task valueSubmit()
+    {
+        await JS.InvokeVoidAsync("modalOff", "edit-value-param-modal");
+
+        normalMessage = "";
+        errorMessage = "";
+        StateHasChanged();
+
+        if (PermissionProvider.CanWriteLectureContentsRepository(Lecture, LoginUser))
+        {
+            saveParameters(parameters.Select(x => x.Name == editFor.Name ? editFor : x));
+            readParameters();
+        }
+
+        editFor = null;
+    }
+
+
+
+    protected override void OnInitialized()
+    {
+        readParameters();
+    }
+
+    private void saveParameters(IEnumerable<Parameter> parameters)
+    {
+        try
+        {
+            Repository = RepositoryHandler.GetLectureContentsRepository(Lecture);
+            if (RepositoryHandler.IsInitialized(Repository))
+            {
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+                sb.AppendLine("<Parameters>");
+                foreach (var parameter in parameters)
+                {
+                    var tagname = parameter.DataType.ToString();
+                    var name = parameter.Name?.Replace("&", "&amp;")?.Replace("<", "&lt;")?.Replace(">", "&gt;");
+                    var desc = parameter.Description?.Replace("&", "&amp;")?.Replace("<", "&lt;")?.Replace(">", "&gt;");
+                    var value = parameter.Value?.Replace("&", "&amp;")?.Replace("<", "&lt;")?.Replace(">", "&gt;");
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        value = parameter.DataType switch
+                        {
+                            Models.ParameterTypes.Boolean => "false",
+                            Models.ParameterTypes.DateTime => DateTime.Now.ToString(),
+                            Models.ParameterTypes.Integer => "0",
+                            Models.ParameterTypes.Double => "0.0",
+                            Models.ParameterTypes.String => "",
+                            _ => "",
+                        };
+                    }
+
+                    sb.AppendLine($"  <{tagname} Name=\"{name}\" Description=\"{desc}\">{value}</{tagname}>");
+                }
+                sb.AppendLine("</Parameters>");
+                RepositoryHandler.DoWithLock(Repository, r =>
+                {
+                    RepositoryHandler.SaveTextAndSync(r, Rivision, "parameters.xml", sb.ToString(), "Save parameters.", LoginUser.DisplayName, LoginUser.Email);
+                });
+            }
+            else
+            {
+                throw new Exception("Repository is empty.");
+            }
+        }
+        catch (Exception e)
+        {
+            parameters = new Parameter[] { };
+            errorMessage = e.Message;
+        }
+        StateHasChanged();
+    }
+
+    private void readParameters()
+    {
+        try
+        {
+            Repository = RepositoryHandler.GetLectureContentsRepository(Lecture);
+            if (RepositoryHandler.IsInitialized(Repository))
+            {
+                if (RepositoryHandler.Exists(Repository, "parameters.xml", Rivision))
+                {
+                    var xs = LectureHandler.GetLectureParameters(Lecture, Rivision);
+                    parameters = xs.Select(kv =>
+                    {
+                        var dataType = Models.ParameterTypes.String;
+                        try
+                        {
+                            dataType = kv.Value switch
+                            {
+                                Models.LectureBooleanParameter => Models.ParameterTypes.Boolean,
+                                Models.LectureDateTimeParameter => Models.ParameterTypes.DateTime,
+                                Models.LectureIntegerParameter => Models.ParameterTypes.Integer,
+                                Models.LectureDoubleParameter => Models.ParameterTypes.Double,
+                                Models.LectureStringParameter => Models.ParameterTypes.String,
+                                _ => Models.ParameterTypes.String,
+                            };
+                        }
+                        catch
+                        {
+                            dataType = Models.ParameterTypes.String;
+                        }
+                        var value = "";
+                        try
+                        {
+                            value = kv.Value switch
+                            {
+                                Models.LectureDateTimeParameter => kv.Value.GetValue().ToString(),
+                                Models.LectureBooleanParameter => kv.Value.GetValue() ? "true" : "false",
+                                _ => kv.Value.GetValue().ToString()
+                            };
+                        }
+                        catch { }
+                        return new Parameter
+                        {
+                            Name = kv.Key,
+                            Description = kv.Value.Description,
+                            Value = value,
+                            DataType = dataType
+                        };
+                    });
+                }
+                else
+                {
+                    throw new Exception("parameters.xml does not exist.");
+                }
+            }
+            else
+            {
+                throw new Exception("Repository is empty.");
+            }
+        }
+        catch (Exception e)
+        {
+            parameters = new Parameter[] { };
+            errorMessage = e.Message;
+        }
+        StateHasChanged();
+    }
+    private IEnumerable<Parameter> parameters;
+
+}

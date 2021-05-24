@@ -1,0 +1,150 @@
+﻿@page "/LectureAdmin/{Account}/{LectureName}/Submissions"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21}/{Path22?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21}/{Path22}/{Path23?}"
+@page "/LectureAdmin/{Account}/{LectureName}/Submissions/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21}/{Path22}/{Path23}/{Path24?}"
+
+@inherits FiniteDepthPathPage;
+@layout LectureAdminLayout
+@inject PermissionProviderService PermissionProvider;
+@inject LectureHandleService LectureHandler;
+@inject SubmissionHandleService SubmissionHandler;
+@inject UserHandleService UserHandler;
+@inject RepositoryHandleService RepositoryHandler;
+@inject Data.DatabaseContext DatabaseContext;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+@inject IJSRuntime JS;
+@inject NavigationManager NV;
+
+@inject SubmissionNotifierService Notifier;
+@implements IDisposable;
+
+
+<AccessRestrictions Checker="p => p.CanShowSubmission(Lecture, LoginUser)">
+    <Paginated Collection="submissionNames" @ref="@Pagination" EntriesPerPage="20">
+        <nav class="panel is-info">
+            <div class="panel-heading">
+                @Localizer["Submissions"].Value
+            </div>
+
+            <div class="panel-block">
+                <div class="buttons">
+                    <a class="button is-link is-outlined" target="_blank"
+                       href="/Csv/LectureScores/@Lecture.Owner.Account/@Lecture.Name/master/scores.csv">
+                        <span class="icon is-small">
+                            <i class="fas fa-file-csv"></i>
+                        </span>
+                        <span>@Localizer["Download"].Value</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="panel-block tt">
+                <table class="table is-fullwidth" style="font-size: small">
+                    @foreach (var submission in Pagination.ShowedModels)
+                    {
+                        <tr>
+                            <td>
+                                <a href="/LectureAdmin/@LectureUser.Account/@Lecture.Name/Submissions/@submission"
+                                   @onclick="() => { JumpTo(submission); }"
+                                   @onclick:preventDefault>@submission</a>
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </nav>
+    </Paginated>
+
+
+    @if (!string.IsNullOrWhiteSpace(Path))
+    {
+        <SubmissionList User="LoginUser" IsShowHistoryLink="true" CanMark="canMark" Submissions="submissions" />
+    }
+
+</AccessRestrictions>
+
+
+
+
+@code
+{
+    [CascadingParameter]
+    public Data.User LoginUser { get; set; }
+    [CascadingParameter]
+    public Data.User LectureUser { get; set; }
+    [CascadingParameter]
+    public Data.Lecture Lecture { get; set; }
+
+    [Parameter]
+    public string Account { get; set; }
+    [Parameter]
+    public string LectureName { get; set; }
+
+    private bool canMark;
+
+    private Paginated<string> Pagination;
+
+    private IEnumerable<string> submissionNames = null;
+    private IEnumerable<Data.Submission> submissions = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        Notifier.Notify += OnNotify;
+
+        update();
+    }
+
+    private void JumpTo(string submission)
+    {
+        NV.NavigateTo($"/LectureAdmin/{LectureUser.Account}/{Lecture.Name}/Submissions/{submission}", true);
+    }
+
+    private void update()
+    {
+        submissionNames = SubmissionHandler.Set.Where(x => x.LectureId == Lecture.Id).Select(x => x.ActivityName).Distinct().OrderBy(x => x).AsNoTracking().ToList();
+
+        if (!string.IsNullOrWhiteSpace(Path))
+        {
+            submissions = SubmissionHandler.LatestSubmissions(Lecture, Path)
+                .Include(x => x.User).Include(x => x.Lecture).ThenInclude(x => x.Owner).Include(x => x.MarkerUser)
+                .OrderBy(x => x.User.Account).AsNoTracking().ToList();
+        }
+
+        canMark = PermissionProvider.CanMarkSubmission(Lecture, LoginUser);
+    }
+
+    public async Task OnNotify()
+    {
+        update();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    void IDisposable.Dispose()
+    {
+        Notifier.Notify -= OnNotify;
+    }
+}

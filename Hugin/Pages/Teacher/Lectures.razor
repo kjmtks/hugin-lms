@@ -1,0 +1,303 @@
+﻿@page "/Teacher/Lectures"
+@layout MyLayout
+@inject PermissionProviderService PermissionProvider;
+@inject LectureHandleService LectureHandler
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+@inject IJSRuntime JS;
+
+@if (!string.IsNullOrWhiteSpace(NormalMessage))
+{
+    <article class="message is-primary">
+        <div class="message-body">@NormalMessage</div>
+    </article>
+}
+@if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <article class="message is-danger">
+        <div class="message-body">@ErrorMessage</div>
+    </article>
+}
+
+<AccessRestrictions Checker="p => p.CanEditLecture(LoginUser)">
+    <Paginated Collection="LectureHandler.Set.Where(x => x.OwnerId == LoginUser.Id).OrderBy(x => x.Name)" @ref="@Pagination">
+        <nav class="panel is-info">
+            <div class="panel-heading">
+                @Localizer["Lectures"].Value
+            </div>
+            <div class="panel-block tt">
+                <table class="table is-fullwidth" style="font-size: small">
+                    <thead>
+                        <tr>
+                            <th class="is-2">@Localizer["Name"].Value</th>
+                            <th class="is-3">@Localizer["Subject"].Value</th>
+                            <th class="is-4">@Localizer["Description"].Value</th>
+                            <th class="is-1"></th>
+                            <th class="is-2"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var lecture in Pagination.ShowedModels)
+                        {
+                            <tr>
+                                <td>
+                                    <a href="/LectureAdmin/@LoginUser.Account/@lecture.Name">@lecture.Name</a>
+                                </td>
+                                <td>@lecture.Subject</td>
+                                <td>@lecture.Description</td>
+                                <td>
+                                    @if (lecture.IsActived)
+                                    {
+                                        <span><i class="fas fa-lock-open"></i></span>
+                                    }
+                                    else
+                                    {
+                                        <span><i class="fas fa-lock"></i></span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (PermissionProvider.CanEditLecture(LoginUser))
+                                    {
+                                        <a href="javascript: void(0)" @onclick="async () => { await editModalOnAsync(lecture); }"><i class="fas fa-edit"></i></a>
+                                        <a href="javascript: void(0)" @onclick="async () => { await removeAsync(lecture); }"><i class="fas fa-trash-alt"></i></a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                @if (PermissionProvider.CanEditLecture(LoginUser))
+                                {
+                                    <a @onclick="async () => { await createModalOnAsync(); }"><i class="fas fa-plus"></i></a>
+                                }
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </nav>
+    </Paginated>
+
+
+
+    <div class="modal" id="user-modal">
+        @if (model != null && editMode != EditMode.None)
+        {
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">
+                        @if (editMode == EditMode.CreateNew)
+                        {
+                            <text>@Localizer["CreateNewLecture"].Value</text>
+                        }
+                        @if (editMode == EditMode.Edit)
+                        {
+                            <text>@Localizer["EditLecture"].Value</text>
+                        }
+                    </p>
+                    <button class="delete" @onclick="async () => await modalOffAsync()" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+
+                    <EditForm EditContext="@editContext" OnSubmit="@submit">
+                        <DataAnnotationsValidator />
+
+                        <div class="field">
+                            <label class="label tt">@Localizer["Name"].Value</label>
+                            <div class="control">
+                                @if (editMode == EditMode.CreateNew)
+                                {
+                                    <input class="input tt" type="text" @bind="@model.Name">
+                                    <p class="help is-danger"><ValidationMessage For="@(() => model.Name)" /></p>
+                                }
+                                @if (editMode == EditMode.Edit)
+                                {
+                                    <input class="input tt" type="text" value="@model.Name" readonly>
+                                }
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label tt">@Localizer["Subject"].Value</label>
+                            <div class="control">
+                                <input class="input tt" type="text" @bind="@model.Subject">
+                            </div>
+                            <p class="help is-danger"><ValidationMessage For="@(() => model.Subject)" /></p>
+                        </div>
+                        <div class="field">
+                            <label class="label tt">@Localizer["Description"].Value</label>
+                            <div class="control">
+                                <textarea class="textarea tt" @bind="@model.Description"></textarea>
+                            </div>
+                            <p class="help is-danger"><ValidationMessage For="@(() => model.Description)" /></p>
+                        </div>
+                        <div class="field">
+                            <label class="label tt">@Localizer["DefaultBranch"].Value</label>
+                            <div class="control">
+                                <input class="input tt" type="text" @bind="@model.DefaultBranch">
+                            </div>
+                            <p class="help is-danger"><ValidationMessage For="@(() => model.DefaultBranch)" /></p>
+                        </div>
+                        <div class="field">
+                            <label class="label tt">@Localizer["IsActive"].Value</label>
+                            <div class="control">
+                                <label class="checkbox">
+                                    <input type="checkbox" @bind="model.IsActived">Yes
+                                </label>
+                            </div>
+                            <p class="help is-danger"><ValidationMessage For="@(() => model.IsActived)" /></p>
+                        </div>
+                    </EditForm>
+
+                </section>
+
+                <footer class="modal-card-foot">
+                    <buttons>
+                        <button class="button is-success" @onclick="async () => await submit()">@Localizer["OK"].Value</button>
+                        <button class="button" @onclick="async () => await modalOffAsync()">@Localizer["Cancel"].Value</button>
+                    </buttons>
+                </footer>
+            </div>
+        }
+    </div>
+
+</AccessRestrictions>
+
+
+
+@code
+{
+    [CascadingParameter]
+    private Data.User LoginUser { get; set; }
+
+    private enum EditMode
+    {
+        None, CreateNew, Edit
+    }
+    private EditMode editMode = EditMode.None;
+    private EditContext editContext;
+    private ValidationMessageStore messageStore;
+    private Data.Lecture model { get; set; }
+    private bool processing = false;
+
+    private string ErrorMessage { get; set; }
+    private string NormalMessage { get; set; }
+
+    private Paginated<Data.Lecture> Pagination;
+
+
+    private async Task removeAsync(Data.Lecture lecture)
+    {
+        if (await JS.InvokeAsync<bool>("showConfirmDialog", Localizer["AreYouSureDelete"].Value))
+        {
+            if (PermissionProvider.CanEditLecture(LoginUser))
+            {
+                LectureHandler.Remove(lecture);
+            }
+        }
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task createModalOnAsync()
+    {
+        editMode = EditMode.CreateNew;
+        model = new Data.Lecture
+        {
+            OwnerId = LoginUser.Id,
+            DefaultBranch = "master",
+            IsActived = true
+        };
+        resetEdittingModel(model);
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOn", "user-modal");
+    }
+
+    private async Task editModalOnAsync(Data.Lecture lecture)
+    {
+        editMode = EditMode.Edit;
+        model = lecture;
+        resetEdittingModel(model);
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOn", "user-modal");
+    }
+    private async Task modalOffAsync()
+    {
+        model = null;
+        editMode = EditMode.None;
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOff", "user-modal");
+    }
+
+    private void resetEdittingModel(Data.Lecture lecture)
+    {
+        editContext = new EditContext(lecture);
+        messageStore = new ValidationMessageStore(editContext);
+        editContext.OnValidationRequested += (s, e) => messageStore.Clear();
+        editContext.OnFieldChanged += (s, e) => messageStore.Clear(e.FieldIdentifier);
+    }
+    private void addValidationError(string fieldName, string errorMessage)
+    {
+        messageStore.Add(editContext.Field(fieldName), errorMessage);
+        editContext.NotifyValidationStateChanged();
+    }
+
+    private async Task submit()
+    {
+        if (processing) return;
+        processing = true;
+        ErrorMessage = "";
+        NormalMessage = "";
+        await InvokeAsync(() => StateHasChanged());
+
+        bool v1 = true, v2 = true;
+        v1 = editContext.Validate();
+        if (!PermissionProvider.CanEditLecture(LoginUser))
+        {
+            v2 = false;
+            messageStore.Add(editContext.Field("Name"), "You can not edit lecture.");
+            editContext.NotifyValidationStateChanged();
+        }
+        if (v1 && v2)
+        {
+            onValid(editContext);
+            await modalOffAsync();
+            await InvokeAsync(() => StateHasChanged());
+        }
+        processing = false;
+    }
+
+
+    protected virtual void onValid(EditContext editContext)
+    {
+        try
+        {
+            if (editMode == EditMode.CreateNew)
+            {
+                if (LectureHandler.AddNew(model) == null)
+                {
+                    throw new Exception("Error");
+                }
+            }
+            if (editMode == EditMode.Edit)
+            {
+                if (LectureHandler.Update(model) == null)
+                {
+                    throw new Exception("Error");
+                }
+            }
+            NormalMessage = "Success";
+        }
+        catch (Exception e)
+        {
+            ErrorMessage = e.Message;
+            NormalMessage = "";
+        }
+    }
+
+}

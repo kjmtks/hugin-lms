@@ -1,0 +1,114 @@
+﻿@model Hugin.ViewModels.LoginViewModel
+@inject Hugin.Services.ApplicationConfigurationService Conf;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@Conf.GetAppName()</title>
+    <base href="~/" />
+
+    <link rel="stylesheet" type="text/css" href="/node_modules/@@fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="/node_modules/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="/node_modules/bulma/css/bulma.min.css" />
+    <link href="/css/site.css" rel="stylesheet" />
+
+    <script src="/node_modules/@@fortawesome/fontawesome-free/js/all.min.js"></script>
+    <script src="/node_modules/flatpickr/dist/flatpickr.min.js"></script>
+    <script src="/js/site.js"></script>
+
+    <script>
+        function modalOn(targetId) {
+            var modal = document.getElementById(targetId);
+            if (modal != null) {
+                modal.classList.add("is-active")
+            }
+        }
+        function modalOff(targetId) {
+            var modal = document.getElementById(targetId);
+            if (modal != null) {
+                modal.classList.remove("is-active")
+            }
+        }
+    </script>
+
+    <script>
+
+        function setDatePicker(selector) {
+            console.log(selector);
+            flatpickr(selector, {});
+        }
+        function setDateTimePicker(selector) {
+            console.log(selector);
+            flatpickr(selector, { enableTime: true, dateFormat: "Y/m/d H:i:00" });
+        }
+
+        function showConfirmDialog(message) {
+            return window.confirm(message);
+        }
+
+    </script>
+
+</head>
+<body>
+
+
+    <div class="container">
+        <div class="columns">
+            <div class="column is-3"></div>
+
+            <div class="column is-6">
+                <section class="hero is-fullheight">
+                    <div class="hero-body">
+                        <div class="container has-text-centered">
+                            <p class="column is-4 is-offset-4">
+                                <h3 class="title has-text-black">@Conf.GetAppName()</h3>
+                                <hr class="login-hr">
+                            <p class="help is-danger">@ViewData["ErrorMessage"]</p>
+                            <div class="box">
+
+                                @using (Html.BeginForm())
+                                {
+
+                                    <div class="field">
+                                        <div class="control">
+                                            @Html.TextBoxFor(h => h.Account, new { @class = "input is-large", @placeholder = @Localizer["Account"].Value })
+                                        </div>
+                                        <span class="help is-danger">@Html.ValidationMessageFor(h => h.Account)</span>
+                                    </div>
+
+                                    <div class="field">
+                                        <div class="control">
+                                            @Html.PasswordFor(h => h.Password, new { @class = "input is-large", @placeholder = @Localizer["Password"].Value })
+                                        </div>
+                                        <span class="help is-danger">@Html.ValidationMessageFor(h => h.Password)</span>
+                                    </div>
+
+                                    <div class="field">
+                                        @Html.CheckBoxFor(h => h.RememberMe, new { })
+                                        @Localizer["RememberMe"]
+                                    </div>
+                                    <button type="submit" class="button is-block is-info is-large is-fullwidth">@Localizer["Login"] <i class="fas fa-sign-in-alt" aria-hidden="true"></i></button>
+
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="column is-3"></div>
+        </div>
+    </div>
+
+</body>
+</html>
+
+
+
+
+

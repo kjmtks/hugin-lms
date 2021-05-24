@@ -1,0 +1,15 @@
+{
+  "name": "hugin",
+  "version": "0.7.0",
+  "description": "",
+  "dependencies": {
+    "@aspnet/signalr": "^1.0.27",
+    "@fortawesome/fontawesome-free": "^5.12.1",
+    "ace-min-noconflict": "^1.1.9",
+    "bulma": "^0.9.2",
+    "bulma-extensions": "^6.2.7",
+    "chart.js": "^3.2.1",
+    "flatpickr": "^4.6.9",
+    "mathjax": "^3.1.4"
+  }
+}

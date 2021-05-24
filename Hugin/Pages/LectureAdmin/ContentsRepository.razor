@@ -1,0 +1,125 @@
+﻿@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21}/{Path22?}";
+@page "/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/{Path1}/{Path2}/{Path3}/{Path4}/{Path5}/{Path6}/{Path7}/{Path8}/{Path9}/{Path10}/{Path11}/{Path12}/{Path13}/{Path14}/{Path15}/{Path16}/{Path17}/{Path18}/{Path19}/{Path20}/{Path21}/{Path22}/{Path23?}";
+
+@inherits FiniteDepthPathPage;
+@layout LectureAdminLayout;
+@inject ApplicationConfigurationService Conf;
+@inject RepositoryHandleService RepositoryHandler;
+@inject FilePathResolveService FilePathResolver;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+
+<AccessRestrictions Checker="p => p.CanReadLectureContentsRepository(Lecture, LoginUser)">
+    <section>
+        <RepositoryViewer Subject="@Localizer["ContentsRepository"].Value" @ref="RepositoryViewer"
+                          Account="@Account" LectureName="@LectureName" LoginUser="LoginUser" Editable="true"
+                          DefaultBranch="@Lecture.DefaultBranch" Rivision="@Rivision" Current="@Current"
+                          UrlBuilder="UrlBuilder" RawFileUrlBuilder="RawFileUrlBuilder" InitializeCommandsBuilder="InitializeCommandsBuilder"
+                          OnCreateInitial="OnCreateInitial"
+                          Repository="@RepositoryHandler.GetLectureContentsRepository(Account, LectureName)"
+                          RemoteUrl="@FilePathResolver.GetLectureContentsGitApiURL(Account, LectureName)">
+            @if (RepositoryViewer.Current.Split("/").FirstOrDefault() == "pages")
+            {
+                <div class="panel-block">
+                    <div class="buttons">
+                        <a class="button is-link is-outlined" target="_blank"
+                           href="/Page/@RepositoryViewer.Account/@RepositoryViewer.LectureName/@RepositoryViewer.Rivision/@(string.Join("/", RepositoryViewer.Current.Split("/").Skip(1)))">
+                            <span class="icon is-small">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <span>@Localizer["ShowPage"].Value</span>
+                        </a>
+                    </div>
+                </div>
+            }
+            @if (RepositoryViewer.Current == "parameters.xml")
+            {
+                <div class="panel-block">
+                    <div class="buttons">
+                        <a class="button is-link is-outlined"
+                           href="/LectureAdmin/@LectureUser.Account/@Lecture.Name/Parameters/@Rivision">
+                            <span class="icon is-small">
+                                <i class="fas fa-dollar-sign"></i>
+                            </span>
+                            <span>@Localizer["GoEditParameters"].Value</span>
+                        </a>
+                    </div>
+                </div>
+            }
+        </RepositoryViewer>
+    </section>
+</AccessRestrictions>
+
+
+@code
+{
+    [Parameter]
+    public string Account { get; set; }
+    [Parameter]
+    public string LectureName { get; set; }
+    [Parameter]
+    public string Rivision { get; set; }
+
+    [CascadingParameter]
+    public Data.User LoginUser { get; set; }
+    [CascadingParameter]
+    public Data.User LectureUser { get; set; }
+    [CascadingParameter]
+    public Data.Lecture Lecture { get; set; }
+
+    private string BaseUrl { get; set; }
+    private Func<string, string, string, string, string> UrlBuilder { get; set; }
+    private Func<string, string, string, string, string> RawFileUrlBuilder { get; set; }
+    private Func<string> InitializeCommandsBuilder { get; set; }
+    private string Current { get; set; }
+
+    private RepositoryViewer RepositoryViewer;
+
+    private void OnCreateInitial(Models.Repository repository, string defaultBranch)
+    {
+        RepositoryHandler.DoWithLock(repository, r =>
+        {
+            RepositoryHandler.CreateInitialLectureContentsRepository(repository, defaultBranch, Lecture, LoginUser, "Initial Commit");
+        });
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        UrlBuilder = (account, lectureName, rivision, path) => $"/LectureAdmin/{account}/{lectureName}/ContentsRepository/{rivision}/{path}";
+        RawFileUrlBuilder = (account, lectureName, rivision, path) => $"/RawFile/LectureContents/{account}/{lectureName}/{rivision}/{path}";
+        InitializeCommandsBuilder = () =>
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"git clone --origin github https://github.com/kjmtks/hugin-initial-lecture.git {LectureName}");
+            sb.AppendLine($"cd {LectureName}");
+            sb.AppendLine($"git remote add origin {FilePathResolver.GetLectureContentsGitApiURL(Account, LectureName)}");
+            sb.AppendLine($"git remote rm github");
+            sb.AppendLine($"git push origin master:{Lecture.DefaultBranch}");
+            return sb.ToString();
+        };
+
+        Current = $"{Path}";
+    }
+}

@@ -1,0 +1,361 @@
+﻿@page "/LectureAdmin/{Account}/{LectureName}/Users";
+@layout LectureAdminLayout;
+@inject PermissionProviderService PermissionProvider;
+@inject IJSRuntime JS;
+@inject RepositoryHandleService RepositoryHandler;
+@inject LectureHandleService LectureHandler;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+
+@if (!string.IsNullOrWhiteSpace(normalMessage))
+{
+    <article class="message is-primary">
+        <div class="message-body">@normalMessage</div>
+    </article>
+}
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <article class="message is-danger">
+        <div class="message-body">@errorMessage</div>
+    </article>
+}
+
+<AccessRestrictions Checker="p => p.CanShowLectureUsers(Lecture, LoginUser)">
+
+    <Paginated Collection="LectureHandler.GetLectureUserRelationships(Lecture).Include(x => x.User).OrderBy(x => x.User.Account).AsNoTracking()" EntriesPerPage="40" @ref="@Pagination">
+        <nav class="panel is-info">
+            <div class="panel-heading">
+                @Localizer["LectureUsers"].Value
+            </div>
+            <div class="panel-block tt">
+                <table class="table is-fullwidth" style="font-size: small">
+                    <thead>
+                        <tr>
+                            <th>@Localizer["Account"].Value</th>
+                            <th colspan="2">@Localizer["Name"].Value</th>
+                            <th>@Localizer["EMail"].Value</th>
+                            <th>@Localizer["Role"].Value</th>
+                            <th colspan="2"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var rel in Pagination.ShowedModels.ToList())
+                        {
+                            <tr>
+                                <td><a @onclick="async () => { await showChartAsync(rel.User); }">@rel.User.Account</a></td>
+                                <td>@rel.User.DisplayName</td>
+                                <td>@rel.User.EnglishName</td>
+                                <td>@rel.User.Email</td>
+                                <td>
+                                    @if (rel.Role == Data.LectureUserRelationship.LectureRole.Banned)
+                                    {
+                                        <text>@Localizer["Banned"].Value</text>
+                                    }
+                                    @if (rel.Role == Data.LectureUserRelationship.LectureRole.Student)
+                                    {
+                                        <text>@Localizer["Student"].Value</text>
+                                    }
+                                    @if (rel.Role == Data.LectureUserRelationship.LectureRole.Observer)
+                                    {
+                                        <text>@Localizer["Observer"].Value</text>
+                                    }
+                                    @if (rel.Role == Data.LectureUserRelationship.LectureRole.Editor)
+                                    {
+                                        <text>@Localizer["Editor"].Value</text>
+                                    }
+                                    @if (rel.Role == Data.LectureUserRelationship.LectureRole.Assistant)
+                                    {
+                                        <text>@Localizer["Assistant"].Value</text>
+                                    }
+                                    @if (rel.Role == Data.LectureUserRelationship.LectureRole.Lecurer)
+                                    {
+                                        <text>@Localizer["Lecurer"].Value</text>
+                                    }
+                                </td>
+                                <td>
+                                    @if (PermissionProvider.CanReadLectureUserDataRepository(Lecture, rel.User, LoginUser))
+                                    {
+                                        <a href="/LectureAdmin/@Lecture.Owner.Account/@Lecture.Name/UserDataRepository/@rel.User.Account/master/"><i class="fas fa-database"></i></a>
+                                    }
+                                </td>
+                                <td>
+                                    @if (PermissionProvider.CanEditLectureUsers(Lecture, LoginUser))
+                                    {
+                                        <a @onclick="async () => { await modalOnEditUserAsync(rel); }"><i class="fas fa-edit"></i></a>
+                                        <a @onclick="async () => { await removeAsync(rel); }"><i class="fas fa-trash-alt"></i></a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+
+                    <tfoot>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                @if (PermissionProvider.CanEditLectureUsers(Lecture, LoginUser))
+                                {
+                                    <a @onclick="async () => { await modalOnAddNewUserAsync(); }">
+                                        <span class="fa-stack">
+                                            <i class="fas fa-user fa-stack-1x"></i>
+                                            <i class="fas fa-plus fa-stack-1x" data-fa-transform="shrink-4 right-12 down-6"></i>
+                                        </span>
+                                    </a>
+                                    <a @onclick="async () => { await modalOnAddNewUsersAsync(); }">
+                                        <span class="fa-stack">
+                                            <i class="fas fa-users fa-stack-1x"></i>
+                                            <i class="fas fa-plus fa-stack-1x" data-fa-transform="shrink-4 right-12 down-6"></i>
+                                        </span>
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </nav>
+    </Paginated>
+
+
+    @if(selectedUser != null)
+    { 
+        <ActivityActionChart @ref="ActivityActionChart" Lecture="Lecture" User="selectedUser" Title="@(string.Format(Localizer["ActivityActionChartOfUserOf"].Value, selectedUser.DisplayName))" />
+    }
+
+
+    <div class="modal" id="user-modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">
+                    @if(isAddNewUser)
+                    {
+                        <text>@Localizer["AddNewLectureUser"].Value</text>
+                    }
+                    else
+                    {
+                        <text>@Localizer["EditLectureUser"].Value</text>
+                    }
+                </p>
+                <button class="delete" @onclick="async () => await modalOffAsync()" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+
+                <div class="field">
+                    <label class="label tt">@Localizer["Accounts"].Value</label>
+                    <div class="control">
+                        @if (isAddNewUser)
+                        {
+                            <input class="input tt" @bind="account" />
+                        }
+                        else
+                        {
+                            <input class="input tt" @bind="account" readonly />
+                        }
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control is-expanded">
+                        <div class="select is-fullwidth">
+                            <select class="tt" @bind="role">
+                                <option value="@Data.LectureUserRelationship.LectureRole.Student" class="tt">@Localizer["Student"].Value</option>
+                                <option value="@Data.LectureUserRelationship.LectureRole.Observer" class="tt">@Localizer["Observer"].Value</option>
+                                <option value="@Data.LectureUserRelationship.LectureRole.Assistant" class="tt">@Localizer["Assistant"].Value</option>
+                                <option value="@Data.LectureUserRelationship.LectureRole.Editor" class="tt">@Localizer["Editor"].Value</option>
+                                <option value="@Data.LectureUserRelationship.LectureRole.Lecurer" class="tt">@Localizer["Lecurer"].Value</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <footer class="modal-card-foot">
+                <buttons>
+                    <button class="button is-success" @onclick="async () => await submitUser()">@Localizer["OK"].Value</button>
+                    <button class="button" @onclick="async () => await modalOffAsync()">@Localizer["Cancel"].Value</button>
+                </buttons>
+            </footer>
+        </div>
+    </div>
+
+
+    <div class="modal" id="users-modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">
+                    @Localizer["AddNewLectureUsers"].Value
+                </p>
+                <button class="delete" @onclick="async () => await modalOffAsync()" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+
+                <div class="field">
+                    <label class="label tt">@Localizer["Accounts"].Value</label>
+                    <div class="control">
+                        <textarea class="textarea tt" rows="6" @bind="accounts"></textarea>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control is-expanded">
+                        <div class="select is-fullwidth">
+                            <select class="tt" @bind="role">
+                                <option value="@Data.LectureUserRelationship.LectureRole.Student" class="tt">@Localizer["Student"].Value</option>
+                                <option value="@Data.LectureUserRelationship.LectureRole.Observer" class="tt">@Localizer["Observer"].Value</option>
+                                <option value="@Data.LectureUserRelationship.LectureRole.Assistant" class="tt">@Localizer["Assistant"].Value</option>
+                                <option value="@Data.LectureUserRelationship.LectureRole.Editor" class="tt">@Localizer["Editor"].Value</option>
+                                <option value="@Data.LectureUserRelationship.LectureRole.Lecurer" class="tt">@Localizer["Lecurer"].Value</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <footer class="modal-card-foot">
+                <buttons>
+                    <button class="button is-success" @onclick="async () => await submitUsers()">@Localizer["OK"].Value</button>
+                    <button class="button" @onclick="async () => await modalOffAsync()">@Localizer["Cancel"].Value</button>
+                </buttons>
+            </footer>
+        </div>
+    </div>
+
+</AccessRestrictions>
+
+@code {
+
+    [CascadingParameter]
+    public Data.User LoginUser { get; set; }
+    [CascadingParameter]
+    public Data.User LectureUser { get; set; }
+    [CascadingParameter]
+    public Data.Lecture Lecture { get; set; }
+
+    [Parameter]
+    public string Account { get; set; }
+    [Parameter]
+    public string LectureName { get; set; }
+
+    private string normalMessage;
+    private string errorMessage;
+
+    private Paginated<Data.LectureUserRelationship> Pagination;
+
+    private bool isAddNewUser;
+    private string accounts = "";
+    private string account = "";
+    private Data.LectureUserRelationship.LectureRole role = Data.LectureUserRelationship.LectureRole.Student;
+
+    private ActivityActionChart ActivityActionChart = new ActivityActionChart();
+    private Data.User selectedUser;
+
+
+    private async Task showChartAsync(Data.User user)
+    {
+        selectedUser = user;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task removeAsync(Data.LectureUserRelationship rel)
+    {
+        if (!PermissionProvider.CanEditLectureUsers(Lecture, LoginUser)) { return; }
+        if (await JS.InvokeAsync<bool>("showConfirmDialog", Localizer["AreYouSureDelete"].Value))
+        {
+            LectureHandler.RemoveUser(Lecture, rel.User);
+        }
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task submitUser()
+    {
+        if (!PermissionProvider.CanEditLectureUsers(Lecture, LoginUser)) { return; }
+        errorMessage = "";
+        normalMessage = "";
+        await InvokeAsync(() => StateHasChanged());
+
+        try
+        {
+            if (LectureHandler.AddUser(Lecture, account, role))
+            {
+                normalMessage = "Success";
+            }
+            else
+            {
+                errorMessage = "Failed";
+            }
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+        }
+        await modalOffAsync();
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task submitUsers()
+    {
+        if (!PermissionProvider.CanEditLectureUsers(Lecture, LoginUser)) { return; }
+        errorMessage = "";
+        normalMessage = "";
+        await InvokeAsync(() => StateHasChanged());
+
+        try
+        {
+            var xs = accounts.Split(new char[] { ',', ' ', '\t', '\n', '\r', ';', ':' }).Where(x => !string.IsNullOrWhiteSpace(x));
+            var errors = LectureHandler.AddUsers(Lecture, xs, role);
+            if (errors.Count() == 0)
+            {
+                normalMessage = "Success";
+            }
+            else
+            {
+                errorMessage = $"Failed to add following users: {Environment.NewLine}{string.Join(", ", errors)}";
+            }
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+        }
+        await modalOffAsync();
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task modalOnEditUserAsync(Data.LectureUserRelationship rel)
+    {
+        isAddNewUser = false;
+        account = rel.User.Account;
+        role = rel.Role;
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOn", "user-modal");
+    }
+    private async Task modalOnAddNewUserAsync()
+    {
+        isAddNewUser = true;
+        account = "";
+        role = Data.LectureUserRelationship.LectureRole.Student;
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOn", "user-modal");
+    }
+    private async Task modalOnAddNewUsersAsync()
+    {
+        accounts = "";
+        role = Data.LectureUserRelationship.LectureRole.Student;
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOn", "users-modal");
+    }
+    private async Task modalOffAsync()
+    {
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOff", "user-modal");
+        await JS.InvokeVoidAsync("modalOff", "users-modal");
+    }
+}

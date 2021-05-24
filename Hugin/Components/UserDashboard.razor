@@ -1,0 +1,133 @@
+﻿@inject ActivityActionHandleService ActivityActionHandler;
+@inject SubmissionHandleService SubmissionHandler;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+
+
+<section class="hero is-info welcome is-small">
+    <div class="hero-body">
+        <div class="container">
+            <h1 class="title">
+                @User.Account / @User.DisplayName / @User.EnglishName
+            </h1>
+        </div>
+    </div>
+</section>
+
+<section class="info-tiles">
+    <div class="tile is-ancestor has-text-centered">
+        <div class="tile is-parent">
+            <article class="tile is-child box">
+                <p class="title">@numOfActions</p>
+                <p class="subtitle">Actions</p>
+            </article>
+        </div>
+        <div class="tile is-parent">
+            <article class="tile is-child box">
+                <p class="title">@numOfSubmissions</p>
+                <p class="subtitle">Submissions</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+
+<section class="card-section">
+    <Paginated Collection="mySubmissions" EntriesPerPage="40" @ref="MySubmissionsPagination">
+        <div class="card events-card">
+            <header class="card-header">
+                <p class="card-header-title">
+                    @Localizer["MySubmissions"].Value (@mySubmissions.Count())
+                </p>
+            </header>
+            <div class="card-table" style="height: 30em">
+                <div class="content">
+                    <table class="table is-fullwidth is-striped">
+                        <thead>
+                            <tr>
+                                <td>@Localizer["Lecture"].Value</td>
+                                <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Localizer["Name"].Value</td>
+                                <td>@Localizer["Tags"].Value</td>
+                                <td>@Localizer["SubmittedAt"].Value</td>
+                                <td>@Localizer["MarkedAt"].Value</td>
+                                <td></td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var submission in MySubmissionsPagination.ShowedModels.ToList())
+                            {
+                                <tr>
+                                    <td><a href="/MySubmission/@submission.Lecture.Owner.Account/@submission.Lecture.Name">@submission.Lecture.Subject</a></td>
+                                    <td class="tt">
+                                        <a target="_blank" href="/Page/@submission.Lecture.Owner.Account/@submission.Lecture.Name/@submission.Lecture.DefaultBranch/@submission.Page#@submission.ActivityName"><i class="fas fa-link"></i></a>
+                                        <a href="/MySubmission/@submission.Lecture.Owner.Account/@submission.Lecture.Name/@submission.ActivityName">@submission.ActivityName</a>
+                                    </td>
+                                    <td><p class="long-text" style="width: 15em;">@submission.Tags</p></td>
+                                    <td>
+                                        @if (!submission.Deadline.HasValue || submission.SubmittedAt <= submission.Deadline)
+                                        {
+                                            <span>@submission.SubmittedAt</span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color: red">@submission.SubmittedAt</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (submission.MarkerUser != null)
+                                        {
+                                            <span>@submission.MarkedAt</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (submission.State == Data.Submission.SubmissionState.Submitted)
+                                        {
+                                            <span class="tag tt is-info">@Localizer["Submitted"].Value</span>
+                                        }
+                                        @if (submission.State == Data.Submission.SubmissionState.RequiringResubmit)
+                                        {
+                                            <span class="tag tt is-danger">@Localizer["RequireResubmit"].Value</span>
+                                        }
+                                        @if (submission.State == Data.Submission.SubmissionState.AcceptingResubmit)
+                                        {
+                                            <span class="tag tt is-success">@Localizer["AcceptingResubmit"].Value</span>
+                                        }
+                                        @if (submission.State == Data.Submission.SubmissionState.Confirmed)
+                                        {
+                                            <span class="tag tt is-success">@Localizer["Confirmed"].Value</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </Paginated>
+</section>
+
+
+
+@code
+{
+    [Parameter]
+    public Data.User User { get; set; }
+    [Parameter]
+    public Data.User LoginUser { get; set; }
+
+    private int numOfActions;
+    private int numOfSubmissions;
+
+    private IEnumerable<Data.Submission> mySubmissions;
+    private Paginated<Data.Submission> MySubmissionsPagination;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        numOfActions = ActivityActionHandler.Set.Where(x => x.UserId == User.Id).Count();
+        numOfSubmissions = SubmissionHandler.Set.Where(x => x.UserId == User.Id && x.State != Data.Submission.SubmissionState.Deleted).Count();
+        mySubmissions = SubmissionHandler.MyLatestSubmissions(User).OrderByDescending(x => x.MarkedAt).ThenByDescending(x => x.SubmittedAt).AsNoTracking();
+    }
+}

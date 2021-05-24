@@ -1,0 +1,200 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+@inherits LoginedLayoutBase;
+@inject LectureHandleService LectureHandler;
+@inject SandboxHandleService SandboxHandler;
+@inject SubmissionHandleService SubmissionHandler;
+@inject RepositoryHandleService RepositoryHandler;
+@inject PermissionProviderService PermissionProvider;
+@inject NavigationManager NV;
+<CommonMenu />
+
+<AuthorizeView>
+    <Authorized>
+        @if (enabled)
+        {
+            <div class="container" style="padding-bottom: 4em">
+                <div class="columns">
+
+                    <div class="column is-3 ">
+                        <aside class="menu is-hidden-mobile">
+                            <p class="menu-label">
+                                @Lecture.Subject
+                            </p>
+                            <ul class="menu-list">
+                                <li><a href="/LectureAdmin/@LectureUser.Account/@Lecture.Name/Dashboard">@Localizer["LectureMenuDashboard"].Value</a></li>
+                                <li><a href="/LectureAdmin/@LectureUser.Account/@Lecture.Name/Users">@Localizer["LectureMenuUsers"].Value</a></li>
+                                <li>
+                                    <a href="/LectureAdmin/@Lecture.Owner.Account/@Lecture.Name/Submissions"
+                                       @onclick="@(() => Jump($"/LectureAdmin/{Lecture.Owner.Account}/{Lecture.Name}/Submissions"))" @onclick:preventDefault>
+                                       @Localizer["LectureMenuSubmissions"].Value
+                                    </a>
+                                    @if (submissions.Count() > 0)
+                                    {
+                                        <ul class="tt">
+                                            @foreach (var submission in submissions)
+                                            {
+                                                <li>
+                                                    <a href="/LectureAdmin/@Lecture.Owner.Account/@Lecture.Name/Submissions/@submission"
+                                                       @onclick="@(() => Jump($"/LectureAdmin/{Lecture.Owner.Account}/{Lecture.Name}/Submissions/{submission}"))" @onclick:preventDefault>
+                                                        @submission
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                </li>
+                                <li>
+                                    <a href="/LectureAdmin/@LectureUser.Account/@Lecture.Name/Sandboxes">@Localizer["LectureMenuSandboxes"].Value</a>
+                                    @{
+                                        var sandboxes = SandboxHandler.Set.Where(x => x.LectureId == Lecture.Id).OrderBy(x => x.Name).AsNoTracking().ToList();
+                                    }
+                                    @if (sandboxes.Count() > 0)
+                                    {
+                                        <ul class="tt">
+                                            @foreach (var sandbox in sandboxes)
+                                            {
+                                                <li>
+                                                    <a href="/LectureAdmin/@LectureUser.Account/@Lecture.Name/Sandboxes/@sandbox.Name"
+                                                       @onclick="@(() => Jump($"/LectureAdmin/{LectureUser.Account}/{Lecture.Name}/Sandboxes/{sandbox.Name}"))"
+                                                       @onclick:preventDefault>
+                                                        @sandbox.Name
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                </li>
+                            </ul>
+
+                            <p class="menu-label">
+                                @Localizer["LectureMenuContents"].Value
+                            </p>
+                            <ul class="menu-list">
+                                <li><a href="/LectureAdmin/@LectureUser.Account/@Lecture.Name/ContentsRepository/@Lecture.DefaultBranch">@Localizer["LectureMenuRepository"].Value</a></li>
+                                <li><a href="/LectureAdmin/@LectureUser.Account/@Lecture.Name/Parameters/@Lecture.DefaultBranch">@Localizer["LectureMenuParameters"].Value</a></li>
+                                @if (existsRepository)
+                                {
+                                    @if (pages != null && pages.Count() > 0)
+                                    {
+                                        <li>
+                                            <a href="/LectureAdmin/@Lecture.Owner.Account/@Lecture.Name/ContentsRepository/@Lecture.DefaultBranch/pages/"
+                                               @onclick="@(() => Jump($"/LectureAdmin/{Lecture.Owner.Account}/{Lecture.Name}/ContentsRepository/{Lecture.DefaultBranch}"))" @onclick:preventDefault>
+                                               @Localizer["LectureMenuPages"].Value
+                                            </a>
+                                            <ul class="tt">
+                                                @foreach (var page in pages)
+                                                {
+                                                    <li>
+                                                        <a href="/LectureAdmin/@Lecture.Owner.Account/@Lecture.Name/ContentsRepository/@Lecture.DefaultBranch/pages/@(page)"
+                                                           @onclick="@(() => Jump($"/LectureAdmin/{Lecture.Owner.Account}/{Lecture.Name}/ContentsRepository/{Lecture.DefaultBranch}/pages/{page}"))" @onclick:preventDefault>
+                                                            @(page)
+                                                        </a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </li>
+                                    }
+                                    @if (activities != null && activities.Count() > 0)
+                                    {
+                                        <li>
+                                            <a href="/LectureAdmin/@Lecture.Owner.Account/@Lecture.Name/ContentsRepository/@Lecture.DefaultBranch/activities/"
+                                               @onclick="@(() => Jump($"/LectureAdmin/{Lecture.Owner.Account}/{Lecture.Name}/ContentsRepository/{Lecture.DefaultBranch}/activities/"))" @onclick:preventDefault>
+                                               @Localizer["LectureMenuActivities"].Value
+                                            </a>
+                                            <ul class="tt">
+                                                @foreach (var activity in activities)
+                                                {
+                                                    <li>
+                                                        <a href="/LectureAdmin/@Lecture.Owner.Account/@Lecture.Name/ContentsRepository/@Lecture.DefaultBranch/activities/@(activity)"
+                                                           @onclick="@(() => Jump($"/LectureAdmin/{Lecture.Owner.Account}/{Lecture.Name}/ContentsRepository/{Lecture.DefaultBranch}/activities/{activity}"))" @onclick:preventDefault>
+                                                            @(activity)
+                                                        </a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </aside>
+                    </div>
+
+
+                    <div class="column is-9">
+
+                        <CascadingValue Value="Lecture">
+                            <CascadingValue Value="LectureUser">
+                                <CascadingValue Value="LoginUser">
+                                    @Body
+                                </CascadingValue>
+                            </CascadingValue>
+                        </CascadingValue>
+
+                    </div>
+                </div>
+            </div>
+        }
+
+    </Authorized>
+    <NotAuthorized>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+
+@code
+{
+    public Data.User LectureUser { get; set; }
+    public Data.Lecture Lecture { get; set; }
+
+    private bool existsRepository = false;
+    private IEnumerable<string> pages = null;
+    private IEnumerable<string> activities = null;
+    private IEnumerable<string> submissions = null;
+
+    private bool enabled = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var values = (this.Body.Target as RouteView)?.RouteData.RouteValues;
+        object account = null;
+        object lectureName = null;
+        if (values?.TryGetValue("Account", out account) == true)
+        {
+            LectureUser = UserHandler.Set.Where(x => x.Account == account as string).AsNoTracking().FirstOrDefault();
+        }
+        if (values?.TryGetValue("LectureName", out lectureName) == true)
+        {
+            Lecture = LectureHandler.Set.Where(x => x.OwnerId == LectureUser.Id && x.Name == lectureName as string).Include(x => x.Owner).AsNoTracking().FirstOrDefault();
+        }
+
+        var repository = RepositoryHandler.GetLectureContentsRepository(Lecture);
+        existsRepository = RepositoryHandler.IsInitialized(repository);
+        if (existsRepository)
+        {
+            submissions = SubmissionHandler.UnmarkedLatestEntries(Lecture)
+                .Select(x => x.ActivityName).Distinct().OrderBy(x => x).AsNoTracking().ToList();
+            if (RepositoryHandler.Exists(repository, "pages", Lecture.DefaultBranch))
+            {
+                pages = RepositoryHandler.GetFileNames(repository, "pages", Lecture.DefaultBranch)
+                    .Where(x => System.Text.RegularExpressions.Regex.IsMatch(x, @"\.(md|htm|html)$"))
+                    .Select(x => x.Split("/", 2).Last()).OrderBy(x => x);
+            }
+            if (RepositoryHandler.Exists(repository, "activities", Lecture.DefaultBranch))
+            {
+                activities = RepositoryHandler.GetFileNames(repository, "activities", Lecture.DefaultBranch)
+                    .Where(x => System.Text.RegularExpressions.Regex.IsMatch(x, @"\.xml$"))
+                    .Select(x => x.Split("/", 2).Last()).OrderBy(x => x);
+            }
+        }
+        enabled = PermissionProvider.CanShowLectureDashboard(Lecture, LoginUser);
+    }
+
+    private void Jump(string path)
+    {
+        NV.NavigateTo(path, true);
+    }
+}
