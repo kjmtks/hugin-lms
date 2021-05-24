@@ -6,6 +6,9 @@
 
 ### Quick Start
 
+Requirements:
+* Docker, docker-compose
+
 ```
 git clone https://github.com/kjmtks/hugin-lms.git
 cd Hugin
@@ -13,7 +16,11 @@ make local-up
 # Then, open http://localhost:8080
 ```
 
-### for Visual Studio
+### for Visual Studio (Windows)
+
+Requirements:
+* Visual Studio 2019
+* Docker Desktop
 
 ```
 git clone https://github.com/kjmtks/hugin-lms.git
@@ -24,6 +31,9 @@ cd ..
 ```
 
 ### for Production
+
+Requirements:
+* Docker, docker-compose
 
 ```
 git clone https://github.com/kjmtks/hugin-lms.git
