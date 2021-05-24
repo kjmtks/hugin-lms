@@ -14,7 +14,7 @@ services:
       DB_CONNECTION_STR: "Host=db; Database=hugin-local; Port=5432; Username=hugin; Password=password"
       APP_SECRET_KEY: "your-secret-key(need-32-characters)"
       APP_DATA_PATH: /app-data
-       APP_NAME: Hugin
+      APP_NAME: Hugin
       APP_DESCRIPTION: ""
            
       ASPNETCORE_ENVIRONMENT: Development
