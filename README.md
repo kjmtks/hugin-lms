@@ -16,11 +16,18 @@ GitHubのようにGitのコマンドでコンテンツの入手・更新がで�
 * LDAP認証の利用（LDAPを使用しない認証との併用も可）
 * スタイラスペンによるページへの書き込み
 
+また，以下を準備しています:
+
+* コンテンツ，プログラム実行環境(サンドボックス)，課題(アクティビティ)のひな形を共有する機能 (Docker Hub のようなもの)
+* 行動の可視化の強化，独自のクエリ式を用いた検索
+* 単体テスト機能の強化
+
+
 ## 実行方法
 
 以下の3種類の実行方法を用意しています．
 いずれも Docker と docker-compose が必要です．
-Windows の場合は　[WSL2](https://docs.microsoft.com/ja-jp/windows/wsl/install-win10) と [Docker Desktop](https://docs.microsoft.com/ja-jp/windows/wsl/tutorials/wsl-containers) を準備しておいてください．
+Windows の場合は　[WSL2](https://docs.microsoft.com/ja-jp/windows/wsl/install-win10) と [Docker Desktop](https://docs.microsoft.com/ja-jp/windows/wsl/tutorials/wsl-containers#install-docker-desktop) を準備しておいてください．
 
 ### Quick Start
 
