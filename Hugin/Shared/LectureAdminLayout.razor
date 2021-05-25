@@ -46,7 +46,9 @@
                                 </li>
                                 <li>
                                     <a href="/LectureAdmin/@LectureUser.Account/@Lecture.Name/Sandboxes">@Localizer["LectureMenuSandboxes"].Value</a>
-                                    @{ var sandboxes = SandboxHandler.Set.Where(x => x.LectureId == Lecture.Id).OrderBy(x => x.Name).AsNoTracking().ToList(); }
+                                    @{
+                                        var sandboxes = SandboxHandler.Set.Where(x => x.LectureId == Lecture.Id).OrderBy(x => x.Name).AsNoTracking().ToList();
+                                    }
                                     @if (submissions != null && submissions.Count() > 0)
                                     {
                                 <ul class="tt">
