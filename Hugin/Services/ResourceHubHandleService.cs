@@ -43,13 +43,31 @@ namespace Hugin.Services
             var xs = await WgetResourceHubAsync(model.YamlURL);
             foreach(var x in xs.Sandboxes)
             {
-                var yaml = await wget(x);
-                if (!string.IsNullOrWhiteSpace(yaml))
+
+                using (var request = new HttpRequestMessage(HttpMethod.Get, x))
                 {
-                    var deserializer = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
-                    var sandbox = deserializer.Deserialize<Hugin.Models.ResourceHub.Sandbox>(yaml);
-                    sandbox.HubName = model.Name;
-                    result.Add(sandbox);
+                    request.Headers.Add("User-Agent", "Hugin");
+                    using (var client = ClientFactory.CreateClient())
+                    {
+                        using (var response = await client.SendAsync(request).ConfigureAwait(false))
+                        {
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var yaml = await response.Content.ReadAsStringAsync();
+                                if (!string.IsNullOrWhiteSpace(yaml))
+                                {
+                                    var deserializer = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
+                                    var sandbox = deserializer.Deserialize<Hugin.Models.ResourceHub.Sandbox>(yaml);
+                                    sandbox.HubName = model.Name;
+                                    result.Add(sandbox);
+                                }
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
                 }
             }
             return result;
@@ -58,21 +76,8 @@ namespace Hugin.Services
 
         public async Task<Hugin.Models.ResourceHub.ResourceHub> WgetResourceHubAsync(string yamlUrl)
         {
-            var yaml = await wget(yamlUrl);
-            if(!string.IsNullOrWhiteSpace(yaml))
-            {
-                var deserializer = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
-                return deserializer.Deserialize<Hugin.Models.ResourceHub.ResourceHub>(yaml);
-            }
-            else
-            {
-                return null;
-            }
-        }
 
-        private async Task<string> wget(string url)
-        {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+            using (var request = new HttpRequestMessage(HttpMethod.Get, yamlUrl))
             {
                 request.Headers.Add("User-Agent", "Hugin");
                 using (var client = ClientFactory.CreateClient())
@@ -81,7 +86,17 @@ namespace Hugin.Services
                     {
                         if (response.IsSuccessStatusCode)
                         {
-                            return await response.Content.ReadAsStringAsync();
+                            var yaml = await response.Content.ReadAsStringAsync();
+
+                            if (!string.IsNullOrWhiteSpace(yaml))
+                            {
+                                var deserializer = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
+                                return deserializer.Deserialize<Hugin.Models.ResourceHub.ResourceHub>(yaml);
+                            }
+                            else
+                            {
+                                return null;
+                            }
                         }
                         else
                         {

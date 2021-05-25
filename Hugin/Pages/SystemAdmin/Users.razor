@@ -338,7 +338,7 @@
 
         bool v1 = true, v2 = true;
         v1 = editContext.Validate();
-        if (!PermissionProvider.CanEditSandboxTemplate(LoginUser))
+        if (!PermissionProvider.CanManageUser(LoginUser))
         {
             v2 = false;
             messageStore.Add(editContext.Field("Account"), "You can not edit user.");

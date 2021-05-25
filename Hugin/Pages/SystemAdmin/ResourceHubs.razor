@@ -21,7 +21,7 @@
     </article>
 }
 
-<AccessRestrictions Checker="p=> p.CanEditSandboxTemplate(LoginUser)">
+<AccessRestrictions Checker="p=> p.CanEditResourceHub(LoginUser)">
 
     <Paginated Collection="resourceHubs" @ref="@Pagination">
         <nav class="panel is-info">
@@ -46,7 +46,8 @@
                             <td>
                                 @if (PermissionProvider.CanEditResourceHub(LoginUser))
                                 {
-                        <a href="javascript: void(0)" @onclick="async () => { await removeAsync(hub); }"><i class="fas fa-trash-alt"></i></a>}
+                                    <a href="javascript: void(0)" @onclick="async () => { await removeAsync(hub); }"><i class="fas fa-trash-alt"></i></a>
+                                }
                             </td>
                         </tr>
                     }
@@ -148,7 +149,7 @@
     {
         if (await JS.InvokeAsync<bool>("showConfirmDialog", Localizer["AreYouSureDelete"].Value))
         {
-            if (!PermissionProvider.CanEditSandboxTemplate(LoginUser))
+            if (PermissionProvider.CanEditResourceHub(LoginUser))
             {
                 ResourceHubHandler.Remove(hub);
             }
