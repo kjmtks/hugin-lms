@@ -20,7 +20,7 @@ GitHubのようにGitのコマンドでコンテンツの入手・更新がで�
 
 ### Quick Start
 
-試用する場合はこの方法がお勧めです．
+試用する場合，またはローカル環境で動作させる場合はこの方法がお勧めです．
 
 Docker, docker-compose が利用可能であれば，macOS, Windows, Linux のいずれのOSでも動作します．
 Windows の場合は WSL2 + Docker Dektop での動作を確認しています．
