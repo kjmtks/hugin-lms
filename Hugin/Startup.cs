@@ -77,7 +77,6 @@ namespace Hugin
             services.AddSingleton<IBackgroundTaskQueueSet, BackgroundTaskQueueSet>();
 
             services.AddScoped<UserHandleService>();
-            services.AddScoped<SandboxTemplateHandleService>();
             services.AddScoped<ResourceHubHandleService>();
             services.AddScoped<LectureHandleService>();
             services.AddScoped<SandboxHandleService>();

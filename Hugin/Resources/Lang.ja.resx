@@ -360,6 +360,9 @@
   <data name="Installing" xml:space="preserve">
     <value>インストール中</value>
   </data>
+  <data name="InstallSandbox" xml:space="preserve">
+    <value>サンドボックスのインストール</value>
+  </data>
   <data name="Integer" xml:space="preserve">
     <value>整数</value>
   </data>
@@ -443,9 +446,6 @@
   </data>
   <data name="MyMenuResourceHubs" xml:space="preserve">
     <value>リソースハブ</value>
-  </data>
-  <data name="MyMenuSandboxTemplates" xml:space="preserve">
-    <value>サンドボックスのひな形</value>
   </data>
   <data name="MyMenuSubmissions" xml:space="preserve">
     <value>提出物</value>
@@ -543,8 +543,14 @@
   <data name="Sandbox" xml:space="preserve">
     <value>サンドボックス</value>
   </data>
+  <data name="SandboxBase" xml:space="preserve">
+    <value>ベースのみ</value>
+  </data>
   <data name="Sandboxes" xml:space="preserve">
     <value>サンドボックス</value>
+  </data>
+  <data name="SandboxTemplate" xml:space="preserve">
+    <value>サンドボックスのひな形</value>
   </data>
   <data name="SandboxTemplates" xml:space="preserve">
     <value>サンドボックスのひな形</value>

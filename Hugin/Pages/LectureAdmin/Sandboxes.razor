@@ -1,13 +1,12 @@
 ﻿@page "/LectureAdmin/{Account}/{LectureName}/Sandboxes"
 @page "/LectureAdmin/{Account}/{LectureName}/Sandboxes/{Name}"
+@using Microsoft.AspNetCore.Mvc.Localization;
 @layout LectureAdminLayout
 @inject PermissionProviderService PermissionProvider;
 @inject LectureHandleService LectureHandler
 @inject SandboxHandleService SandboxHandler
-@inject SandboxTemplateHandleService SandboxTemplateHandler
 @inject ResourceHubHandleService ResourceHubHandler
 @inject SandboxExecutionService Executor;
-@using Microsoft.AspNetCore.Mvc.Localization;
 @inject IHtmlLocalizer<Hugin.Lang> Localizer;
 @inject IJSRuntime JS;
 @inject NavigationManager NV;
@@ -102,36 +101,48 @@
 @if (Sandbox != null && PermissionProvider.CanEditSandbox(Lecture, LoginUser))
 {
 <div class="box">
-    <div class="columns">
-        <div class="column is-8">
-            <h4 id="const" class="title tt">
-                @if (!string.IsNullOrWhiteSpace(Sandbox.Name))
-                {
-                    @Sandbox.Name
-                }
-                &nbsp;
-                @if (Sandbox.State == Data.Sandbox.SandboxState.Installing)
-                {
-                    <span class="tag tt is-info">@Localizer["Installing"].Value</span>
-                }
-                @if (Sandbox.State == Data.Sandbox.SandboxState.Installed)
-                 {
-                    <span class="tag tt is-success">@Localizer["Installed"].Value</span>
-                }
-                @if (Sandbox.State == Data.Sandbox.SandboxState.Uninstalled)
-                {
-                    <span class="tag tt is-dark">@Localizer["Uninstalled"].Value</span>
-                }
-            </h4>
+    <div class="level">
+        <div class="level-left">
+            <div class="level-item">
+                <h4 id="const" class="title tt">
+                    @if (!string.IsNullOrWhiteSpace(Sandbox.Name))
+                    {
+                        @Sandbox.Name
+                    }
+                    &nbsp;
+                    @if (Sandbox.State == Data.Sandbox.SandboxState.Installing)
+                    {
+                        <span class="tag tt is-info">@Localizer["Installing"].Value</span>
+                    }
+                    @if (Sandbox.State == Data.Sandbox.SandboxState.Installed)
+                     {
+                        <span class="tag tt is-success">@Localizer["Installed"].Value</span>
+                    }
+                    @if (Sandbox.State == Data.Sandbox.SandboxState.Uninstalled)
+                    {
+                        <span class="tag tt is-dark">@Localizer["Uninstalled"].Value</span>
+                    }
+                </h4>
+            </div>
         </div>
-        <div class="column is-4">
-            <div class="field">
-                <div class="control">
-                    <button type="submit" class="button is-info" @onclick="installModal">@Localizer["InstallSandbox"].Value</button>
+        <div class="level-right">
+            <div class="level-item">
+                <div class="field">
+                    <div class="control">
+                        @if(isRunning)
+                        {
+                            <button type="submit" class="button is-info" disabled>@Localizer["InstallSandbox"].Value</button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="button is-info" @onclick="installModal">@Localizer["InstallSandbox"].Value</button>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
 
     <article class="panel is-info">
         <div class="panel-block">
@@ -263,14 +274,6 @@
                     <textarea class="textarea tt" rows="10" @bind="installerCommands"></textarea>
                 </div>
             </div>
-            
-            <div class="field">
-                <div class="control">
-                    <label class="checkbox">
-                        <input type="checkbox" @bind="installActivities" />@Localizer["ImportActivities"].Value
-                    </label>
-                </div>
-            </div>
         </section>
 
         <footer class="modal-card-foot">
@@ -356,20 +359,17 @@
         }
         installerDescription = null;
         installerCommands = null;
-        installActivities = false;
         await JS.InvokeVoidAsync("modalOn", "install-modal");
     }
 
     private string installerDescription = "";
     private string installerCommands = "";
-    private bool installActivities = false;
     private async Task onSelectionChangeInstaller(ChangeEventArgs ev)
     {
         if(!int.TryParse(ev.Value.ToString(), out var id))
         {
             installerDescription = null;
             installerCommands = null;
-            installActivities = false;
         }
         else
         {
@@ -378,13 +378,11 @@
                 var t = templates[id];
                 installerDescription = t.Description;
                 installerCommands = t.Commands;
-                installActivities = true;
             }
             else
             {
                 installerDescription = null;
                 installerCommands = null;
-                installActivities = false;
             }
         }
         await InvokeAsync(StateHasChanged);

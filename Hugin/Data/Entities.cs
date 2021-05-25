@@ -229,16 +229,6 @@ namespace Hugin.Data
         public DateTime SendAt { get; set; }
     }
 
-    public class SandboxTemplate : IEntity
-    {
-        [Key, Required]
-        public int Id { get; set; }
-        [Required]
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string Commands { get; set; }
-    }
-
     public class ActivityTemplate : IEntity
     {
         [Key, Required]
@@ -249,10 +239,6 @@ namespace Hugin.Data
         [Required]
         public string Body { get; set; }
         public string Usage { get; set; }
-
-        [ForeignKey("SandboxTemplate")]
-        public int SandboxTemplateId { get; set; }
-        public virtual SandboxTemplate SandboxTemplate { get; set; }
     }
 
     public class ResourceHub : IEntity

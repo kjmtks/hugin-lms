@@ -62,10 +62,10 @@ namespace Hugin.Data
                 context.SaveChanges();
             }
 
-            //resourceHubHandle.AddNew(new ResourceHub 
-            //{
-            //    YamlURL = "https://raw.githubusercontent.com/kjmtks/hugin-hub/main/hub.yaml"
-            //});
+            resourceHubHandle.AddNew(new ResourceHub 
+            {
+                YamlURL = "https://raw.githubusercontent.com/kjmtks/hugin-hub/main/hub.yaml"
+            });
         }
     }
 }

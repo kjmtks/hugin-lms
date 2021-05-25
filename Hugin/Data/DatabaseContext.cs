@@ -34,7 +34,6 @@ namespace Hugin.Data
         public DbSet<ActivityAction> ActivityActions { get; set; }
         public DbSet<Submission> Submissions { get; set; }
         public DbSet<ActivityMessage> ActivityMessages { get; set; }
-        public DbSet<SandboxTemplate> SandboxTemplates { get; set; }
         public DbSet<ActivityTemplate> ActivityTemplates { get; set; }
         public DbSet<ResourceHub> ResourceHubs { get; set; }
 
@@ -84,14 +83,9 @@ namespace Hugin.Data
             modelBuilder.Entity<ActivityMessage>().HasOne(x => x.ToUser);
             modelBuilder.Entity<ActivityMessage>().HasOne(x => x.Lecture);
 
-            modelBuilder.Entity<SandboxTemplate>().ToTable("SandboxTemplates");
-            modelBuilder.Entity<SandboxTemplate>().HasKey(x => x.Id);
-            modelBuilder.Entity<SandboxTemplate>().HasIndex(x => x.Name).IsUnique();
-
             modelBuilder.Entity<ActivityTemplate>().ToTable("ActivityTemplates");
             modelBuilder.Entity<ActivityTemplate>().HasKey(x => x.Id);
             modelBuilder.Entity<ActivityTemplate>().HasIndex(x => x.Name).IsUnique();
-            modelBuilder.Entity<ActivityTemplate>().HasOne(x => x.SandboxTemplate);
 
             modelBuilder.Entity<ResourceHub>().ToTable("ResourceHub");
             modelBuilder.Entity<ResourceHub>().HasKey(x => x.Id);
