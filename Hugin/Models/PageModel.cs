@@ -19,8 +19,9 @@ namespace Hugin.Models
 
         public LectureModel Lecture { get; }
         public UserModel User { get; }
-        public IEnumerable<UserModel> Staffs { get; }
-        public IEnumerable<UserModel> Students { get; }
+        public IEnumerable<UserModel> Users { get; }
+        public IEnumerable<UserModel> Staffs => Users.Where(x => x.Role == RoleModel.Staff);
+        public IEnumerable<UserModel> Students => Users.Where(x => x.Role == RoleModel.Studnet);
         public CommitInfo CommitInfo { get; }
 
         public string PagePath { get; }
@@ -37,9 +38,8 @@ namespace Hugin.Models
             PagePath = page_path;
             Rivision = rivision;
             ViewBag = viewBag;
-            User = new UserModel(user, LectureHandler.GetStaffs(lecture).Any(x => x.Account == user.Account) ? RoleModel.Staff : RoleModel.Studnet);
-            Staffs = lectureHandler.GetStaffs(lecture).Select(x => new UserModel(x, RoleModel.Staff));
-            Students = lectureHandler.GetStudents(lecture).Select(x => new UserModel(x, RoleModel.Studnet));
+            Users = LectureHandler.GetUserAndRoles(lecture).Select(x => new UserModel(x.Item1, x.Item2 == Data.LectureUserRelationship.LectureRole.Student ? RoleModel.Studnet : RoleModel.Staff));
+            User = Users.Where(x => x.Account == user.Account).FirstOrDefault();
         }
 
 
@@ -54,7 +54,7 @@ namespace Hugin.Models
         public string GetParameterAsString(string parameterName)
         {
             var x = ((IDictionary<string, object>)ViewBag);
-            if(x.ContainsKey(parameterName))
+            if (x.ContainsKey(parameterName))
             {
                 var value = x[parameterName];
                 if (value is DateTime dt)
@@ -80,7 +80,7 @@ namespace Hugin.Models
         {
             try
             {
-                return RepositoryHandler.ReadTextFile( repository, path, Rivision);
+                return RepositoryHandler.ReadTextFile(repository, path, Rivision);
             }
             catch (Exception e)
             {

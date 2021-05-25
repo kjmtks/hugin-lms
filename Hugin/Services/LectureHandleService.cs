@@ -35,7 +35,7 @@ namespace Hugin.Services
         public void RemoveUser(Lecture lecture, User user)
         {
             var rel = DatabaseContext.LectureUserRelationships.Where(x => x.LectureId == lecture.Id && x.UserId == user.Id).FirstOrDefault();
-            if(rel != null)
+            if (rel != null)
             {
                 lock (DatabaseContext)
                 {
@@ -46,13 +46,13 @@ namespace Hugin.Services
         }
         public bool AddUser(Lecture lecture, string account, Data.LectureUserRelationship.LectureRole role)
         {
-            lock(DatabaseContext)
+            lock (DatabaseContext)
             {
                 var user = DatabaseContext.Users.Where(x => x.Account == account).FirstOrDefault();
-                if(user != null)
+                if (user != null)
                 {
                     var rel = DatabaseContext.LectureUserRelationships.Where(x => x.UserId == user.Id && x.LectureId == lecture.Id).FirstOrDefault();
-                    if(rel != null)
+                    if (rel != null)
                     {
                         rel.Role = role;
                         DatabaseContext.LectureUserRelationships.Update(rel);
@@ -80,7 +80,7 @@ namespace Hugin.Services
             lock (DatabaseContext)
             {
                 var errors = new List<string>();
-                foreach(var account in accounts)
+                foreach (var account in accounts)
                 {
                     var user = DatabaseContext.Users.Where(x => x.Account == account).FirstOrDefault();
                     if (user != null)
@@ -133,7 +133,7 @@ namespace Hugin.Services
             var repository = RepositoryHandler.GetLectureContentsRepository(model.Owner.Account, model.Name);
             RepositoryHandler.Create(repository, model.DefaultBranch);
 
-            lock(DatabaseContext)
+            lock (DatabaseContext)
             {
                 DatabaseContext.LectureUserRelationships.Add(new LectureUserRelationship
                 {
@@ -188,46 +188,70 @@ namespace Hugin.Services
         }
         public IQueryable<User> GetUsers(Lecture lecture)
         {
-            return DatabaseContext.LectureUserRelationships.Include(x => x.User).Where(x => x.LectureId == lecture.Id).Select(x => x.User);
+            return DatabaseContext.LectureUserRelationships.Include(x => x.User)
+                .Where(x => x.LectureId == lecture.Id && !x.Role.HasFlag(LectureUserRelationship.LectureRole.Banned))
+                .Select(x => x.User);
+        }
+        public IEnumerable<(User, LectureUserRelationship.LectureRole)> GetUserAndRoles(Lecture lecture)
+        {
+            return DatabaseContext.LectureUserRelationships.Include(x => x.User)
+                .Where(x => x.LectureId == lecture.Id && !x.Role.HasFlag(LectureUserRelationship.LectureRole.Banned))
+                .AsNoTracking().AsEnumerable().Select(x => (x.User, x.Role));
         }
         public IQueryable<User> GetStudents(Lecture lecture)
         {
-            return DatabaseContext.LectureUserRelationships.Include(x => x.User).Where(x => x.LectureId == lecture.Id && x.Role == LectureUserRelationship.LectureRole.Student).Select(x => x.User);
+            return DatabaseContext.LectureUserRelationships.Include(x => x.User)
+                .Where(x => x.LectureId == lecture.Id && x.Role == LectureUserRelationship.LectureRole.Student)
+                .Select(x => x.User);
         }
         public IQueryable<User> GetObservers(Lecture lecture)
         {
-            return DatabaseContext.LectureUserRelationships.Include(x => x.User).Where(x => x.LectureId == lecture.Id && x.Role == LectureUserRelationship.LectureRole.Observer).Select(x => x.User);
+            return DatabaseContext.LectureUserRelationships.Include(x => x.User)
+                .Where(x => x.LectureId == lecture.Id && x.Role == LectureUserRelationship.LectureRole.Observer)
+                .Select(x => x.User);
         }
         public IQueryable<User> GetAssistants(Lecture lecture)
         {
-            return DatabaseContext.LectureUserRelationships.Include(x => x.User).Where(x => x.LectureId == lecture.Id && x.Role == LectureUserRelationship.LectureRole.Assistant).Select(x => x.User);
+            return DatabaseContext.LectureUserRelationships.Include(x => x.User)
+                .Where(x => x.LectureId == lecture.Id && x.Role == LectureUserRelationship.LectureRole.Assistant)
+                .Select(x => x.User);
         }
         public IQueryable<User> GetEditors(Lecture lecture)
         {
-            return DatabaseContext.LectureUserRelationships.Include(x => x.User).Where(x => x.LectureId == lecture.Id && x.Role == LectureUserRelationship.LectureRole.Editor).Select(x => x.User);
+            return DatabaseContext.LectureUserRelationships.Include(x => x.User)
+                .Where(x => x.LectureId == lecture.Id && x.Role == LectureUserRelationship.LectureRole.Editor)
+                .Select(x => x.User);
         }
         public IQueryable<User> GetLecturers(Lecture lecture)
         {
-            return DatabaseContext.LectureUserRelationships.Include(x => x.User).Where(x => x.LectureId == lecture.Id && x.Role == LectureUserRelationship.LectureRole.Lecurer).Select(x => x.User);
+            return DatabaseContext.LectureUserRelationships.Include(x => x.User)
+                .Where(x => x.LectureId == lecture.Id && x.Role == LectureUserRelationship.LectureRole.Lecurer)
+                .Select(x => x.User);
         }
         public IQueryable<User> GetStaffs(Lecture lecture)
         {
-            return DatabaseContext.LectureUserRelationships.Include(x => x.User).Where(x => x.LectureId == lecture.Id && x.Role > LectureUserRelationship.LectureRole.Student).Select(x => x.User);
+            return DatabaseContext.LectureUserRelationships.Include(x => x.User)
+                .Where(x => x.LectureId == lecture.Id && x.Role > LectureUserRelationship.LectureRole.Student && !x.Role.HasFlag(LectureUserRelationship.LectureRole.Banned))
+                .Select(x => x.User);
         }
         public IQueryable<User> GetUsersWhoHasRole(Lecture lecture, LectureUserRelationship.LectureRole role)
         {
-            return DatabaseContext.LectureUserRelationships.Include(x => x.User).Where(x => x.LectureId == lecture.Id && x.Role.HasFlag(role) ).Select(x => x.User);
+            return DatabaseContext.LectureUserRelationships.Include(x => x.User)
+                .Where(x => x.LectureId == lecture.Id && x.Role.HasFlag(role) && !x.Role.HasFlag(LectureUserRelationship.LectureRole.Banned))
+                .Select(x => x.User);
         }
 
         public IQueryable<Lecture> GetTeachingLectures(User user)
         {
             return DatabaseContext.LectureUserRelationships.Include(x => x.Lecture).ThenInclude(x => x.Owner)
-                .Where(x => x.UserId == user.Id && x.Role > LectureUserRelationship.LectureRole.Student).Select(x => x.Lecture);
+                .Where(x => x.UserId == user.Id && x.Role > LectureUserRelationship.LectureRole.Student && !x.Role.HasFlag(LectureUserRelationship.LectureRole.Banned))
+                .Select(x => x.Lecture);
         }
         public IQueryable<Lecture> GetLecturesIncludingRole(User user, LectureUserRelationship.LectureRole role)
         {
             return DatabaseContext.LectureUserRelationships.Include(x => x.Lecture).ThenInclude(x => x.Owner)
-                .Where(x => x.UserId == user.Id && x.Role.HasFlag(role)).Select(x => x.Lecture);
+                .Where(x => x.UserId == user.Id && x.Role.HasFlag(role) && !x.Role.HasFlag(LectureUserRelationship.LectureRole.Banned))
+                .Select(x => x.Lecture);
         }
         public IDictionary<string, ILectureParameter> GetLectureParameters(Data.Lecture lecture, string rivision)
         {
@@ -237,7 +261,7 @@ namespace Hugin.Services
                 return new Dictionary<string, ILectureParameter>();
             }
             var (data, isTextFile) = RepositoryHandler.ReadFileWithTypeCheck(repository, "parameters.xml", rivision);
-            if(isTextFile)
+            if (isTextFile)
             {
                 var serializer = new XmlSerializer(typeof(LectureParameters));
                 var viewbag = new Dictionary<string, ILectureParameter>();
