@@ -51,19 +51,17 @@
                                     }
                                     @if (submissions != null && submissions.Count() > 0)
                                     {
-                                        <ul class="tt">
-                                            @foreach (var sandbox in sandboxes)
-                                            {
-                                                <li>
-                                                    <a href="/LectureAdmin/@LectureUser.Account/@Lecture.Name/Sandboxes/@sandbox.Name"
-                                                       @onclick="@(() => Jump($"/LectureAdmin/{LectureUser.Account}/{Lecture.Name}/Sandboxes/{sandbox.Name}"))"
-                                                       @onclick:preventDefault>
-                                                        @sandbox.Name
-                                                    </a>
-                                                </li>
-                                            }
-                                        </ul>
-                                    }
+                                <ul class="tt">
+                                    @foreach (var sandbox in sandboxes)
+                                    {
+                                <li>
+                                    <a href="/LectureAdmin/@LectureUser.Account/@Lecture.Name/Sandboxes/@sandbox.Name"
+                                       @onclick="@(() => Jump($"/LectureAdmin/{LectureUser.Account}/{Lecture.Name}/Sandboxes/{sandbox.Name}"))"
+                                       @onclick:preventDefault>
+                                        @sandbox.Name
+                                    </a>
+                                </li>}
+                                </ul>}
                                 </li>
                             </ul>
 

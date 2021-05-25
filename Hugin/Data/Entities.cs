@@ -254,4 +254,14 @@ namespace Hugin.Data
         public int SandboxTemplateId { get; set; }
         public virtual SandboxTemplate SandboxTemplate { get; set; }
     }
+
+    public class ResourceHub : IEntity
+    {
+        [Key, Required]
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        [Required]
+        public string YamlURL { get; set; }
+    }
 }

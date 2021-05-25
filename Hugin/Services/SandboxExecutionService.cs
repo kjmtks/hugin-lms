@@ -51,14 +51,14 @@ namespace Hugin.Services
         public void Install(
             Data.User user,
             Data.Sandbox sandbox,
-            Data.SandboxTemplate sandboxTemplate = null,
+            string installerCommands = null,
             Func<string, Task> stdoutCallback = null,
             Func<string, Task> stderrCallback = null,
             Func<Task> doneCallback = null)
         {
             var directorypath = FilePathResolver.GetSandboxDirectoryPath(user.Account, sandbox.Lecture.Name, sandbox.Name);
 
-            if (sandbox.State == Sandbox.SandboxState.Uninstalled && sandboxTemplate == null)
+            if (sandbox.State == Sandbox.SandboxState.Uninstalled && string.IsNullOrWhiteSpace(installerCommands))
             {
                 var run = $@"debootstrap stretch {directorypath} http://http.debian.net/debian;";
                 var desc = $"Insatall sandbox {user.Account}/{sandbox.Lecture.Name}/{sandbox.Name}";
@@ -96,11 +96,11 @@ namespace Hugin.Services
                     await SandboxNotifier.Update();
                 }, user, desc, user.IsTeacher);
             }
-            else if (sandbox.State != Sandbox.SandboxState.Uninstalled && sandboxTemplate == null)
+            else if (sandbox.State != Sandbox.SandboxState.Uninstalled && string.IsNullOrWhiteSpace(installerCommands))
             {
                 doneCallback().Wait();
             }
-            else if (sandbox.State != Sandbox.SandboxState.Uninstalled && sandboxTemplate != null)
+            else if (sandbox.State != Sandbox.SandboxState.Uninstalled && !string.IsNullOrWhiteSpace(installerCommands))
             {
                 var run = $@"debootstrap stretch {directorypath} http://http.debian.net/debian;";
                 var desc = $"Insatall sandbox {user.Account}/{sandbox.Lecture.Name}/{sandbox.Name}";
@@ -116,7 +116,7 @@ namespace Hugin.Services
                         }
 
                         await ExecuteAsync(user, sandbox, sudo: true,
-                            stdin: sandboxTemplate.Commands.Replace("\r\n", Environment.NewLine).Replace("\r", Environment.NewLine).Replace("\n", Environment.NewLine),
+                            stdin: installerCommands.Replace("\r\n", Environment.NewLine).Replace("\r", Environment.NewLine).Replace("\n", Environment.NewLine),
                             stdoutCallback: (_, x) => stdoutCallback?.Invoke(x),
                             stderrCallback: (_, x) => stderrCallback?.Invoke(x));
 
@@ -136,7 +136,7 @@ namespace Hugin.Services
                     await SandboxNotifier.Update();
                 }, user, desc, user.IsTeacher);
             }
-            else if(sandbox.State == Sandbox.SandboxState.Uninstalled && sandboxTemplate != null)
+            else if(sandbox.State == Sandbox.SandboxState.Uninstalled && !string.IsNullOrWhiteSpace(installerCommands))
             {
                 var run = $@"debootstrap stretch {directorypath} http://http.debian.net/debian;";
                 var desc = $"Insatall sandbox {user.Account}/{sandbox.Lecture.Name}/{sandbox.Name}";
@@ -159,7 +159,7 @@ namespace Hugin.Services
                         File.Copy($"{directorypath}/etc/group", $"{directorypath}/etc/group.original", true);
 
                         await ExecuteAsync(user, sandbox, sudo: true,
-                            stdin: sandboxTemplate.Commands.Replace("\r\n", Environment.NewLine).Replace("\r", Environment.NewLine).Replace("\n", Environment.NewLine),
+                            stdin: installerCommands.Replace("\r\n", Environment.NewLine).Replace("\r", Environment.NewLine).Replace("\n", Environment.NewLine),
                             stdoutCallback: (_, x) => stdoutCallback?.Invoke(x),
                             stderrCallback: (_, x) => stderrCallback?.Invoke(x));
 

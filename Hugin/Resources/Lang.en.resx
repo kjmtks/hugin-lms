@@ -228,6 +228,9 @@
   <data name="CreateNewParameter" xml:space="preserve">
     <value>Create New Parameter</value>
   </data>
+  <data name="CreateNewResourceHub" xml:space="preserve">
+    <value>Create New Resource Hub</value>
+  </data>
   <data name="CreateNewSandbox" xml:space="preserve">
     <value>Create New Sandbox</value>
   </data>
@@ -287,6 +290,9 @@
   </data>
   <data name="EditParameterValue" xml:space="preserve">
     <value>Edit Parameter Value</value>
+  </data>
+  <data name="EditResourceHub" xml:space="preserve">
+    <value>Edit Resource Hub</value>
   </data>
   <data name="EditSandbox" xml:space="preserve">
     <value>Edit Sandbox</value>
@@ -432,6 +438,9 @@
   <data name="MyMenuLectures" xml:space="preserve">
     <value>Lectures</value>
   </data>
+  <data name="MyMenuResourceHubs" xml:space="preserve">
+    <value>Resource Hubs</value>
+  </data>
   <data name="MyMenuSandboxTemplates" xml:space="preserve">
     <value>Sandbox Templates</value>
   </data>
@@ -518,6 +527,9 @@
   </data>
   <data name="Reset" xml:space="preserve">
     <value>Reset</value>
+  </data>
+  <data name="ResourceHubs" xml:space="preserve">
+    <value>Resource Hub</value>
   </data>
   <data name="ResubmitDeadline" xml:space="preserve">
     <value>Resubmit deadline</value>
@@ -638,5 +650,8 @@
   </data>
   <data name="Value" xml:space="preserve">
     <value>Value</value>
+  </data>
+  <data name="YamlUrl" xml:space="preserve">
+    <value>YAML URL</value>
   </data>
 </root>

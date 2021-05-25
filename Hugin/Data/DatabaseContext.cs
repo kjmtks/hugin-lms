@@ -36,6 +36,9 @@ namespace Hugin.Data
         public DbSet<ActivityMessage> ActivityMessages { get; set; }
         public DbSet<SandboxTemplate> SandboxTemplates { get; set; }
         public DbSet<ActivityTemplate> ActivityTemplates { get; set; }
+        public DbSet<ResourceHub> ResourceHubs { get; set; }
+
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -89,6 +92,11 @@ namespace Hugin.Data
             modelBuilder.Entity<ActivityTemplate>().HasKey(x => x.Id);
             modelBuilder.Entity<ActivityTemplate>().HasIndex(x => x.Name).IsUnique();
             modelBuilder.Entity<ActivityTemplate>().HasOne(x => x.SandboxTemplate);
+
+            modelBuilder.Entity<ResourceHub>().ToTable("ResourceHub");
+            modelBuilder.Entity<ResourceHub>().HasKey(x => x.Id);
+            modelBuilder.Entity<ResourceHub>().HasIndex(x => x.Name).IsUnique();
+            modelBuilder.Entity<ResourceHub>().HasIndex(x => x.YamlURL).IsUnique();
         }
     }
 }

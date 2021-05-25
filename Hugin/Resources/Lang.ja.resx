@@ -228,6 +228,9 @@
   <data name="CreateNewParameter" xml:space="preserve">
     <value>新しいパラメーターの追加</value>
   </data>
+  <data name="CreateNewResourceHub" xml:space="preserve">
+    <value>新しいリソースハブの追加</value>
+  </data>
   <data name="CreateNewSandbox" xml:space="preserve">
     <value>新しいサンドボックスを作成</value>
   </data>
@@ -287,6 +290,9 @@
   </data>
   <data name="EditParameterValue" xml:space="preserve">
     <value>パラメーターの値の編集</value>
+  </data>
+  <data name="EditResourceHub" xml:space="preserve">
+    <value>リソースハブの編集</value>
   </data>
   <data name="EditSandbox" xml:space="preserve">
     <value>サンドボックスの編集</value>
@@ -435,6 +441,9 @@
   <data name="MyMenuLectures" xml:space="preserve">
     <value>講義</value>
   </data>
+  <data name="MyMenuResourceHubs" xml:space="preserve">
+    <value>リソースハブ</value>
+  </data>
   <data name="MyMenuSandboxTemplates" xml:space="preserve">
     <value>サンドボックスのひな形</value>
   </data>
@@ -521,6 +530,9 @@
   </data>
   <data name="Reset" xml:space="preserve">
     <value>初期状態にリセット</value>
+  </data>
+  <data name="ResourceHubs" xml:space="preserve">
+    <value>リソースハブ</value>
   </data>
   <data name="ResubmitDeadline" xml:space="preserve">
     <value>再提出期限</value>
@@ -638,5 +650,8 @@
   </data>
   <data name="Value" xml:space="preserve">
     <value>値</value>
+  </data>
+  <data name="YamlUrl" xml:space="preserve">
+    <value>YAMLのURL</value>
   </data>
 </root>

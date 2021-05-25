@@ -29,6 +29,10 @@ namespace Hugin.Services
         {
             return user.IsAdmin;
         }
+        public bool CanEditResourceHub(Data.User user)
+        {
+            return user.IsAdmin;
+        }
         public bool CanManageUser(Data.User user)
         {
             return user.IsAdmin;
