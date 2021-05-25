@@ -47,7 +47,9 @@ namespace Hugin.Services
                 if (!string.IsNullOrWhiteSpace(yaml))
                 {
                     var deserializer = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
-                    result.Add(deserializer.Deserialize<Hugin.Models.ResourceHub.Sandbox>(yaml));
+                    var sandbox = deserializer.Deserialize<Hugin.Models.ResourceHub.Sandbox>(yaml);
+                    sandbox.HubName = model.Name;
+                    result.Add(sandbox);
                 }
             }
             return result;

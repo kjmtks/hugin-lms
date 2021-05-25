@@ -125,20 +125,9 @@
             </h4>
         </div>
         <div class="column is-4">
-            <div class="field has-addons">
-                <div class="control is-expanded">
-                    <div class="select is-fullwidth">
-                        <select class="tt" @bind="@sandboxTemplateId">
-                            <option value="-1" class="tt">base</option>
-                            @foreach (var template in templates)
-                            {
-                                <option value="@template.Name" class="tt">@template.Name</option>
-                            }
-                        </select>
-                    </div>
-                </div>
+            <div class="field">
                 <div class="control">
-                    <button type="submit" class="button is-primary" @onclick="install">@Localizer["Install"].Value</button>
+                    <button type="submit" class="button is-info" @onclick="installModal">@Localizer["InstallSandbox"].Value</button>
                 </div>
             </div>
         </div>
@@ -168,7 +157,7 @@
 <div class="modal" id="user-modal">
     @if (model != null && editMode != EditMode.None)
     {
-    <div class="modal-background"></div>
+        <div class="modal-background"></div>
         <div class="modal-card">
             <header class="modal-card-head">
                 <p class="modal-card-title">
@@ -224,6 +213,75 @@
     }
 </div>
 
+<div class="modal" id="install-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">
+                @Localizer["InstallSandbox"].Value
+            </p>
+            <button class="delete" @onclick="async () => await modalOffAsync()" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+
+            <div class="field">
+                <div class="control">
+                    <label class="label tt">@Localizer["SandboxTemplate"].Value</label>
+                    <div class="select">
+                        <select class="tt is-fullwidth" @onchange="onSelectionChangeInstaller">
+                            @if(Sandbox != null && Sandbox.State != Data.Sandbox.SandboxState.Installed)
+                            { 
+                                <option value="-1" class="tt">@Localizer["SandboxBase"].Value</option>
+                            }
+                            else
+                            {
+                                <option value="-1" class="tt">@Localizer["SelectInstallSandbox"].Value</option>
+                            }
+                            @if(templates != null)
+                            {
+    
+                                @foreach (var (template, i) in templates.Select((x,i) => (x,i)))
+                                {
+                                    <option value="@i" class="tt">@template.HubName/@template.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="field">
+                <label class="label tt">@Localizer["Description"].Value</label>
+                <div class="control">
+                    <textarea class="textarea tt" readonly>@installerDescription</textarea>
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label tt">@Localizer["Commands"].Value</label>
+                <div class="control">
+                    <textarea class="textarea tt" rows="10" @bind="installerCommands"></textarea>
+                </div>
+            </div>
+            
+            <div class="field">
+                <div class="control">
+                    <label class="checkbox">
+                        <input type="checkbox" @bind="installActivities" />@Localizer["ImportActivities"].Value
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <footer class="modal-card-foot">
+            <buttons>
+                <button class="button is-success" @onclick="install">@Localizer["Install"].Value</button>
+                <button class="button" @onclick="async () => await modalOffAsync()">@Localizer["Cancel"].Value</button>
+            </buttons>
+        </footer>
+    </div>
+</div>
+
 
 
 @code
@@ -253,14 +311,6 @@
         await base.OnInitializedAsync();
         User = LoginUser;
         Notifier.Notify += OnNotify;
-        // templates = SandboxTemplateHandler.Set.OrderBy(x => x.Name).AsNoTracking().ToList();
-
-        templates = new List<Hugin.Models.ResourceHub.Sandbox>();
-        foreach(var x in ResourceHubHandler.Set.AsNoTracking().ToList())
-        {
-            var ys = await ResourceHubHandler.WgetSandboxes(x);
-            templates.AddRange(ys);
-        }
 
         if (!string.IsNullOrWhiteSpace(Name))
         {
@@ -286,13 +336,60 @@
         await InvokeAsync(StateHasChanged);
     }
 
-
     private bool isAlived = true;
     void IDisposable.Dispose()
     {
         Notifier.Notify -= OnNotify;
         isAlived = false;
     }
+
+
+
+    private async Task installModal()
+    {
+        if (isRunning) { return; }
+        templates = new List<Hugin.Models.ResourceHub.Sandbox>();
+        foreach (var x in ResourceHubHandler.Set.AsNoTracking().ToList())
+        {
+            var ys = await ResourceHubHandler.WgetSandboxes(x);
+            templates.AddRange(ys);
+        }
+        installerDescription = null;
+        installerCommands = null;
+        installActivities = false;
+        await JS.InvokeVoidAsync("modalOn", "install-modal");
+    }
+
+    private string installerDescription = "";
+    private string installerCommands = "";
+    private bool installActivities = false;
+    private async Task onSelectionChangeInstaller(ChangeEventArgs ev)
+    {
+        if(!int.TryParse(ev.Value.ToString(), out var id))
+        {
+            installerDescription = null;
+            installerCommands = null;
+            installActivities = false;
+        }
+        else
+        {
+            if (id >= 0 && id < templates.Count)
+            {
+                var t = templates[id];
+                installerDescription = t.Description;
+                installerCommands = t.Commands;
+                installActivities = true;
+            }
+            else
+            {
+                installerDescription = null;
+                installerCommands = null;
+                installActivities = false;
+            }
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
 
     #region Commands
 
@@ -312,23 +409,16 @@
         StateHasChanged();
     }
 
-    private int? sandboxTemplateId = null;
-    private void install()
+    private async Task install()
     {
         if (User == null || Sandbox == null || Sandbox.State == Data.Sandbox.SandboxState.Installing && !PermissionProvider.CanEditSandbox(Lecture, LoginUser)) { return; }
-        Data.SandboxTemplate tmpl = null;
-
-        if (sandboxTemplateId > 0 && sandboxTemplateId != null)
-        {
-            tmpl = SandboxTemplateHandler.Set.Where(x => x.Id == sandboxTemplateId).AsNoTracking().FirstOrDefault();
-            if (tmpl == null) { return; }
-        }
-
+        
         isRunning = true;
         output = "";
         var s = Sandbox;
-        Executor.Install(User, s, tmpl, stdoutCallback: stdoutCallback, stderrCallback: stderrCallback, doneCallback: doneCallback);
+        Executor.Install(User, s, installerCommands, stdoutCallback: stdoutCallback, stderrCallback: stderrCallback, doneCallback: doneCallback);
         command = null;
+        await modalOffAsync();
         StateHasChanged();
     }
 
@@ -344,15 +434,11 @@
         });
         s = SandboxHandler.Set.Where(x => x.Id == s.Id).Include(x => x.Lecture).ThenInclude(x => x.Owner).AsNoTracking().FirstOrDefault();
 
-        var tmpl = string.IsNullOrWhiteSpace(sandbox.Installation) ? null : new Data.SandboxTemplate
-        {
-            Commands = sandbox.Installation
-        };
 
         isRunning = true;
         output = "";
         Sandbox = s;
-        Executor.Install(User, s, tmpl, stdoutCallback: stdoutCallback, stderrCallback: stderrCallback, doneCallback: doneCallback);
+        Executor.Install(User, s, sandbox.Installation, stdoutCallback: stdoutCallback, stderrCallback: stderrCallback, doneCallback: doneCallback);
         command = null;
         StateHasChanged();
     }
@@ -449,6 +535,7 @@
         editMode = EditMode.None;
         await InvokeAsync(() => StateHasChanged());
         await JS.InvokeVoidAsync("modalOff", "user-modal");
+        await JS.InvokeVoidAsync("modalOff", "install-modal");
     }
 
     private void resetEdittingModel(Data.Sandbox sandbox)

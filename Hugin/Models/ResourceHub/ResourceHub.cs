@@ -24,6 +24,7 @@ namespace Hugin.Models.ResourceHub
 
     public class Sandbox
     {
+        public string HubName { get; set; }
         public string Name { get; set; }
         public string Author { get; set; }
         public string Email { get; set; }
