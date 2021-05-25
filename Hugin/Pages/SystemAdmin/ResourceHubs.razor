@@ -1,0 +1,234 @@
+﻿@page "/SystemAdmin/ResourceHubs";
+@layout MyLayout;
+@inject PermissionProviderService PermissionProvider;
+@inject ResourceHubHandleService ResourceHubHandler;
+@inject Data.DatabaseContext DB;
+@inject IJSRuntime JS;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+
+
+@if (!string.IsNullOrWhiteSpace(NormalMessage))
+{
+    <article class="message is-primary">
+        <div class="message-body">@NormalMessage</div>
+    </article>
+}
+@if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <article class="message is-danger">
+        <div class="message-body">@ErrorMessage</div>
+    </article>
+}
+
+<AccessRestrictions Checker="p=> p.CanEditSandboxTemplate(LoginUser)">
+
+    <Paginated Collection="resourceHubs" @ref="@Pagination">
+        <nav class="panel is-info">
+            <div class="panel-heading">
+                @Localizer["ResourceHubs"].Value
+            </div>
+            <div class="panel-block tt">
+                <table class="table is-fullwidth" style="font-size: small">
+                    <thead>
+                        <tr>
+                            <th class="is-10">@Localizer["YamlUrl"].Value</th>
+                            <th class="is-2"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (Data.ResourceHub hub in Pagination.ShowedModels.ToList())
+                    {
+                        <tr>
+                            <td><p class="long-text" style="width: 40em">@hub.YamlURL</p></td>
+                            <td>
+                                @if (PermissionProvider.CanEditResourceHub(LoginUser))
+                                { 
+                                    <a href="javascript: void(0)" @onclick="async () => { await removeAsync(hub); }"><i class="fas fa-trash-alt"></i></a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                    @if (PermissionProvider.CanEditResourceHub(LoginUser))
+                    {
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th>
+                                    <a @onclick="async () => { await createModalOnAsync(); }">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
+                                </th>
+                            </tr>
+                        </tfoot>
+                    }
+                </table>
+            </div>
+        </nav>
+    </Paginated>
+</AccessRestrictions>
+
+
+<div class="modal" id="user-modal">
+    @if (model != null && editMode != EditMode.None)
+    {
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">@Localizer["CreateNewResourceHub"].Value</p>
+                <button class="delete" @onclick="async () => await modalOffAsync()" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+
+                <EditForm EditContext="@editContext" OnSubmit="@submit">
+                    <DataAnnotationsValidator />
+
+                    <div class="field">
+                        <label class="label tt">@Localizer["YamlUrl"].Value</label>
+                        <div class="control">
+                            <input type="text" class="input tt" @bind="@model.YamlURL" />
+                        </div>
+                        <p class="help is-danger"><ValidationMessage For="@(() => model.YamlURL)" /></p>
+                    </div>
+                </EditForm>
+
+            </section>
+
+            <footer class="modal-card-foot">
+                <buttons>
+                    <button class="button is-success" @onclick="async () => await submit()">@Localizer["OK"].Value</button>
+                    <button class="button" @onclick="async () => await modalOffAsync()">@Localizer["Cancel"].Value</button>
+                </buttons>
+            </footer>
+        </div>
+    }
+</div>
+
+
+
+@code
+{
+    private IEnumerable<Data.ResourceHub> resourceHubs;
+
+    private enum EditMode
+    {
+        None, CreateNew
+    }
+    private EditMode editMode = EditMode.None;
+    private EditContext editContext { get; set; }
+    private ValidationMessageStore messageStore;
+    private Data.ResourceHub model { get; set; }
+    private bool processing = false;
+
+    private string ErrorMessage { get; set; }
+    private string NormalMessage { get; set; }
+
+    private Paginated<Data.ResourceHub> Pagination;
+
+
+
+    [CascadingParameter]
+    public Data.User LoginUser { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        updateResourceHubs();
+    }
+
+    private void updateResourceHubs()
+    {
+        resourceHubs = ResourceHubHandler.Set.OrderBy(x => x.YamlURL).AsNoTracking();
+    }
+
+    private async Task removeAsync(Data.ResourceHub hub)
+    {
+        if (await JS.InvokeAsync<bool>("showConfirmDialog", Localizer["AreYouSureDelete"].Value))
+        {
+            if (!PermissionProvider.CanEditSandboxTemplate(LoginUser))
+            {
+                ResourceHubHandler.Remove(hub);
+            }
+        }
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task createModalOnAsync()
+    {
+        editMode = EditMode.CreateNew;
+        model = new Data.ResourceHub { };
+        resetEdittingModel(model);
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOn", "user-modal");
+    }
+
+    private async Task modalOffAsync()
+    {
+        model = null;
+        editMode = EditMode.None;
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOff", "user-modal");
+    }
+
+    private void resetEdittingModel(Data.ResourceHub hub)
+    {
+        editContext = new EditContext(hub);
+        messageStore = new ValidationMessageStore(editContext);
+        editContext.OnValidationRequested += (s, e) => messageStore.Clear();
+        editContext.OnFieldChanged += (s, e) => messageStore.Clear(e.FieldIdentifier);
+    }
+    private void addValidationError(string fieldName, string errorMessage)
+    {
+        messageStore.Add(editContext.Field(fieldName), errorMessage);
+        editContext.NotifyValidationStateChanged();
+    }
+
+    private async Task submit()
+    {
+        if (processing) return;
+        processing = true;
+        ErrorMessage = "";
+        NormalMessage = "";
+        await InvokeAsync(() => StateHasChanged());
+
+        bool v1 = true, v2 = true;
+        v1 = editContext.Validate();
+        if (!PermissionProvider.CanEditResourceHub(LoginUser))
+        {
+            v2 = false;
+            messageStore.Add(editContext.Field("Name"), "You can not edit resource hub.");
+            editContext.NotifyValidationStateChanged();
+        }
+        if (v1 && v2)
+        {
+            onValid(editContext);
+            await modalOffAsync();
+            updateResourceHubs();
+            await InvokeAsync(() => StateHasChanged());
+        }
+        processing = false;
+    }
+
+
+    protected virtual void onValid(EditContext editContext)
+    {
+        try
+        {
+            if (editMode == EditMode.CreateNew)
+            {
+                if (ResourceHubHandler.AddNew(model) == null)
+                {
+                    throw new Exception("Error");
+                }
+            }
+            NormalMessage = "Success";
+        }
+        catch (Exception e)
+        {
+            ErrorMessage = e.Message;
+            NormalMessage = "";
+        }
+    }
+
+}

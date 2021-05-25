@@ -32,9 +32,9 @@ namespace Hugin
                     var context = services.GetRequiredService<DatabaseContext>();
                     var userHandler = services.GetRequiredService<UserHandleService>();
                     var lectureHandler = services.GetRequiredService<LectureHandleService>();
-                    var sandboxTemplateHandler = services.GetRequiredService<SandboxTemplateHandleService>();
+                    var resourceHubHandler = services.GetRequiredService<ResourceHubHandleService>();
                     DbInitializer.Initialize(context);
-                    SeedData.InitializeAsync(context, userHandler, lectureHandler, sandboxTemplateHandler).Wait();
+                    SeedData.InitializeAsync(context, userHandler, lectureHandler, resourceHubHandler).Wait();
                 }
                 catch (Exception e)
                 {

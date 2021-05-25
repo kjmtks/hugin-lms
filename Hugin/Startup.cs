@@ -60,6 +60,8 @@ namespace Hugin
 
             services.AddSignalR(c => { c.MaximumReceiveMessageSize = 50 * 1024 * 1024; });
 
+            services.AddHttpClient();
+
             services.AddDatabaseDeveloperPageExceptionFilter();
 
             services.AddHostedService<QueuedHostedBackgroundJobService>();
@@ -67,6 +69,7 @@ namespace Hugin
 
             services.AddScoped<UserHandleService>();
             services.AddScoped<SandboxTemplateHandleService>();
+            services.AddScoped<ResourceHubHandleService>();
             services.AddScoped<LectureHandleService>();
             services.AddScoped<SandboxHandleService>();
             services.AddScoped<ActivityActionHandleService>();
