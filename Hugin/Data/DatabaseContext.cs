@@ -95,8 +95,8 @@ namespace Hugin.Data
 
             modelBuilder.Entity<ResourceHub>().ToTable("ResourceHub");
             modelBuilder.Entity<ResourceHub>().HasKey(x => x.Id);
+            modelBuilder.Entity<ResourceHub>().HasIndex(x => x.Name).IsUnique();
             modelBuilder.Entity<ResourceHub>().HasIndex(x => x.YamlURL).IsUnique();
-            
         }
     }
 }

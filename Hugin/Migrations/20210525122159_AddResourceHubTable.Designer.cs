@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Hugin.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20210525094408_AddResourceHubTable")]
+    [Migration("20210525122159_AddResourceHubTable")]
     partial class AddResourceHubTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -205,11 +205,21 @@ namespace Hugin.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("YamlURL")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.HasIndex("YamlURL")
                         .IsUnique();

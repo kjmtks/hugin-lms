@@ -13,12 +13,20 @@ namespace Hugin.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
                     YamlURL = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ResourceHub", x => x.Id);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ResourceHub_Name",
+                table: "ResourceHub",
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ResourceHub_YamlURL",

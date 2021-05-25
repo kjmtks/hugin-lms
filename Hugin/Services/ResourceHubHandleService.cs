@@ -29,29 +29,65 @@ namespace Hugin.Services
 
         protected override bool BeforeAddNew(ResourceHub model)
         {
-            // TODO
-            WgetResourceHubAsync(model.YamlURL).Wait();
+            var t = WgetResourceHubAsync(model.YamlURL);
+            t.Wait();
+            var x = t.Result;
+            model.Name = x.Name;
+            model.Description = x.Description;
             return true;
         }
 
-
-        public async Task WgetResourceHubAsync(string yamlUrl)
+        public async Task<IEnumerable<Hugin.Models.ResourceHub.Sandbox>> WgetSandboxes(ResourceHub model)
         {
-            var info = new System.Diagnostics.ProcessStartInfo();
-            info.FileName = "curl";
-            info.Arguments = yamlUrl;
-            info.RedirectStandardOutput = true;
-            info.RedirectStandardError = true;
-            info.CreateNoWindow = true;
-            info.UseShellExecute = false;
-            var proc = new System.Diagnostics.Process();
-            proc.StartInfo = info;
-            proc.Start();
-            await proc.WaitForExitAsync();
-            var deserializer = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
-            // TODO
-            var obj = deserializer.Deserialize<object>(proc.StandardOutput);
+            var result = new List<Hugin.Models.ResourceHub.Sandbox>();
+            var xs = await WgetResourceHubAsync(model.YamlURL);
+            foreach(var x in xs.Sandboxes)
+            {
+                var yaml = await wget(x);
+                if (!string.IsNullOrWhiteSpace(yaml))
+                {
+                    var deserializer = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
+                    result.Add(deserializer.Deserialize<Hugin.Models.ResourceHub.Sandbox>(yaml));
+                }
+            }
+            return result;
         }
 
+
+        public async Task<Hugin.Models.ResourceHub.ResourceHub> WgetResourceHubAsync(string yamlUrl)
+        {
+            var yaml = await wget(yamlUrl);
+            if(!string.IsNullOrWhiteSpace(yaml))
+            {
+                var deserializer = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
+                return deserializer.Deserialize<Hugin.Models.ResourceHub.ResourceHub>(yaml);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private async Task<string> wget(string url)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+            {
+                request.Headers.Add("User-Agent", "Hugin");
+                using (var client = ClientFactory.CreateClient())
+                {
+                    using (var response = await client.SendAsync(request).ConfigureAwait(false))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return await response.Content.ReadAsStringAsync();
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

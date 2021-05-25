@@ -5,6 +5,7 @@
 @inject LectureHandleService LectureHandler
 @inject SandboxHandleService SandboxHandler
 @inject SandboxTemplateHandleService SandboxTemplateHandler
+@inject ResourceHubHandleService ResourceHubHandler
 @inject SandboxExecutionService Executor;
 @using Microsoft.AspNetCore.Mvc.Localization;
 @inject IHtmlLocalizer<Hugin.Lang> Localizer;
@@ -33,50 +34,50 @@
                 <tbody>
                     @foreach (var sandbox in SandboxHandler.GetUninstalledXmlSandboxes(Lecture, Lecture.DefaultBranch))
                     {
-                        <tr>
-                            <td>@sandbox.Name</td>
-                            <td><span class="tag tt is-danger">@Localizer["Need"].Value</span> </td>
-                            <td><p class="long-text" style="width: 15em">@sandbox.Description</p></td>
-                            <td>
-                                @if (PermissionProvider.CanEditSandbox(Lecture, LoginUser))
-                                {
-                                    <a class="button is-primary is-small" @onclick="() => { installXmlSandbox(sandbox); }">@Localizer["Install"].Value</a>
-                                }
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>@sandbox.Name</td>
+                        <td><span class="tag tt is-danger">@Localizer["Need"].Value</span> </td>
+                        <td><p class="long-text" style="width: 15em">@sandbox.Description</p></td>
+                        <td>
+                            @if (PermissionProvider.CanEditSandbox(Lecture, LoginUser))
+                            {
+                                <a class="button is-primary is-small" @onclick="() => { installXmlSandbox(sandbox); }">@Localizer["Install"].Value</a>
+                            }
+                        </td>
+                    </tr>
                     }
                     @foreach (var sandbox in Pagination.ShowedModels.ToList())
                     {
-                        <tr>
-                            <td>
-                                @if (PermissionProvider.CanEditSandbox(Lecture, LoginUser))
-                                {
-                                    <a href="@($"/LectureAdmin/{Account}/{LectureName}/Sandboxes/{sandbox.Name}")" @onclick="@(() => Show(sandbox.Name))" @onclick:preventDefault>@sandbox.Name</a>
-                                }
-                            </td>
-                            <td>
-                                @if (sandbox.State == Data.Sandbox.SandboxState.Installing)
-                                {
-                                    <span class="tag tt is-info">@Localizer["Installing"].Value</span>
-                                }
-                                @if (sandbox.State == Data.Sandbox.SandboxState.Installed)
-                                {
-                                    <span class="tag tt is-success">@Localizer["Installed"].Value</span>
-                                }
-                                @if (sandbox.State == Data.Sandbox.SandboxState.Uninstalled)
-                                {
-                                    <span class="tag tt is-dark">@Localizer["Uninstalled"].Value</span>
-                                }
-                            </td>
-                            <td><p class="long-text" style="width: 15em">@sandbox.Description</p></td>
-                            <td>
-                                @if (PermissionProvider.CanEditSandbox(Lecture, LoginUser))
-                                {
-                                    <a href="javascript: void(0)" @onclick="async () => { await editModalOnAsync(sandbox); }"><i class="fas fa-edit"></i></a>
-                                    <a href="javascript: void(0)" @onclick="async () => { await removeAsync(sandbox); }"><i class="fas fa-trash-alt"></i></a>
-                                }
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>
+                            @if (PermissionProvider.CanEditSandbox(Lecture, LoginUser))
+                            {
+                                <a href="@($"/LectureAdmin/{Account}/{LectureName}/Sandboxes/{sandbox.Name}")" @onclick="@(() => Show(sandbox.Name))" @onclick:preventDefault>@sandbox.Name</a>
+                            }
+                        </td>
+                        <td>
+                            @if (sandbox.State == Data.Sandbox.SandboxState.Installing)
+                            {
+                                <span class="tag tt is-info">@Localizer["Installing"].Value</span>
+                            }
+                            @if (sandbox.State == Data.Sandbox.SandboxState.Installed)
+                            {
+                                <span class="tag tt is-success">@Localizer["Installed"].Value</span>
+                            }
+                            @if (sandbox.State == Data.Sandbox.SandboxState.Uninstalled)
+                            {
+                                <span class="tag tt is-dark">@Localizer["Uninstalled"].Value</span>
+                            }
+                        </td>
+                        <td><p class="long-text" style="width: 15em">@sandbox.Description</p></td>
+                        <td>
+                            @if (PermissionProvider.CanEditSandbox(Lecture, LoginUser))
+                            {
+                                <a href="javascript: void(0)" @onclick="async () => { await editModalOnAsync(sandbox); }"><i class="fas fa-edit"></i></a>
+                                <a href="javascript: void(0)" @onclick="async () => { await removeAsync(sandbox); }"><i class="fas fa-trash-alt"></i></a>
+                            }
+                        </td>
+                    </tr>
                     }
                 </tbody>
 
@@ -88,7 +89,7 @@
                         <td>
                             @if (PermissionProvider.CanEditSandbox(Lecture, LoginUser))
                             {
-                                <a @onclick="async () => { await createModalOnAsync(); }"><i class="fas fa-plus"></i></a>
+                            <a @onclick="async () => { await createModalOnAsync(); }"><i class="fas fa-plus"></i></a>
                             }
                         </td>
                     </tr>
@@ -100,85 +101,84 @@
 
 @if (Sandbox != null && PermissionProvider.CanEditSandbox(Lecture, LoginUser))
 {
-    <div class="box">
-        <div class="columns">
-            <div class="column is-8">
-                <h4 id="const" class="title tt">
-                    @if (!string.IsNullOrWhiteSpace(Sandbox.Name))
-                    {
-                        @Sandbox.Name
-                    }
-                    &nbsp;
-                    @if (Sandbox.State == Data.Sandbox.SandboxState.Installing)
-                    {
-                        <span class="tag tt is-info">@Localizer["Installing"].Value</span>
-                    }
-                    @if (Sandbox.State == Data.Sandbox.SandboxState.Installed)
-                    {
-                        <span class="tag tt is-success">@Localizer["Installed"].Value</span>
-                    }
-                    @if (Sandbox.State == Data.Sandbox.SandboxState.Uninstalled)
-                    {
-                        <span class="tag tt is-dark">@Localizer["Uninstalled"].Value</span>
-                    }
-                </h4>
-            </div>
-            <div class="column is-4">
-                <div class="field has-addons">
-                    <div class="control is-expanded">
-                        <div class="select is-fullwidth">
-                            <select class="tt" @bind="@sandboxTemplateId">
-                                <option value="-1" class="tt">base</option>
-                                @foreach (var template in templates)
-                                {
-                                    <option value="@template.Id" class="tt">@template.Name</option>
-                                }
-                            </select>
-                        </div>
+<div class="box">
+    <div class="columns">
+        <div class="column is-8">
+            <h4 id="const" class="title tt">
+                @if (!string.IsNullOrWhiteSpace(Sandbox.Name))
+                {
+                    @Sandbox.Name
+                }
+                &nbsp;
+                @if (Sandbox.State == Data.Sandbox.SandboxState.Installing)
+                {
+                    <span class="tag tt is-info">@Localizer["Installing"].Value</span>
+                }
+                @if (Sandbox.State == Data.Sandbox.SandboxState.Installed)
+                 {
+                    <span class="tag tt is-success">@Localizer["Installed"].Value</span>
+                }
+                @if (Sandbox.State == Data.Sandbox.SandboxState.Uninstalled)
+                {
+                    <span class="tag tt is-dark">@Localizer["Uninstalled"].Value</span>
+                }
+            </h4>
+        </div>
+        <div class="column is-4">
+            <div class="field has-addons">
+                <div class="control is-expanded">
+                    <div class="select is-fullwidth">
+                        <select class="tt" @bind="@sandboxTemplateId">
+                            <option value="-1" class="tt">base</option>
+                            @foreach (var template in templates)
+                            {
+                                <option value="@template.Name" class="tt">@template.Name</option>
+                            }
+                        </select>
                     </div>
-                    <div class="control">
-                        <button type="submit" class="button is-primary" @onclick="install">@Localizer["Install"].Value</button>
-                    </div>
+                </div>
+                <div class="control">
+                    <button type="submit" class="button is-primary" @onclick="install">@Localizer["Install"].Value</button>
                 </div>
             </div>
         </div>
-
-        <article class="panel is-info">
-            <div class="panel-block">
-                <div class="control">
-                    <textarea id="simple-terminal-output" class="textarea tt" rows="20" readonly>@output.ToString()</textarea>
-                </div>
-            </div>
-            <div class="panel-block">
-                <form class="control" @onsubmit='run'>
-                    <div class="field is-fullwidth">
-                        <div class="control has-icons-left @(isRunning ? "is-loading" : "")">
-                            <input class="input is-fullwidth is-info tt" type="text" placeholder="@Localizer["Command"].Value" @bind-value="command">
-                            <span class="icon is-left">
-                                <i class="fas fa-terminal" aria-hidden="true"></i>
-                            </span>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </article>
     </div>
-}
+
+    <article class="panel is-info">
+        <div class="panel-block">
+            <div class="control">
+                <textarea id="simple-terminal-output" class="textarea tt" rows="20" readonly>@output.ToString()</textarea>
+            </div>
+        </div>
+        <div class="panel-block">
+            <form class="control" @onsubmit='run'>
+                <div class="field is-fullwidth">
+                    <div class="control has-icons-left @(isRunning ? "is-loading" : "")">
+                        <input class="input is-fullwidth is-info tt" type="text" placeholder="@Localizer["Command"].Value" @bind-value="command">
+                        <span class="icon is-left">
+                            <i class="fas fa-terminal" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </article>
+</div>}
 
 <div class="modal" id="user-modal">
     @if (model != null && editMode != EditMode.None)
     {
-        <div class="modal-background"></div>
+    <div class="modal-background"></div>
         <div class="modal-card">
             <header class="modal-card-head">
                 <p class="modal-card-title">
                     @if (editMode == EditMode.CreateNew)
                     {
-                        <text>@Localizer["CreateNewSandbox"].Value</text>
+                        <span>@Localizer["CreateNewSandbox"].Value</span>
                     }
                     @if (editMode == EditMode.Edit)
                     {
-                        <text>@Localizer["EditSandbox"].Value</text>
+                        <span>@Localizer["EditSandbox"].Value</span>
                     }
                 </p>
                 <button class="delete" @onclick="async () => await modalOffAsync()" aria-label="close"></button>
@@ -227,7 +227,7 @@
 
 
 @code
-{
+{ 
     [CascadingParameter]
     public Data.User LoginUser { get; set; }
     [CascadingParameter]
@@ -246,14 +246,21 @@
 
     private Data.Sandbox Sandbox = null;
 
-    private IEnumerable<Data.SandboxTemplate> templates;
+    private List<Hugin.Models.ResourceHub.Sandbox> templates;
 
     protected async override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         User = LoginUser;
         Notifier.Notify += OnNotify;
-        templates = SandboxTemplateHandler.Set.OrderBy(x => x.Name).AsNoTracking().ToList();
+        // templates = SandboxTemplateHandler.Set.OrderBy(x => x.Name).AsNoTracking().ToList();
+
+        templates = new List<Hugin.Models.ResourceHub.Sandbox>();
+        foreach(var x in ResourceHubHandler.Set.AsNoTracking().ToList())
+        {
+            var ys = await ResourceHubHandler.WgetSandboxes(x);
+            templates.AddRange(ys);
+        }
 
         if (!string.IsNullOrWhiteSpace(Name))
         {
@@ -263,6 +270,7 @@
         {
             Sandbox = null;
         }
+        await InvokeAsync(StateHasChanged);
     }
 
     public async Task OnNotify()

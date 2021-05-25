@@ -21,6 +21,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Hugin.Hubs;
 using Microsoft.AspNetCore.Localization;
+using Polly.Extensions.Http;
+using System.Net.Http;
+using Polly;
 
 namespace Hugin
 {
@@ -32,7 +35,13 @@ namespace Hugin
         }
 
         public IConfiguration Configuration { get; }
-
+        static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+        {
+            return HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
+                .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+        }
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
@@ -60,7 +69,7 @@ namespace Hugin
 
             services.AddSignalR(c => { c.MaximumReceiveMessageSize = 50 * 1024 * 1024; });
 
-            services.AddHttpClient();
+            services.AddHttpClient<ResourceHubHandleService>().SetHandlerLifetime(TimeSpan.FromMinutes(5)).AddPolicyHandler(GetRetryPolicy());
 
             services.AddDatabaseDeveloperPageExceptionFilter();
 

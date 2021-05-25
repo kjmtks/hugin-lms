@@ -189,13 +189,13 @@ namespace Hugin.Services
         public IQueryable<User> GetUsers(Lecture lecture)
         {
             return DatabaseContext.LectureUserRelationships.Include(x => x.User)
-                .Where(x => x.LectureId == lecture.Id && !x.Role.HasFlag(LectureUserRelationship.LectureRole.Banned))
+                .Where(x => x.LectureId == lecture.Id && x.Role != LectureUserRelationship.LectureRole.Banned)
                 .Select(x => x.User);
         }
         public IEnumerable<(User, LectureUserRelationship.LectureRole)> GetUserAndRoles(Lecture lecture)
         {
             return DatabaseContext.LectureUserRelationships.Include(x => x.User)
-                .Where(x => x.LectureId == lecture.Id && !x.Role.HasFlag(LectureUserRelationship.LectureRole.Banned))
+                .Where(x => x.LectureId == lecture.Id && x.Role != LectureUserRelationship.LectureRole.Banned)
                 .AsNoTracking().AsEnumerable().Select(x => (x.User, x.Role));
         }
         public IQueryable<User> GetStudents(Lecture lecture)
@@ -231,26 +231,26 @@ namespace Hugin.Services
         public IQueryable<User> GetStaffs(Lecture lecture)
         {
             return DatabaseContext.LectureUserRelationships.Include(x => x.User)
-                .Where(x => x.LectureId == lecture.Id && x.Role > LectureUserRelationship.LectureRole.Student && !x.Role.HasFlag(LectureUserRelationship.LectureRole.Banned))
+                .Where(x => x.LectureId == lecture.Id && x.Role > LectureUserRelationship.LectureRole.Student && x.Role != LectureUserRelationship.LectureRole.Banned)
                 .Select(x => x.User);
         }
         public IQueryable<User> GetUsersWhoHasRole(Lecture lecture, LectureUserRelationship.LectureRole role)
         {
             return DatabaseContext.LectureUserRelationships.Include(x => x.User)
-                .Where(x => x.LectureId == lecture.Id && x.Role.HasFlag(role) && !x.Role.HasFlag(LectureUserRelationship.LectureRole.Banned))
+                .Where(x => x.LectureId == lecture.Id && x.Role.HasFlag(role) && x.Role != LectureUserRelationship.LectureRole.Banned)
                 .Select(x => x.User);
         }
 
         public IQueryable<Lecture> GetTeachingLectures(User user)
         {
             return DatabaseContext.LectureUserRelationships.Include(x => x.Lecture).ThenInclude(x => x.Owner)
-                .Where(x => x.UserId == user.Id && x.Role > LectureUserRelationship.LectureRole.Student && !x.Role.HasFlag(LectureUserRelationship.LectureRole.Banned))
+                .Where(x => x.UserId == user.Id && x.Role > LectureUserRelationship.LectureRole.Student && x.Role != LectureUserRelationship.LectureRole.Banned)
                 .Select(x => x.Lecture);
         }
         public IQueryable<Lecture> GetLecturesIncludingRole(User user, LectureUserRelationship.LectureRole role)
         {
             return DatabaseContext.LectureUserRelationships.Include(x => x.Lecture).ThenInclude(x => x.Owner)
-                .Where(x => x.UserId == user.Id && x.Role.HasFlag(role) && !x.Role.HasFlag(LectureUserRelationship.LectureRole.Banned))
+                .Where(x => x.UserId == user.Id && x.Role.HasFlag(role) && x.Role != LectureUserRelationship.LectureRole.Banned)
                 .Select(x => x.Lecture);
         }
         public IDictionary<string, ILectureParameter> GetLectureParameters(Data.Lecture lecture, string rivision)
