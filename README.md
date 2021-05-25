@@ -18,9 +18,14 @@ GitHubのようにGitのコマンドでコンテンツの入手・更新がで�
 
 ## 実行方法
 
+以下の3種類の実行方法を用意しています．
+いずれも Docker と docker-compose が必要です．
+Windows の場合は　[WSL2](https://docs.microsoft.com/ja-jp/windows/wsl/install-win10) と [Docker Desktop](https://docs.microsoft.com/ja-jp/windows/wsl/tutorials/wsl-containers) を準備しておいてください．
+
 ### Quick Start
 
 試用する場合，またはローカル環境で動作させる場合はこの方法がお勧めです．
+`make` コマンドでシステムの起動と終了ができるようにしています．
 
 Docker, docker-compose が利用可能であれば，macOS, Windows, Linux のいずれのOSでも動作します．
 Windows の場合は WSL2 + Docker Dektop での動作を確認しています．
@@ -58,6 +63,7 @@ cd ..
 
 HTTPS での本番環境で動作させる場合です．
 サーバー証明書とその鍵が必要です．
+`make` コマンドでシステムの起動と終了ができるようにしています．
 
 Requirements:
 * Docker, docker-compose
