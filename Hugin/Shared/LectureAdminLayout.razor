@@ -29,7 +29,7 @@
                                        @onclick="@(() => Jump($"/LectureAdmin/{Lecture.Owner.Account}/{Lecture.Name}/Submissions"))" @onclick:preventDefault>
                                        @Localizer["LectureMenuSubmissions"].Value
                                     </a>
-                                    @if (submissions.Count() > 0)
+                                    @if (submissions != null && submissions.Count() > 0)
                                     {
                                         <ul class="tt">
                                             @foreach (var submission in submissions)
@@ -49,7 +49,7 @@
                                     @{
                                         var sandboxes = SandboxHandler.Set.Where(x => x.LectureId == Lecture.Id).OrderBy(x => x.Name).AsNoTracking().ToList();
                                     }
-                                    @if (sandboxes.Count() > 0)
+                                    @if (submissions != null && submissions.Count() > 0)
                                     {
                                         <ul class="tt">
                                             @foreach (var sandbox in sandboxes)
