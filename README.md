@@ -29,6 +29,17 @@ GitHubのようにGitのコマンドでコンテンツの入手・更新がで�
 いずれも Docker と docker-compose が必要です．
 Windows の場合は　[WSL2](https://docs.microsoft.com/ja-jp/windows/wsl/install-win10) と [Docker Desktop](https://docs.microsoft.com/ja-jp/windows/wsl/tutorials/wsl-containers#install-docker-desktop) を準備しておいてください．
 
+
+初期ユーザーのアカウントとパスワード:
+
+アカウント | パスワード
+----------|-----------
+admin     | password
+test001   | password
+test002   | password
+test003   | password
+
+
 ### Quick Start
 
 試用する場合，またはローカル環境で動作させる場合はこの方法がお勧めです．
