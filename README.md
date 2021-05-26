@@ -53,8 +53,21 @@ Windows の場合は WSL2 + Docker Dektop での動作を確認しています�
 git clone https://github.com/kjmtks/hugin-lms.git
 cd Hugin
 make local-up
-# Then, open http://localhost:8080
 ```
+
+`make` コマンド実行後，しばらくしてから `Then, open http://localhost:8080` にブラウザでアクセスしてください．
+ただし，Internet Explorerは対応していません．
+
+ログインが必要ですが， `admin` でログインを試してください．パスワードは `password` です．
+
+デモ用の講義「Demo Lecture」が用意されていますが，
+まず，この講義に必要なプログラムの実行環境（サンドボックス）をインストールする必要があります．
+「担当」→「講義」→「Demo Lecture」のリンクから，Demo Lectureの管理画面に移動してください．
+インストールの必要なサンドボックス一覧が表示されていますので，「インストール」ボタンをクリックしてインストールを開始してください．
+
+「講義ページへ」ボタンをクリックすると学生に提示する講義のページへ移動することができます．
+サンドボックスのインストールが完了後に，プログラム演習を行うことができます．
+
 
 終了手順:
 ```
