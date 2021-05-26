@@ -79,7 +79,7 @@
                                     {
                                         <li>
                                             <a href="/LectureAdmin/@Lecture.Owner.Account/@Lecture.Name/ContentsRepository/@Lecture.DefaultBranch/pages/"
-                                               @onclick="@(() => Jump($"/LectureAdmin/{Lecture.Owner.Account}/{Lecture.Name}/ContentsRepository/{Lecture.DefaultBranch}"))" @onclick:preventDefault>
+                                               @onclick="@(() => Jump($"/LectureAdmin/{Lecture.Owner.Account}/{Lecture.Name}/ContentsRepository/{Lecture.DefaultBranch}/pages/"))" @onclick:preventDefault>
                                                @Localizer["LectureMenuPages"].Value
                                             </a>
                                             <ul class="tt">
@@ -95,26 +95,26 @@
                                             </ul>
                                         </li>
                                     }
-                                    @if (activities != null && activities.Count() > 0)
-                                    {
-                                        <li>
-                                            <a href="/LectureAdmin/@Lecture.Owner.Account/@Lecture.Name/ContentsRepository/@Lecture.DefaultBranch/activities/"
-                                               @onclick="@(() => Jump($"/LectureAdmin/{Lecture.Owner.Account}/{Lecture.Name}/ContentsRepository/{Lecture.DefaultBranch}/activities/"))" @onclick:preventDefault>
-                                               @Localizer["LectureMenuActivities"].Value
-                                            </a>
+                                    <li>
+                                        <a href="/LectureAdmin/@Lecture.Owner.Account/@Lecture.Name/Activitis/@Lecture.DefaultBranch"
+                                            @onclick="@(() => Jump($"/LectureAdmin/{Lecture.Owner.Account}/{Lecture.Name}/Activities/{Lecture.DefaultBranch}"))" @onclick:preventDefault>
+                                            @Localizer["LectureMenuActivities"].Value
+                                        </a>
+                                        @if (activities != null && activities.Count() > 0)
+                                        {
                                             <ul class="tt">
                                                 @foreach (var activity in activities)
                                                 {
                                                     <li>
                                                         <a href="/LectureAdmin/@Lecture.Owner.Account/@Lecture.Name/ContentsRepository/@Lecture.DefaultBranch/activities/@(activity)"
-                                                           @onclick="@(() => Jump($"/LectureAdmin/{Lecture.Owner.Account}/{Lecture.Name}/ContentsRepository/{Lecture.DefaultBranch}/activities/{activity}"))" @onclick:preventDefault>
+                                                            @onclick="@(() => Jump($"/LectureAdmin/{Lecture.Owner.Account}/{Lecture.Name}/ContentsRepository/{Lecture.DefaultBranch}/activities/{activity}"))" @onclick:preventDefault>
                                                             @(activity)
                                                         </a>
                                                     </li>
                                                 }
                                             </ul>
-                                        </li>
-                                    }
+                                        }
+                                    </li>
                                 }
                             </ul>
                         </aside>
