@@ -68,6 +68,9 @@ namespace Hugin.Data
 
         public virtual ICollection<LectureUserRelationship> LectureUserRelationships { get; set; } = new List<LectureUserRelationship>();
         public virtual ICollection<Sandbox> Sandboxes { get; set; } = new List<Sandbox>();
+
+        [NotMapped]
+        public string RepositoryCloneFrom { get; set; }
     }
     public class LectureUserRelationship
     {

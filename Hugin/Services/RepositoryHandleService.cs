@@ -60,6 +60,37 @@ namespace Hugin.Services
 
             SaveAndSync(repository, defaultBranch, files, null, message, user.DisplayName, user.Email);
         }
+        public void CreateFromGitContentsRepository(Repository repository, string remoteUrl, Data.Lecture lecture, Data.User user)
+        {
+            if (IsInitialized(repository))
+            {
+                throw new Exception($"The repository is not empty.");
+            }
+            var tmpdir = $"/tmp/{Guid.NewGuid().ToString("N").Substring(0, 32)}";
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"mkdir {tmpdir}; cd {tmpdir}; git clone --origin github {remoteUrl} {lecture.Name}; cd {lecture.Name};");
+            sb.AppendLine($"git remote add origin {repository.BaredFullPath};");
+            sb.AppendLine($"git remote rm github");
+            sb.AppendLine($"git push origin master");
+            sb.AppendLine($"cd /; rm -rf {tmpdir}; ");
+
+            var codes = sb.ToString();
+            var proc = new Process();
+            proc.StartInfo.FileName = "/bin/bash";
+            proc.StartInfo.RedirectStandardInput = true;
+            proc.StartInfo.RedirectStandardOutput = false;
+            proc.StartInfo.RedirectStandardError = false;
+            proc.StartInfo.CreateNoWindow = true;
+            proc.StartInfo.UseShellExecute = false;
+            proc.Start();
+            proc.StandardInput.WriteLine(codes);
+            proc.StandardInput.Close();
+            proc.WaitForExit();
+            if(proc.ExitCode != 0)
+            {
+                throw new Exception("Git error");
+            }
+        }
 
         public void CreateInitialLectureUserDataRepositoryIfNotExist(Repository repository, string branch, Data.Lecture lecture, Data.User user, string message)
         {

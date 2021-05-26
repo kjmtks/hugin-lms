@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Mvc.Localization;
 @inject IHtmlLocalizer<Hugin.Lang> Localizer;
 @inject IJSRuntime JS;
+@inject ResourceHubHandleService ResourceHubHandler
 
 @if (!string.IsNullOrWhiteSpace(NormalMessage))
 {
@@ -144,6 +145,27 @@
                             </div>
                             <p class="help is-danger"><ValidationMessage For="@(() => model.DefaultBranch)" /></p>
                         </div>
+                        @if(templates != null)
+                        {
+                            <div class="field">
+                                <label class="label tt">@Localizer["CloneRepositoryFrom"].Value</label>
+                                <div class="control">
+                                    <div class="select">
+                                        <select class="tt is-fullwidth" @onchange="onChangeTemplate">
+                                            <option value="-1" class="tt">@Localizer["EmptyRepository"].Value</option>
+                                            @if(templates != null)
+                                            {
+                                                @foreach (var (template, i) in templates.Select((x,i) => (x,i)))
+                                                {
+                                                    <option value="@i" class="tt">@template.HubName/@template.Name</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <p class="help is-danger"><ValidationMessage For="@(() => model.Subject)" /></p>
+                            </div>
+                        }
                         <div class="field">
                             <label class="label tt">@Localizer["IsActive"].Value</label>
                             <div class="control">
@@ -192,6 +214,29 @@
     private Paginated<Data.Lecture> Pagination;
 
 
+
+    private List<Hugin.Models.ResourceHub.Content> templates;
+    private async Task onChangeTemplate(ChangeEventArgs ev)
+    {
+        if (!int.TryParse(ev.Value.ToString(), out var id))
+        {
+            model.RepositoryCloneFrom = null;
+        }
+        else
+        {
+            if (id >= 0 && id < templates.Count)
+            {
+                model.RepositoryCloneFrom = templates[id].Url;
+            }
+            else
+            {
+                model.RepositoryCloneFrom = null;
+            }
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+
     private async Task removeAsync(Data.Lecture lecture)
     {
         if (await JS.InvokeAsync<bool>("showConfirmDialog", Localizer["AreYouSureDelete"].Value))
@@ -206,13 +251,26 @@
 
     private async Task createModalOnAsync()
     {
+        templates = new List<Hugin.Models.ResourceHub.Content>();
+        foreach (var x in ResourceHubHandler.Set.AsNoTracking().ToList())
+        {
+            var hub = await ResourceHubHandler.WgetResourceHubAsync(x.YamlURL);
+            foreach (var y in hub.Contents)
+            {
+                y.HubName = x.Name;
+                templates.Add(y);
+            }
+        }
+
         editMode = EditMode.CreateNew;
         model = new Data.Lecture
         {
             OwnerId = LoginUser.Id,
             DefaultBranch = "master",
-            IsActived = true
+            IsActived = true,
+            RepositoryCloneFrom = null
         };
+
         resetEdittingModel(model);
         await InvokeAsync(() => StateHasChanged());
         await JS.InvokeVoidAsync("modalOn", "user-modal");
@@ -222,6 +280,7 @@
     {
         editMode = EditMode.Edit;
         model = lecture;
+        templates = null;
         resetEdittingModel(model);
         await InvokeAsync(() => StateHasChanged());
         await JS.InvokeVoidAsync("modalOn", "user-modal");
