@@ -135,6 +135,9 @@
   <data name="Accounts" xml:space="preserve">
     <value>Accounts</value>
   </data>
+  <data name="Activities" xml:space="preserve">
+    <value>Activities</value>
+  </data>
   <data name="ActivityActionChartOfLecture" xml:space="preserve">
     <value>Activity Action Chart Of Lecture</value>
   </data>
@@ -146,6 +149,15 @@
   </data>
   <data name="ActivityActionStatus" xml:space="preserve">
     <value>Action Status</value>
+  </data>
+  <data name="ActivityRequirements" xml:space="preserve">
+    <value>Activity Requirements</value>
+  </data>
+  <data name="ActivityTemplate" xml:space="preserve">
+    <value>Activity Template</value>
+  </data>
+  <data name="ActivityXml" xml:space="preserve">
+    <value>Activity Definition (XML)</value>
   </data>
   <data name="AddNewLDAPUsers" xml:space="preserve">
     <value>Add New LDAP Users</value>
@@ -312,6 +324,9 @@
   <data name="EnglishName" xml:space="preserve">
     <value>English Name</value>
   </data>
+  <data name="ExportName" xml:space="preserve">
+    <value>Export Name</value>
+  </data>
   <data name="Failed" xml:space="preserve">
     <value>Failed</value>
   </data>
@@ -350,6 +365,9 @@
   </data>
   <data name="Home" xml:space="preserve">
     <value>Home</value>
+  </data>
+  <data name="ImportActivity" xml:space="preserve">
+    <value>Import Activity</value>
   </data>
   <data name="Install" xml:space="preserve">
     <value>Install</value>
@@ -560,6 +578,9 @@
   </data>
   <data name="SaveError" xml:space="preserve">
     <value>Save error.</value>
+  </data>
+  <data name="SelectImportActivity" xml:space="preserve">
+    <value>Select Import Activity</value>
   </data>
   <data name="Send" xml:space="preserve">
     <value>Send</value>

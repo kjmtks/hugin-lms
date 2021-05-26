@@ -36,6 +36,27 @@ namespace Hugin.Services
             model.Description = x.Description;
             return true;
         }
+        public async Task<string> WgetActivityXml(string url)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+            {
+                request.Headers.Add("User-Agent", "Hugin");
+                using (var client = ClientFactory.CreateClient())
+                {
+                    using (var response = await client.SendAsync(request).ConfigureAwait(false))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return await response.Content.ReadAsStringAsync();
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
+                }
+            }
+        }
 
         public async Task<IEnumerable<Hugin.Models.ResourceHub.Sandbox>> WgetSandboxes(ResourceHub model)
         {
@@ -43,7 +64,6 @@ namespace Hugin.Services
             var xs = await WgetResourceHubAsync(model.YamlURL);
             foreach(var x in xs.Sandboxes)
             {
-
                 using (var request = new HttpRequestMessage(HttpMethod.Get, x))
                 {
                     request.Headers.Add("User-Agent", "Hugin");

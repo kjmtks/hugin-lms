@@ -84,7 +84,6 @@
                 </div>
             </div>
 
-
             @if (children.Count() > 0)
             {
                 <div class="panel-block tt">
@@ -117,7 +116,6 @@
                 {
                     @ChildContent
                 }
-
                 if (isTextFile)
                 {
                     <div class="panel-block">
@@ -502,7 +500,7 @@
 
 
 
-    protected IEnumerable<string> GetChildren(string path)
+    public IEnumerable<string> GetChildren(string path)
     {
         return Files == null ? new string[] { } : Files.Where(x => x.Length >= path.Length && x.Substring(0, path.Length) == path)
             .Where(x => string.IsNullOrWhiteSpace(path) ? true : (!(x.Length >= path.Length + 1) || x[path.Length] == '/'))

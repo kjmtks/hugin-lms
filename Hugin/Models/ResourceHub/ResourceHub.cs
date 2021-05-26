@@ -10,7 +10,7 @@ namespace Hugin.Models.ResourceHub
         public string Name { get; set; }
         public string Description { get; set; }
 
-        public IEnumerable<string> Activities { get; set; }
+        public IEnumerable<Activity> Activities { get; set; }
         public IEnumerable<string> Sandboxes { get; set; }
         public IEnumerable<Content> Contents { get; set; }
     }
@@ -30,6 +30,15 @@ namespace Hugin.Models.ResourceHub
         public string Email { get; set; }
         public string Description { get; set; }
         public string Commands { get; set; }
-        public IEnumerable<string> Activities { get; set; }
+    }
+    public class Activity
+    {
+        public string HubName { get; set; }
+        public string ExportName { get; set; }
+        public string Name { get; set; }
+        public string Url { get; set; }
+        public string Description { get; set; }
+        public string Requirements { get; set; }
+        public string Xml { get; set; }
     }
 }

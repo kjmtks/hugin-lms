@@ -135,6 +135,9 @@
   <data name="Accounts" xml:space="preserve">
     <value>アカウント</value>
   </data>
+  <data name="Activities" xml:space="preserve">
+    <value>アクティビティ</value>
+  </data>
   <data name="ActivityActionChartOfLecture" xml:space="preserve">
     <value>講義のアクション数の時間変化</value>
   </data>
@@ -146,6 +149,15 @@
   </data>
   <data name="ActivityActionStatus" xml:space="preserve">
     <value>学習行動状況</value>
+  </data>
+  <data name="ActivityRequirements" xml:space="preserve">
+    <value>このアクティビティの要件</value>
+  </data>
+  <data name="ActivityTemplate" xml:space="preserve">
+    <value>アクティビティのひな形</value>
+  </data>
+  <data name="ActivityXml" xml:space="preserve">
+    <value>アクティビティの定義(XML)</value>
   </data>
   <data name="AddNewLDAPUsers" xml:space="preserve">
     <value>LDAPユーザーの複数追加</value>
@@ -312,6 +324,9 @@
   <data name="EnglishName" xml:space="preserve">
     <value>英語氏名</value>
   </data>
+  <data name="ExportName" xml:space="preserve">
+    <value>エクスポートする名前</value>
+  </data>
   <data name="Failed" xml:space="preserve">
     <value>失敗</value>
   </data>
@@ -350,6 +365,9 @@
   </data>
   <data name="Home" xml:space="preserve">
     <value>ホーム</value>
+  </data>
+  <data name="ImportActivity" xml:space="preserve">
+    <value>新しいアクティビティのインポート</value>
   </data>
   <data name="Install" xml:space="preserve">
     <value>インストール</value>
@@ -560,6 +578,9 @@
   </data>
   <data name="SaveError" xml:space="preserve">
     <value>保存に失敗しました．</value>
+  </data>
+  <data name="SelectImportActivity" xml:space="preserve">
+    <value>インポートするアクティビティを選択してください．</value>
   </data>
   <data name="Send" xml:space="preserve">
     <value>送信</value>

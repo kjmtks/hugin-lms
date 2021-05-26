@@ -1,0 +1,267 @@
+﻿@page "/LectureAdmin/{Account}/{LectureName}/Activities/{Rivision}";
+@layout LectureAdminLayout;
+@using Microsoft.AspNetCore.Mvc.Localization;
+@inject IHtmlLocalizer<Hugin.Lang> Localizer;
+@inject PermissionProviderService PermissionProvider;
+@inject IJSRuntime JS;
+@inject RepositoryHandleService RepositoryHandler;
+@inject LectureHandleService LectureHandler;
+@inject ResourceHubHandleService ResourceHubHandler
+@inject NavigationManager NV;
+
+
+@if (!string.IsNullOrWhiteSpace(normalMessage))
+{
+    <article class="message is-primary">
+        <div class="message-body">@normalMessage</div>
+    </article>
+}
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <article class="message is-danger">
+        <div class="message-body">@errorMessage</div>
+    </article>
+}
+
+<AccessRestrictions Checker="p => p.CanReadLectureContentsRepository(Lecture, LoginUser)">
+    <section>
+        <nav class="panel is-info">
+
+            <div class="panel-heading">
+                @Localizer["Activities"].Value
+            </div>
+
+            <div class="panel-block tt">
+                <table class="table is-fullwidth" style="font-size: small">
+                    <thead>
+                        <tr>
+                            <th>@Localizer["Name"].Value</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var activity in activities)
+                        {
+                        <tr>
+                            <td><a href="/LectureAdmin/@Account/@LectureName/ContentsRepository/@Rivision/activities/@activity">@activity</a></td>
+                            <td></td>
+                        </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2">
+                                <div class="level">
+                                    <div class="level-left">
+                                        <div class="level-item"></div>
+                                    </div>
+                                    <div class="level-right">
+                                        <div class="level-item">
+                                            @if (PermissionProvider.CanWriteLectureContentsRepository(Lecture, LoginUser))
+                                            {
+                                                <a @onclick="modalOnAsync">
+                                                    <i class="fas fa-plus"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </nav>
+    </section>
+    
+
+    <div class="modal" id="add-new-activity-modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">
+                    @Localizer["ImportActivity"].Value
+                </p>
+                <button class="delete" @onclick="modalOffAsync" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+                
+                <div class="field">
+                    <div class="control">
+                        <label class="label tt">@Localizer["ActivityTemplate"].Value</label>
+                        <div class="select">
+                            <select class="tt is-fullwidth" @onchange="onChangeTemplate">
+                                <option value="-1" class="tt">@Localizer["SelectImportActivity"].Value</option>
+                                @if(templates != null)
+                                {
+                                    @foreach (var (template, i) in templates.Select((x,i) => (x,i)))
+                                    {
+                                        <option value="@i" class="tt">@template.HubName/@template.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                @if(selectedTemplate != null)
+                {
+
+                    <div class="field">
+                        <label class="label tt">@Localizer["ExportName"].Value</label>
+                        <div class="control">
+                            <input class="input tt" @bind="@selectedTemplate.ExportName" />
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label tt">@Localizer["Description"].Value</label>
+                        <div class="control">
+                            <textarea class="textarea tt" rows="2" readonly>@selectedTemplate.Description</textarea>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label tt">@Localizer["ActivityRequirements"].Value</label>
+                        <div class="control">
+                            <textarea class="textarea tt" rows="2" readonly>@selectedTemplate.Requirements</textarea>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label tt">@Localizer["ActivityXml"].Value</label>
+                        <div class="control">
+                            <textarea class="textarea tt" rows="10" readonly>@selectedTemplate.Xml</textarea>
+                        </div>
+                    </div>
+                }
+            </section>
+
+            <footer class="modal-card-foot">
+                @if(selectedTemplate != null)
+                {
+                    <button class="button is-success" @onclick="install">@Localizer["OK"].Value</button>
+                }
+                <button class="button" @onclick="modalOffAsync">@Localizer["Cancel"].Value</button>
+            </footer>
+        </div>
+    </div>
+</AccessRestrictions>
+
+
+@code {
+    [Parameter]
+    public string Account { get; set; }
+    [Parameter]
+    public string LectureName { get; set; }
+    [Parameter]
+    public string Rivision { get; set; }
+
+    [CascadingParameter]
+    public Data.User LoginUser { get; set; }
+    [CascadingParameter]
+    public Data.User LectureUser { get; set; }
+    [CascadingParameter]
+    public Data.Lecture Lecture { get; set; }
+
+    private string normalMessage;
+    private string errorMessage;
+
+    private Models.Repository Repository;
+
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        updateActivities();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private IEnumerable<string> activities;
+    private void updateActivities()
+    {
+        try
+        {
+            Repository = RepositoryHandler.GetLectureContentsRepository(Lecture);
+            if (RepositoryHandler.IsInitialized(Repository))
+            {
+                activities = RepositoryHandler.GetFileNames(Repository, "activities", Rivision)
+                    .Where(x => System.Text.RegularExpressions.Regex.IsMatch(x, @"\.xml$"))
+                    .Select(x => x.Split("/", 2).Last()).OrderBy(x => x);
+            }
+            else
+            {
+                activities = new string[] { };
+                throw new Exception("Repository is empty.");
+            }
+        }
+        catch (Exception e)
+        {
+            activities = new string[] { };
+            errorMessage = e.Message;
+        }
+        StateHasChanged();
+    }
+
+
+    private Hugin.Models.ResourceHub.Activity selectedTemplate;
+    private List<Hugin.Models.ResourceHub.Activity> templates;
+    private async Task modalOnAsync()
+    {
+        templates = new List<Hugin.Models.ResourceHub.Activity>();
+        foreach (var x in ResourceHubHandler.Set.AsNoTracking().ToList())
+        {
+            var hub = await ResourceHubHandler.WgetResourceHubAsync(x.YamlURL);
+            foreach (var y in hub.Activities)
+            {
+                y.HubName = x.Name;
+                templates.Add(y);
+            }
+
+        }
+        selectedTemplate = null;
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOn", "add-new-activity-modal");
+    }
+    private async Task onChangeTemplate(ChangeEventArgs ev)
+    {
+        if (!int.TryParse(ev.Value.ToString(), out var id))
+        {
+            selectedTemplate = null;
+        }
+        else
+        {
+            if (id >= 0 && id < templates.Count)
+            {
+                selectedTemplate = templates[id];
+                selectedTemplate.ExportName = $"{selectedTemplate.Name}.xml";
+                selectedTemplate.Xml = await ResourceHubHandler.WgetActivityXml(selectedTemplate.Url);
+            }
+            else
+            {
+                selectedTemplate = null;
+            }
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task modalOffAsync()
+    {
+        await InvokeAsync(() => StateHasChanged());
+        await JS.InvokeVoidAsync("modalOff", "add-new-activity-modal");
+    }
+
+    private async Task install()
+    {
+        if (selectedTemplate == null && !PermissionProvider.CanWriteLectureContentsRepository(Lecture, LoginUser) && !RepositoryHandler.IsInitialized(Repository)) { return; }
+
+        RepositoryHandler.SaveTextAndSync(Repository, Rivision, $"activities/{selectedTemplate.ExportName}", selectedTemplate.Xml,
+            $"Add activity `{selectedTemplate.ExportName}'", LoginUser.DisplayName, LoginUser.Email);
+
+        await modalOffAsync();
+        StateHasChanged();
+
+        NV.NavigateTo($"/LectureAdmin/{Account}/{LectureName}/ContentsRepository/{Rivision}/activities/{selectedTemplate.ExportName}", true);
+    }
+}
