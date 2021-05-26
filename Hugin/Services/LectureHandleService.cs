@@ -133,6 +133,11 @@ namespace Hugin.Services
             var repository = RepositoryHandler.GetLectureContentsRepository(model.Owner.Account, model.Name);
             RepositoryHandler.Create(repository, model.DefaultBranch);
 
+            if(!string.IsNullOrWhiteSpace(model.RepositoryCloneFrom))
+            {
+                RepositoryHandler.CreateFromGitContentsRepository(repository, model.RepositoryCloneFrom, model, model.Owner);
+            }
+
             lock (DatabaseContext)
             {
                 DatabaseContext.LectureUserRelationships.Add(new LectureUserRelationship

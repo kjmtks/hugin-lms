@@ -37,7 +37,8 @@ namespace Hugin.Data
                 Description = "for Demo",
                 DefaultBranch = "master",
                 IsActived = true,
-                Opened = true
+                Opened = true,
+                RepositoryCloneFrom = "https://github.com/kjmtks/hugin-initial-lecture.git"
             });
 
 

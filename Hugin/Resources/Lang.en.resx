@@ -198,6 +198,9 @@
   <data name="ChooseAFile" xml:space="preserve">
     <value>Choose a file...</value>
   </data>
+  <data name="CloneRepositoryFrom" xml:space="preserve">
+    <value>Clone From</value>
+  </data>
   <data name="Close" xml:space="preserve">
     <value>Close</value>
   </data>
@@ -320,6 +323,9 @@
   </data>
   <data name="EmptyContent" xml:space="preserve">
     <value>Empty Content</value>
+  </data>
+  <data name="EmptyRepository" xml:space="preserve">
+    <value>Empty Contents Repository</value>
   </data>
   <data name="EnglishName" xml:space="preserve">
     <value>English Name</value>

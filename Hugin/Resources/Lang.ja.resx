@@ -198,6 +198,9 @@
   <data name="ChooseAFile" xml:space="preserve">
     <value>アップロードするファイルを選択</value>
   </data>
+  <data name="CloneRepositoryFrom" xml:space="preserve">
+    <value>コンテンツの Clone 元</value>
+  </data>
   <data name="Close" xml:space="preserve">
     <value>閉じる</value>
   </data>
@@ -320,6 +323,9 @@
   </data>
   <data name="EmptyContent" xml:space="preserve">
     <value>表示するべきものがありません．</value>
+  </data>
+  <data name="EmptyRepository" xml:space="preserve">
+    <value>空のコンテンツリポジトリ</value>
   </data>
   <data name="EnglishName" xml:space="preserve">
     <value>英語氏名</value>
