@@ -43,15 +43,15 @@ test003   | password
 
 ### Quick Start
 
+[![](https://img.youtube.com/vi/ynMQXg2I9j8/0.jpg)](https://youtu.be/ynMQXg2I9j8)
+
 試用する場合，またはローカル環境で動作させる場合はこの方法がお勧めです．
 `make` コマンドでシステムの起動と終了ができるようにしています．
 
 Docker, docker-compose が利用可能であれば，macOS, Windows, Linux のいずれのOSでも動作します．
 Windows の場合は WSL2 + Docker Dektop での動作を確認しています．
 
-#### ソースコード入手と実行:
-
-[![](https://img.youtube.com/vi/ynMQXg2I9j8/0.jpg)](https://youtu.be/ynMQXg2I9j8)
+#### ソースコード入手と実行
 
 ```
 git clone https://github.com/kjmtks/hugin-lms.git
