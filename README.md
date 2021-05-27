@@ -59,7 +59,7 @@ cd Hugin
 make local-up
 ```
 
-`make` コマンド実行後，しばらくしてから `Then, open http://localhost:8080` にブラウザでアクセスしてください．
+`make` コマンド実行後，しばらくしてから `http://localhost:8080` にブラウザでアクセスしてください．
 ただし，Internet Explorerは対応していません．
 
 #### 起動後~デモを動かすまで
