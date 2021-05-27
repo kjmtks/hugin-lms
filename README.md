@@ -56,6 +56,8 @@ cd Hugin
 make local-up
 ```
 
+ここまでの手順の動画: [YouTube](https://youtu.be/gBmShIhK9d0)
+
 `make` コマンド実行後，しばらくしてから `Then, open http://localhost:8080` にブラウザでアクセスしてください．
 ただし，Internet Explorerは対応していません．
 
