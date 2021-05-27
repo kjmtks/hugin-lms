@@ -189,11 +189,11 @@
                             <label class="label tt">@Localizer["Authorities"].Value</label>
                             <div class="control">
                                 <label class="checkbox">
-                                    <input type="checkbox" @bind="model.IsAdmin">@Localizer["Admin"]
+                                    <input type="checkbox" @bind="model.IsAdmin">@Localizer["Admin"].Value
                                 </label>
                                 &nbsp;&nbsp;
                                 <label class="checkbox">
-                                    <input type="checkbox" @bind="model.IsTeacher">@Localizer["Teacher"]
+                                    <input type="checkbox" @bind="model.IsTeacher">@Localizer["Teacher"].Value
                                 </label>
                             </div>
                             <p class="help is-danger"><ValidationMessage For="@(() => model.IsAdmin)" /></p>
