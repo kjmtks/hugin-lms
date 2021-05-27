@@ -49,17 +49,20 @@ test003   | password
 Docker, docker-compose が利用可能であれば，macOS, Windows, Linux のいずれのOSでも動作します．
 Windows の場合は WSL2 + Docker Dektop での動作を確認しています．
 
-ソースコード入手と実行:
+#### ソースコード入手と実行:
+
+[![](https://img.youtube.com/vi/gBmShIhK9d0/0.jpg)](https://www.youtube.com/watch?v=gBmShIhK9d0)
+
 ```
 git clone https://github.com/kjmtks/hugin-lms.git
 cd Hugin
 make local-up
 ```
 
-ここまでの手順の動画: [YouTube](https://youtu.be/gBmShIhK9d0)
-
 `make` コマンド実行後，しばらくしてから `Then, open http://localhost:8080` にブラウザでアクセスしてください．
 ただし，Internet Explorerは対応していません．
+
+#### 起動後~デモを動かすまで
 
 ログインが必要です．
 まずは `admin` でログインをしてください．
@@ -74,7 +77,8 @@ make local-up
 サンドボックスのインストールが完了した後に，プログラム演習を行うことができます．
 
 
-終了手順:
+#### 終了手順
+
 ```
 make local-down
 ```
