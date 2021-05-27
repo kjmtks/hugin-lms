@@ -43,7 +43,7 @@ test003   | password
 
 ### Quick Start
 
-[![](https://img.youtube.com/vi/cHRI-NIDXHM/0.jpg)](https://youtu.be/cHRI-NIDXHM)
+[![](https://img.youtube.com/vi/Yvm4sSdc58M/0.jpg)](https://www.youtube.com/watch?v=Yvm4sSdc58M)
 
 試用する場合，またはローカル環境で動作させる場合はこの方法がお勧めです．
 `make` コマンドでシステムの起動と終了ができるようにしています．
