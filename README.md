@@ -51,7 +51,7 @@ Windows の場合は WSL2 + Docker Dektop での動作を確認しています�
 
 #### ソースコード入手と実行:
 
-[![](https://img.youtube.com/vi/gBmShIhK9d0/0.jpg)](https://www.youtube.com/watch?v=gBmShIhK9d0)
+[![](https://img.youtube.com/vi/ynMQXg2I9j8/0.jpg)](https://youtu.be/ynMQXg2I9j8)
 
 ```
 git clone https://github.com/kjmtks/hugin-lms.git
