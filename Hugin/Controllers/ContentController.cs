@@ -56,8 +56,15 @@ namespace Hugin.Controllers
                     var ext = path.Split(".").LastOrDefault();
                     if (ext == "md" || ext == "html" || ext == "htm")
                     {
-                        var html = await ContentParser.BuildPageAsync(this, loginUser, lecture, rivision, path);
-                        return View(new Tuple<Data.Lecture, Data.User, string, string, string>(lecture, loginUser, rivision, path, html));
+                        try
+                        {
+                            var html = await ContentParser.BuildPageAsync(this, loginUser, lecture, rivision, path);
+                            return View(new Tuple<Data.Lecture, Data.User, string, string, string>(lecture, loginUser, rivision, path, html));
+                        }
+                        catch (Exception e)
+                        {
+                            return Content($"{e.Message}{Environment.NewLine}{e.StackTrace}");
+                        }
                     }
                     else
                     {
