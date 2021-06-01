@@ -41,29 +41,31 @@
                         </ul>
                     </aside>
 
-                    <br />
-                    <aside class="menu is-hidden-mobile">
-                        <p class="menu-label">
-                            @Localizer["MyMenuTeaching"].Value
-                        </p>
-                        <ul class="menu-list">
-                            <li>
-                                <a href="/Teacher/Lectures">@Localizer["MyMenuLectures"].Value</a>
-                                <ul>
-                                    @foreach (var lecture in LectureHandler.GetTeachingLectures(LoginUser))
-                                    {
-                                        <li>
-                                            <a href="/LectureAdmin/@lecture.Owner.Account/@lecture.Name/">@lecture.Subject</a>
-                                        </li>
-                                    }
-                                </ul>
-                            </li>
-                        </ul>
-                    </aside>
-
-                    <br />
+                    @if(LoginUser.IsTeacher)
+                    {
+                        <br />
+                        <aside class="menu is-hidden-mobile">
+                            <p class="menu-label">
+                                @Localizer["MyMenuTeaching"].Value
+                            </p>
+                            <ul class="menu-list">
+                                <li>
+                                    <a href="/Teacher/Lectures">@Localizer["MyMenuLectures"].Value</a>
+                                    <ul>
+                                        @foreach (var lecture in LectureHandler.GetTeachingLectures(LoginUser))
+                                        {
+                                            <li>
+                                                <a href="/LectureAdmin/@lecture.Owner.Account/@lecture.Name/">@lecture.Subject</a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </li>
+                            </ul>
+                        </aside>
+                    }
                     @if (LoginUser.IsAdmin)
                     {
+                        <br />
                         <aside class="menu is-hidden-mobile">
                             <p class="menu-label">
                                 @Localizer["MyMenuSystem"].Value

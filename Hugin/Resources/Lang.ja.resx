@@ -282,6 +282,9 @@
   <data name="DisplayName" xml:space="preserve">
     <value>氏名</value>
   </data>
+  <data name="Disqualified" xml:space="preserve">
+    <value>不合格</value>
+  </data>
   <data name="Double" xml:space="preserve">
     <value>倍精度浮動小数</value>
   </data>
@@ -654,6 +657,9 @@
   <data name="TheActivityHasBeenConfirmed" xml:space="preserve">
     <value>このアクティビティは既に提出が完了しているので再提出はできません．</value>
   </data>
+  <data name="TheActivityHasBeenDisqualified" xml:space="preserve">
+    <value>このアクティビティは既に不合格となっているので再提出はできません．</value>
+  </data>
   <data name="TheDeadlineHasBeenPassed" xml:space="preserve">
     <value>このアクティビティは提出期限を過ぎているので提出はできません．</value>
   </data>
@@ -665,6 +671,9 @@
   </data>
   <data name="Uninstalled" xml:space="preserve">
     <value>未インストール</value>
+  </data>
+  <data name="Unsubmitted" xml:space="preserve">
+    <value>未提出</value>
   </data>
   <data name="UploadFile" xml:space="preserve">
     <value>ファイルのアップロード</value>

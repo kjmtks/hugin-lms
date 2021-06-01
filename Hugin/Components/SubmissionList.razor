@@ -8,6 +8,7 @@
 @inject SubmissionNotifierService Notifier;
 @inject IJSRuntime JS;
 
+
 @if (submissions != null && submissions.Count() > 0)
 {
     <nav class="panel is-info">
@@ -15,19 +16,29 @@
             <table class="table is-fullwidth" style="font-size: small">
                 @foreach (var s in submissions)
                 {
+                    var empty = s.State == Data.Submission.SubmissionState.Empty;
+
                     <tr>
-                        @if (string.IsNullOrWhiteSpace(s.Hash))
+                        @if (empty)
                         {
-                            <td colspan="2">@s.User.DisplayName</td>
+                            <td width="50%">
+                                <div>
+                                    <div>
+                                        @s.User.DisplayName
+                                        &nbsp;
+                                        <span class="tag tt is-disabled">@Localizer["Unsubmitted"].Value</span>
+                                    </div>
+                                </div>
+                            </td>
                         }
                         else
                         {
                             <td width="50%">
                                 <div>
                                     <div>
-
                                         @s.User.DisplayName
                                         &nbsp;
+
                                         @if (s.State == Data.Submission.SubmissionState.Submitted)
                                         {
                                             <span class="tag tt is-info">@Localizer["Submitted"].Value</span>
@@ -44,13 +55,22 @@
                                         {
                                             <span class="tag tt is-success">@Localizer["Confirmed"].Value</span>
                                         }
+                                        @if (s.State == Data.Submission.SubmissionState.Disqualified)
+                                        {
+                                            <span class="tag tt is-disabled">@Localizer["Disqualified"].Value</span>
+                                        }
                                         <br />
                                         <br />
-                                        @s.ActivityName#@s.Count
-                                        &nbsp;
-                                        <a target="_blank" href="/Page/@s.Lecture.Owner.Account/@s.Lecture.Name/@s.Lecture.DefaultBranch/@s.Page#@s.ActivityName">
-                                            <i class="fas fa-link"></i>
-                                        </a>
+                                        <span>
+                                            @s.ActivityName#@s.Count
+                                            &nbsp;
+                                        </span>
+                                        @if(!string.IsNullOrWhiteSpace(s.Page))
+                                        { 
+                                            <a target="_blank" href="/Page/@s.Lecture.Owner.Account/@s.Lecture.Name/@s.Lecture.DefaultBranch/@s.Page#@s.ActivityName">
+                                                <i class="fas fa-link"></i>
+                                            </a>
+                                        }
                                         @if (IsShowHistoryLink)
                                         {
                                             <a style="margin-left: 0.5em; visibility: @(s.Count >= 2 ? "visible" : "hidden")" target="_blank" href="/LectureAdmin/@s.Lecture.Owner.Account/@s.Lecture.Name/UserSubmissions/@s.User.Account/@s.ActivityName">
@@ -66,10 +86,10 @@
                                         @{
                                             var rep = RepositoryHandler.GetLectureUserDataRepository(s.Lecture, s.User.Account);
                                         }
-                                        @if (RepositoryHandler.IsInitialized(rep))
+                                        @if (RepositoryHandler.IsInitialized(rep) && !string.IsNullOrWhiteSpace(s.SubmittedFiles))
                                         {
                                             <ul>
-                                                @foreach (var fn in s.SubmittedFiles.Split().Where(x => !string.IsNullOrWhiteSpace(x)))
+                                                @foreach (var fn in s?.SubmittedFiles?.Split()?.Where(x => !string.IsNullOrWhiteSpace(x)))
                                                 {
                                                     <li>
                                                         <i class="fas fa-file-alt"></i>
@@ -86,70 +106,72 @@
                                     }
                                 </div>
                             </td>
-                            <td width="50%">
-                                @if (CanMark)
-                                {
-                                    var u = collection[s.Id];
+                        }
 
-                                    <div>
-                                        <div class="field has-addons">
-                                            <div class="control">
-                                                <span class="select">
-                                                    <select class="tt" @bind="@u.State">
-                                                        <option value="@Data.Submission.SubmissionState.Submitted">@Localizer["Pending"].Value</option>
-                                                        <option value="@Data.Submission.SubmissionState.Confirmed">@Localizer["Confirm"].Value</option>
-                                                        <option value="@Data.Submission.SubmissionState.RequiringResubmit">@Localizer["RequireResubmit"].Value</option>
-                                                        <option value="@Data.Submission.SubmissionState.AcceptingResubmit">@Localizer["AcceptResubmit"].Value</option>
-                                                        <option value="@Data.Submission.SubmissionState.Deleted">@Localizer["Remove"].Value</option>
-                                                    </select>
-                                                </span>
-                                            </div>
-                                            <div class="control">
-                                                <input type="text" class="input tt" style="text-align: center;" placeholder="@Localizer["Grade"].Value" @bind="@u.Grade" />
-                                            </div>
-                                            <div class="control">
-                                                <button class="button is-primary" @onclick="async () => { await SendFeedbackAsync(s, u); }">@Localizer["Send"].Value</button>
-                                            </div>
+                        <td width="50%">
+                            @if (CanMark)
+                            {
+                                var u = collection[s.Id];
+
+                                <div>
+                                    <div class="field has-addons">
+                                        <div class="control">
+                                            <span class="select">
+                                                <select class="tt" @bind="@u.State">
+                                                    <option value="@Data.Submission.SubmissionState.Submitted">@Localizer["Pending"].Value</option>
+                                                    <option value="@Data.Submission.SubmissionState.Confirmed">@Localizer["Confirm"].Value</option>
+                                                    <option value="@Data.Submission.SubmissionState.RequiringResubmit">@Localizer["RequireResubmit"].Value</option>
+                                                    <option value="@Data.Submission.SubmissionState.AcceptingResubmit">@Localizer["AcceptResubmit"].Value</option>
+                                                    <option value="@Data.Submission.SubmissionState.Disqualified">@Localizer["Disqualified"].Value</option>
+                                                    <option value="@Data.Submission.SubmissionState.Deleted">@Localizer["Remove"].Value</option>
+                                                </select>
+                                            </span>
                                         </div>
-                                        @if (u.State == Data.Submission.SubmissionState.RequiringResubmit || u.State == Data.Submission.SubmissionState.AcceptingResubmit)
-                                        {
-                                            <div class="field is-horizontal">
-                                                <div class="field-label is-normal">
-                                                    <label class="label">@Localizer["ResubmitDeadline"].Value</label>
-                                                </div>
-                                                <div class="field-body">
-                                                    <div class="field">
-                                                        <div class="control">
-                                                            <input class="input datatimepicker tt" type="text" @bind="@u.ResubmitDeadline" />
-                                                        </div>
+                                        <div class="control">
+                                            <input type="text" class="input tt" style="text-align: center;" placeholder="@Localizer["Grade"].Value" @bind="@u.Grade" />
+                                        </div>
+                                        <div class="control">
+                                            <button class="button is-primary" @onclick="async () => { await SendFeedbackAsync(s, u, empty); }">@Localizer["Send"].Value</button>
+                                        </div>
+                                    </div>
+                                    @if (u.State == Data.Submission.SubmissionState.RequiringResubmit || u.State == Data.Submission.SubmissionState.AcceptingResubmit)
+                                    {
+                                        <div class="field is-horizontal">
+                                            <div class="field-label is-normal">
+                                                <label class="label">@Localizer["ResubmitDeadline"].Value</label>
+                                            </div>
+                                            <div class="field-body">
+                                                <div class="field">
+                                                    <div class="control">
+                                                        <input class="input datatimepicker tt" type="text" @bind="@u.ResubmitDeadline" />
                                                     </div>
                                                 </div>
                                             </div>
-                                        }
-                                        <div class="field">
-                                            <div class="control">
-                                                <textarea class="textarea tt" rows="2" style="width: 20em;" placeholder="@Localizer["FeedbackComment"].Value" @bind="@u.FeedbackComment"></textarea>
-                                            </div>
-                                            @if (s.MarkerUser != null)
-                                            {
-                                                <div class="help">@Localizer["MarkedAt"].Value @s.MarkedAt.ToString() by @s.MarkerUser?.DisplayName</div>
-                                            }
                                         </div>
-                                    </div>
-                                }
-                                else if (s.State != Data.Submission.SubmissionState.Submitted)
-                                {
-                                    <div>
-                                        <div class="tt" style="font-size: 2em;">@s.Grade</div>
-                                        <pre class="tt" style="background-color: white; margin: 0.5em; padding: 0;">@s.FeedbackComment</pre>
-                                        @if (s.MarkedAt.HasValue)
+                                    }
+                                    <div class="field">
+                                        <div class="control">
+                                            <textarea class="textarea tt" rows="2" style="width: 20em;" placeholder="@Localizer["FeedbackComment"].Value" @bind="@u.FeedbackComment"></textarea>
+                                        </div>
+                                        @if (s.MarkerUser != null)
                                         {
-                                            <div class="help">@Localizer["MarkedAt"].Value @s.MarkedAt.ToString() by @s.MarkerUser.DisplayName</div>
+                                            <div class="help">@Localizer["MarkedAt"].Value @s.MarkedAt.ToString() by @s.MarkerUser?.DisplayName</div>
                                         }
                                     </div>
-                                }
-                            </td>
-                        }
+                                </div>
+                            }
+                            else if (s.State != Data.Submission.SubmissionState.Submitted)
+                            {
+                                <div>
+                                    <div class="tt" style="font-size: 2em;">@s.Grade</div>
+                                    <pre class="tt" style="background-color: white; margin: 0.5em; padding: 0;">@s.FeedbackComment</pre>
+                                    @if (s.MarkedAt.HasValue)
+                                    {
+                                        <div class="help">@Localizer["MarkedAt"].Value @s.MarkedAt.ToString() by @s.MarkerUser.DisplayName</div>
+                                    }
+                                </div>
+                            }
+                        </td>
                     </tr>
                 }
             </table>
@@ -198,13 +220,22 @@
                 {
                     if (!collection.ContainsKey(x.Id))
                     {
-                        collection.Add(x.Id, new SubmissionForEdit
+                        var u = new SubmissionForEdit
                         {
                             Grade = x.Grade,
                             FeedbackComment = x.FeedbackComment,
                             State = x.State,
                             ResubmitDeadline = x.ResubmitDeadline
-                        });
+                        };
+
+                        if (x.State == Data.Submission.SubmissionState.Empty)
+                        {
+                            var d = DateTime.Now.AddDays(7);
+                            u.ResubmitDeadline = new DateTime(d.Year, d.Month, d.Day, 0, 0, 0);
+                            u.State = Data.Submission.SubmissionState.RequiringResubmit;
+                        }
+
+                        collection.Add(x.Id, u);
 
                     }
                 }
@@ -212,18 +243,33 @@
         }
     }
 
-    private async Task SendFeedbackAsync(Data.Submission submission, SubmissionForEdit forEdit)
+    private async Task SendFeedbackAsync(Data.Submission submission, SubmissionForEdit forEdit, bool isEmpty)
     {
         if (PermissionProvider.CanMarkSubmission(submission.Lecture, User))
         {
             if (forEdit.State == Data.Submission.SubmissionState.Deleted)
             {
+                if (isEmpty) return;
                 if (!await JS.InvokeAsync<bool>("showConfirmDialog", Localizer["AreYouSureDelete"].Value))
                 {
                     return;
                 }
             }
-
+            if(isEmpty)
+            {
+                submission = new Data.Submission
+                {
+                    LectureId = submission.LectureId,
+                    UserId = submission.UserId,
+                    ActivityName = submission.ActivityName,
+                    Count = 1,
+                    Hash = "",
+                    SubumitComment = "",
+                    SubmittedAt = DateTime.Now,
+                    SubmittedFiles = "",
+                    Page = ""
+                };
+            }
             submission.Grade = forEdit.Grade;
             submission.FeedbackComment = forEdit.FeedbackComment;
             submission.State = forEdit.State;
@@ -237,7 +283,14 @@
             }
             submission.MarkedAt = DateTime.Now;
             submission.MarkerUserId = User.Id;
-            SubmissionHandler.Update(submission);
+            if(isEmpty)
+            {
+                SubmissionHandler.AddNew(submission);
+            }
+            else
+            {
+                SubmissionHandler.Update(submission);
+            }
             await Notifier.Update();
             StateHasChanged();
         }

@@ -199,6 +199,7 @@ namespace Hugin.Data
             RequiringResubmit = 2,
             AcceptingResubmit = 3,
             Confirmed = 4,
+            Disqualified = 5
         }
 
         public int NumOfSaves { get; set; }

@@ -282,6 +282,9 @@
   <data name="DisplayName" xml:space="preserve">
     <value>Display Name</value>
   </data>
+  <data name="Disqualified" xml:space="preserve">
+    <value>Disqualified</value>
+  </data>
   <data name="Double" xml:space="preserve">
     <value>Double</value>
   </data>
@@ -654,6 +657,9 @@
   <data name="TheActivityHasBeenConfirmed" xml:space="preserve">
     <value>The activity has been confirmed.</value>
   </data>
+  <data name="TheActivityHasBeenDisqualified" xml:space="preserve">
+    <value>The activity has been disqualified.</value>
+  </data>
   <data name="TheDeadlineHasBeenPassed" xml:space="preserve">
     <value>The deadline has been passed.</value>
   </data>
@@ -665,6 +671,9 @@
   </data>
   <data name="Uninstalled" xml:space="preserve">
     <value>Uninstalled</value>
+  </data>
+  <data name="Unsubmitted" xml:space="preserve">
+    <value>Unsubmitted</value>
   </data>
   <data name="UploadFile" xml:space="preserve">
     <value>Upload File</value>

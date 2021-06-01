@@ -96,6 +96,10 @@
                                         {
                                             <span class="tag tt is-success">@Localizer["Confirmed"].Value</span>
                                         }
+                                        @if (submission.State == Data.Submission.SubmissionState.Disqualified)
+                                        {
+                                            <span class="tag tt is-disacled">@Localizer["Disqualified"].Value</span>
+                                        }
                                     </td>
                                 </tr>
                             }

@@ -132,6 +132,7 @@ connection.on("ReceiveActivityStatus", function (activityId, json) {
         activity.querySelector(".label-for-require-resubmit").style.display = "none";
         activity.querySelector(".label-for-accepting-resubmit").style.display = "none";
         activity.querySelector(".label-for-confirmed").style.display = "none";
+        activity.querySelector(".label-for-disqualified").style.display = "none";
         activity.querySelector(".field-grade").style.display = "none";
         activity.querySelector(".field-feedback-comment").style.display = "none";
         activity.querySelector(".deadline-indicator").style.display = "none";
@@ -165,24 +166,35 @@ connection.on("ReceiveActivityStatus", function (activityId, json) {
                 activity.querySelector(".label-for-require-resubmit").style.display = "inline-flex";
                 activity.querySelector(".label-for-accepting-resubmit").style.display = "none";
                 activity.querySelector(".label-for-confirmed").style.display = "none";
+                activity.querySelector(".label-for-disqualified").style.display = "none";
             }
             else if (data.submissionState == "AcceptingResubmit") {
                 activity.querySelector(".label-for-submitted").style.display = "none";
                 activity.querySelector(".label-for-require-resubmit").style.display = "none";
                 activity.querySelector(".label-for-accepting-resubmit").style.display = "inline-flex";
                 activity.querySelector(".label-for-confirmed").style.display = "none";
+                activity.querySelector(".label-for-disqualified").style.display = "none";
             }
             else if (data.submissionState == "Confirmed") {
                 activity.querySelector(".label-for-submitted").style.display = "none";
                 activity.querySelector(".label-for-require-resubmit").style.display = "none";
                 activity.querySelector(".label-for-accepting-resubmit").style.display = "none";
                 activity.querySelector(".label-for-confirmed").style.display = "inline-flex";
+                activity.querySelector(".label-for-disqualified").style.display = "none";
+            }
+            else if (data.submissionState == "Disqualified") {
+                activity.querySelector(".label-for-submitted").style.display = "none";
+                activity.querySelector(".label-for-require-resubmit").style.display = "none";
+                activity.querySelector(".label-for-accepting-resubmit").style.display = "none";
+                activity.querySelector(".label-for-confirmed").style.display = "none";
+                activity.querySelector(".label-for-disqualified").style.display = "inline-flex";
             }
             else {
                 activity.querySelector(".label-for-submitted").style.display = "inline-flex";
                 activity.querySelector(".label-for-require-resubmit").style.display = "none";
                 activity.querySelector(".label-for-accepting-resubmit").style.display = "none";
                 activity.querySelector(".label-for-confirmed").style.display = "none";
+                activity.querySelector(".label-for-disqualified").style.display = "none";
             }
         }
     }

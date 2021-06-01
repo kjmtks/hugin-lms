@@ -63,7 +63,8 @@ namespace Hugin.Hubs
                 dict.Add("submissionState", submission.State.ToString());
                 if (submission.State == Submission.SubmissionState.AcceptingResubmit ||
                     submission.State == Submission.SubmissionState.RequiringResubmit ||
-                    submission.State == Submission.SubmissionState.Confirmed)
+                    submission.State == Submission.SubmissionState.Confirmed ||
+                    submission.State == Submission.SubmissionState.Disqualified)
                 {
                     dict.Add("grade", submission.Grade);
                     dict.Add("feedbackComment", submission.FeedbackComment);
@@ -338,6 +339,11 @@ namespace Hugin.Hubs
                 if(latest != null && latest.State == Submission.SubmissionState.Confirmed)
                 {
                     await Clients.Caller.SendAsync("ReceiveActionResult", activityId, null, Localizer["TheActivityHasBeenConfirmed"].Value, null);
+                    return;
+                }
+                if (latest != null && latest.State == Submission.SubmissionState.Disqualified)
+                {
+                    await Clients.Caller.SendAsync("ReceiveActionResult", activityId, null, Localizer["TheActivityHasBeenDisqualified"].Value, null);
                     return;
                 }
 
