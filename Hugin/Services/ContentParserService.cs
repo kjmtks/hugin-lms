@@ -234,10 +234,7 @@ namespace Hugin.Services
                 var r = new Markdig.MarkdownPipelineBuilder();
                 var q = Markdig.MarkdownExtensions.UseAdvancedExtensions(r);
                 var p = q.Build();
-                text = Markdig.Markdown.ToHtml(text
-                    .Replace("\\[", "\\\\[").Replace("\\]", "\\\\]")
-                    .Replace("\\(", "\\\\(").Replace("\\)", "\\\\)")
-                    .Replace("\\{", "\\\\{").Replace("\\}", "\\\\}"), p);
+                text = Markdig.Markdown.ToHtml(text, p);
             }
             var options = new AngleSharp.Html.Parser.HtmlParserOptions();
             var parser = new AngleSharp.Html.Parser.HtmlParser(options);

@@ -25,18 +25,24 @@
 
     <script type="text/x-mathjax-config">
         MathJax.Hub.Config({
-          tex2jax: {
-            skipStartupTypeset: true,
-            inlineMath: [['$','$'], ['\\(','\\)']],
-            displayMath: [['$$','$$'], ['\\[','\\]']],
+          "tex2jax": {
+            inlineMath: [
+              ["$", "$"],
+              ["\\(","\\)"]
+            ],
+            displayMath: [
+              ['$$', '$$'],
+              ['\\[', '\\]']
+            ],
             processEscapes: true
           },
-          CommonHTML: { matchFontHeight: false },
-          displayAlign: "left",
-          displayIndent: "2em"
+          "svg": {
+            displayAlign: "left",
+            displayIndent: "2em"
+          }
         });
     </script>
-    <script async src="~/node_modules/mathjax/es5/tex-chtml-full.js"></script>
+    <script async src="~/node_modules/mathjax/es5/tex-svg-full.js"></script>
 
     <script>
         function modalOn(targetId) {
