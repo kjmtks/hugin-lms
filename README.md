@@ -83,20 +83,6 @@ make local-up
 make local-down
 ```
 
-### Azure上での試用
-
-Ubuntu のインスタンスを作成します．
-22(ssh) と 8080 のポートを解放しておいてください．
-ssh でインスタンスにログイン後，以下を実行します:
-
-```
-sudo apt update && sudo apt install -y docker.io docker-compose make
-git clone https://github.com/kjmtks/hugin-lms.git
-cd hugin-lms
-sudo systemctl status docker
-sudo make local-up
-```
-
 ### for Visual Studio (Windows)
 
 開発者向けです．
