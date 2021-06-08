@@ -108,14 +108,14 @@ namespace Hugin.Services
             }
             else
             {
-                if (!string.IsNullOrWhiteSpace(model.RawPassword) && model.RawPassword.Length >= 8)
+                if (!string.IsNullOrWhiteSpace(model.RawPassword))
                 {
                     model.EncryptedPassword = Encrypt(model.RawPassword);
                     return true;
                 }
                 else
                 {
-                    return false;
+                    return true;
                 }
             }
         }
