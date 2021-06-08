@@ -61,7 +61,7 @@ namespace Hugin.Services
             if (sandbox.State == Sandbox.SandboxState.Uninstalled && string.IsNullOrWhiteSpace(installerCommands))
             {
                 var run = $@"debootstrap stretch {directorypath} http://http.debian.net/debian;";
-                var desc = $"Insatall sandbox {user.Account}/{sandbox.Lecture.Name}/{sandbox.Name}";
+                var desc = $"Install sandbox {user.Account}/{sandbox.Lecture.Name}/{sandbox.Name}";
                 Queues.QueueBackgroundWorkItem(async token =>
                 {
                     try
@@ -103,7 +103,7 @@ namespace Hugin.Services
             else if (sandbox.State != Sandbox.SandboxState.Uninstalled && !string.IsNullOrWhiteSpace(installerCommands))
             {
                 var run = $@"debootstrap stretch {directorypath} http://http.debian.net/debian;";
-                var desc = $"Insatall sandbox {user.Account}/{sandbox.Lecture.Name}/{sandbox.Name}";
+                var desc = $"Install sandbox {user.Account}/{sandbox.Lecture.Name}/{sandbox.Name}";
                 Queues.QueueBackgroundWorkItem(async token =>
                 {
                     try
@@ -139,7 +139,7 @@ namespace Hugin.Services
             else if(sandbox.State == Sandbox.SandboxState.Uninstalled && !string.IsNullOrWhiteSpace(installerCommands))
             {
                 var run = $@"debootstrap stretch {directorypath} http://http.debian.net/debian;";
-                var desc = $"Insatall sandbox {user.Account}/{sandbox.Lecture.Name}/{sandbox.Name}";
+                var desc = $"Install sandbox {user.Account}/{sandbox.Lecture.Name}/{sandbox.Name}";
                 Queues.QueueBackgroundWorkItem(async token =>
                 {
                     try
