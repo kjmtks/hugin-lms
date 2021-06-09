@@ -126,3 +126,36 @@ make production-up
 ```
 make production-down
 ```
+
+## 実環境での実行
+
+実環境(https)での実行手順について説明します．
+
+ドメイン，サーバー証明書（および必要であれば中間証明書）が必要となります．
+
+
+### Ubuntu 20.04 (without Docker)
+
+最も推奨する方法です．
+
+#### pfxファイルの生成
+
+下記コマンドによりpfxファイルを生成します．
+ただし，`your.key`, `your.crt`, `your-ca.cer` はそれぞれ 鍵ファイル, サーバー証明書, 中間証明書とします:
+```
+openssl pkcs12 -export -out server.pfx -inkey your.key -in your.crt -certfile your-ca.cer
+```
+中間証明書がない場合は代わりに下記コマンドを実行してください:
+```
+openssl pkcs12 -export -out server.pfx -inkey your.key -in your.crt
+```
+
+以下，執筆予定
+
+### macOS (with Docker Desktop on Mac)
+
+以下，執筆予定
+
+### macOS (without Docker)
+
+準備中
