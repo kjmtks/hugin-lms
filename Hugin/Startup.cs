@@ -59,9 +59,13 @@ namespace Hugin
             services
                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                .AddCookie(options => { options.LoginPath = $"{subdir}/Login"; options.LogoutPath = $"{subdir}/Logout"; });
-            services.AddDataProtection()
-                .PersistKeysToFileSystem(new DirectoryInfo(@"/data/DataProtectionKey"));
 
+            var pathToProtectionKey = Environment.GetEnvironmentVariable("PATH_TO_PROTECTION_KEY");
+	    if(!string.IsNullOrWhiteSpace(pathToProtectionKey))
+            {
+                services.AddDataProtection()
+                    .PersistKeysToFileSystem(new DirectoryInfo(pathToProtectionKey));
+            }
             services.AddDbContext<DatabaseContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("DB_CONNECTION_STR")));
 
             services.AddRazorPages();
