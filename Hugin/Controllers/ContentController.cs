@@ -43,14 +43,17 @@ namespace Hugin.Controllers
                         if (RepositoryHandler.Exists(repository, "pages/index.md", rivision))
                         {
                             path = "index.md";
+                            return Redirect($"/Page/{lectureOwner}/{lectureName}/{rivision}/{path}");
                         }
                         else if (RepositoryHandler.Exists(repository, "pages/index.html", rivision))
                         {
                             path = "index.html";
+                            return Redirect($"/Page/{lectureOwner}/{lectureName}/{rivision}/{path}");
                         }
                         else if (RepositoryHandler.Exists(repository, "pages/index.htm", rivision))
                         {
                             path = "index.htm";
+                            return Redirect($"/Page/{lectureOwner}/{lectureName}/{rivision}/{path}");
                         }
                     }
                     var ext = path.Split(".").LastOrDefault();
@@ -68,22 +71,9 @@ namespace Hugin.Controllers
                     }
                     else
                     {
-
                         var (data, istext) = RepositoryHandler.ReadFileWithTypeCheck(repository, $"pages/{path}", rivision);
-
-                        if (istext)
-                        {
-                            return new ContentResult
-                            {
-                                ContentType = "text/plain; charset=utf-8",
-                                Content = System.Text.UTF8Encoding.UTF8.GetString(data),
-                            };
-                        }
-                        else
-                        {
-                            var contentType = Models.ContentTypeProvider.GetContentType(path);
-                            return File(data, contentType);
-                        }
+                        var contentType = Models.ContentTypeProvider.GetContentType(path, istext ? "text/plain; charset=utf-8" : "application/octet-stream");
+                        return File(data, contentType);
                     }
                 }
                 catch

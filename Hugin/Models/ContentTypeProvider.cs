@@ -8,7 +8,7 @@ namespace Hugin.Models
 {
     public class ContentTypeProvider
     {
-        public static string GetContentType(string path)
+        public static string GetContentType(string path, string defaultType = "application/octet-stream")
         {
             var provider = new FileExtensionContentTypeProvider();
             provider.Mappings[".txt"] = "text/plain";
@@ -39,9 +39,11 @@ namespace Hugin.Models
             provider.Mappings[".jpg"] = "image/jpeg";
             provider.Mappings[".jpeg"] = "image/jpeg";
             provider.Mappings[".gif"] = "image/gif";
+            provider.Mappings[".svg"] = "image/svg+xml";
+            provider.Mappings[".svgz"] = "image/svg+xml";
             if (!provider.TryGetContentType(path, out var contentType))
             {
-                contentType = "application/octet-stream";
+                contentType = defaultType;
             }
             return contentType;
         }

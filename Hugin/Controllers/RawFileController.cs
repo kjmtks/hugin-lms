@@ -90,20 +90,8 @@ namespace Hugin.Controllers
                             return new NotFoundResult();
                         }
                         var (data, istext) = RepositoryHandler.ReadFileWithTypeCheck(repo, path, rivision);
-
-                        if (istext)
-                        {
-                            return new ContentResult
-                            {
-                                ContentType = "text/plain; charset=utf-8",
-                                Content = System.Text.UTF8Encoding.UTF8.GetString(data),
-                            };
-                        }
-                        else
-                        {
-                            var contentType = Models.ContentTypeProvider.GetContentType(path);
-                            return File(data, contentType);
-                        }
+                        var contentType = Models.ContentTypeProvider.GetContentType(path, istext ? "text/plain; charset=utf-8" : "application/octet-stream");
+                        return File(data, contentType);
                     }
                 }
                 catch
@@ -155,21 +143,10 @@ namespace Hugin.Controllers
                         {
                             return new NotFoundResult();
                         }
-                        var (data, istext) = RepositoryHandler.ReadFileWithTypeCheck(repo, path, rivision);
 
-                        if (istext)
-                        {
-                            return new ContentResult
-                            {
-                                ContentType = "text/plain; charset=utf-8",
-                                Content = System.Text.UTF8Encoding.UTF8.GetString(data),
-                            };
-                        }
-                        else
-                        {
-                            var contentType = Models.ContentTypeProvider.GetContentType(path);
-                            return File(data, contentType);
-                        }
+                        var (data, istext) = RepositoryHandler.ReadFileWithTypeCheck(repo, path, rivision);
+                        var contentType = Models.ContentTypeProvider.GetContentType(path, istext ? "text/plain; charset=utf-8" : "application/octet-stream");
+                        return File(data, contentType);
                     }
                 }
                 catch

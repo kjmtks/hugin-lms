@@ -319,6 +319,10 @@ namespace Hugin.Services
         {
             return executeGitCommandWithOutputEncodingAndExceptionProcessing(repository.BaredFullPath, $"show \"{rivision}\":\"{path}\"");
         }
+        public byte[] ReadFile(Repository repository, string path, string rivision)
+        {
+            return executeGitCommandWithExceptionProcessing(repository.BaredFullPath, $"show \"{rivision}\":\"{path}\"");
+        }
         #endregion
 
 

@@ -269,18 +269,9 @@ namespace Hugin.Services
                     else if (el.TagName == "IMG")
                     {
                         attrs.Clear();
-                        foreach (var attr in el.Attributes.Where(x => x.Name != "src" && x.Name != "alt"))
+                        foreach (var attr in el.Attributes.Where(x => x.Name != "alt"))
                         {
                             attrs.Append($"{attr.Name}=\"{attr.Value.Replace("\"", "\\\"")}\" ");
-                        }
-                        if (el.HasAttribute("src"))
-                        {
-                            var src = el.GetAttribute("src");
-                            if (!Regex.IsMatch(src, "^[a-zA-Z0-9]+://"))
-                            {
-                                src = $"/Page/{lecture.Owner.Account}/{lecture.Name}/{rivision}/{relPathToAbsPath(pagepath, src)}";
-                            }
-                            attrs.Append($"src=\"{src.Replace("\"", "\\\"")}\" ");
                         }
                         if (isMarkDown && el.HasAttribute("alt"))
                         {
@@ -310,32 +301,9 @@ namespace Hugin.Services
                     else
                     {
                         attrs.Clear();
-                        if (el.TagName == "A")
+                        foreach (var attr in el.Attributes)
                         {
-                            foreach (var attr in el.Attributes.Where(x => x.Name != "href"))
-                            {
-                                attrs.Append($"{attr.Name}=\"{attr.Value.Replace("\"", "\\\"")}\" ");
-                            }
-                            if (el.HasAttribute("href"))
-                            {
-                                var href = el.GetAttribute("href");
-                                if (Regex.IsMatch(href, "^#"))
-                                {
-                                    href = $"/Page/{lecture.Owner.Account}/{lecture.Name}/{rivision}/{pagepath}{href}";
-                                }
-                                else if (!Regex.IsMatch(href, "^[a-zA-Z0-9]+://"))
-                                {
-                                    href = $"/Page/{lecture.Owner.Account}/{lecture.Name}/{rivision}/{relPathToAbsPath(pagepath, href)}";
-                                }
-                                attrs.Append($"href=\"{href.Replace("\"", "\\\"")}\" ");
-                            }
-                        }
-                        else
-                        {
-                            foreach (var attr in el.Attributes)
-                            {
-                                attrs.Append($"{attr.Name}=\"{attr.Value.Replace("\"", "\\\"")}\" ");
-                            }
+                            attrs.Append($"{attr.Name}=\"{attr.Value.Replace("\"", "\\\"")}\" ");
                         }
 
                         if (!el.Flags.HasFlag(AngleSharp.Dom.NodeFlags.SelfClosing))
