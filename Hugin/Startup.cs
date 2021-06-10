@@ -99,7 +99,9 @@ namespace Hugin
             services.AddSingleton<ApplicationConfigurationService>();
             services.AddSingleton<FilePathResolveService>();
             services.AddSingleton<ActivityEncryptService>();
-            services.AddSingleton<RazorBuildService>();
+
+            //services.AddSingleton<IContentsBuildService, RazorContentsBuildService>();
+            services.AddSingleton<IContentsBuildService, ScribanContentsBuildService >();
             services.AddSingleton<RepositoryHandleService>();
            
             services.AddSingleton<JobQueueNotifierService>();
