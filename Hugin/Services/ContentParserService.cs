@@ -19,14 +19,14 @@ namespace Hugin.Services
     {
         private readonly LectureHandleService LectureHandler;
         private readonly ActivityEncryptService ActivityEncryptor;
-        private readonly RazorBuildService RazorBuilder;
+        private readonly IContentsBuildService ContentsBuilder;
         private readonly RepositoryHandleService RepositoryHandler;
         private readonly PermissionProviderService PermissionProvider;
-        public ContentParserService(PermissionProviderService permissionProvider, LectureHandleService lectureHandler, ActivityEncryptService activityEncryptor, RazorBuildService razorBuilder, RepositoryHandleService repositoryHandler)
+        public ContentParserService(PermissionProviderService permissionProvider, LectureHandleService lectureHandler, ActivityEncryptService activityEncryptor, IContentsBuildService contentsBuilder, RepositoryHandleService repositoryHandler)
         {
             LectureHandler = lectureHandler;
             ActivityEncryptor = activityEncryptor;
-            RazorBuilder = razorBuilder;
+            ContentsBuilder = contentsBuilder;
             RepositoryHandler = repositoryHandler;
             PermissionProvider = permissionProvider;
         }
@@ -80,34 +80,7 @@ namespace Hugin.Services
                 throw new UnauthorizedAccessException();
             }
 
-            var repository = RepositoryHandler.GetLectureContentsRepository(prof.LectureOwnerAccount, prof.LectureName);
-
-
-            var commitInfo = RepositoryHandler.ReadCommitInfo(repository, $"activities/{prof.ActivityRef}", prof.Rivision);
-
-
-            dynamic viewbag = new System.Dynamic.ExpandoObject();
-            var x = viewbag as IDictionary<string, Object>;
-            foreach (var p in LectureHandler.GetLectureParameters(lecture, prof.Rivision))
-            {
-                x.Add(p.Key, p.Value.GetValue());
-            }
-            foreach (var p in prof.Parameters)
-            {
-                x.Add(p.Key, p.Value);
-            }
-            var model = new Models.PageModel(RepositoryHandler, LectureHandler, repository, user, lecture, prof.Rivision, prof.PagePath, commitInfo, viewbag);
-
-            string xml;
-
-            var page_hash = RepositoryHandler.GetHashOfLatestCommit(repository, $"pages/{prof.PagePath}", prof.Rivision);
-            var activity_hash = RepositoryHandler.GetHashOfLatestCommit(repository, $"activities/{prof.ActivityRef}", prof.Rivision);
-            var key = $"{prof.LectureOwnerAccount}/{prof.LectureName}/{prof.PagePath}:{page_hash}/{prof.Number}:{activity_hash}";
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"@model {model.GetType().FullName}");
-            //sb.AppendLine("@{ DisableEncoding = true; }");
-            sb.Append(RepositoryHandler.ReadTextFile(repository, $"activities/{prof.ActivityRef}", prof.Rivision));
-            xml = await RazorBuilder.CompileAsync(key, sb.ToString(), model, viewbag);
+            var xml = await ContentsBuilder.BuildActivityAsync(LectureHandler, prof, user, lecture);
 
             /*
             XmlSchemaSet set = new XmlSchemaSet();
@@ -186,27 +159,7 @@ namespace Hugin.Services
 
         public async Task<string> BuildPageAsync(Microsoft.AspNetCore.Mvc.Controller controller, Data.User user, Data.Lecture lecture, string rivision, string pagePath)
         {
-            var repository = RepositoryHandler.GetLectureContentsRepository(lecture);
-
-            var commitInfo = RepositoryHandler.ReadCommitInfo(repository, $"pages/{pagePath}", rivision);
-
-            dynamic viewbag = new System.Dynamic.ExpandoObject();
-            var x = viewbag as IDictionary<string, Object>;
-            foreach (var p in LectureHandler.GetLectureParameters(lecture, rivision))
-            {
-                x.Add(p.Key, p.Value.GetValue());
-            }
-            var model = new Models.PageModel(RepositoryHandler, LectureHandler, repository, user, lecture, rivision, pagePath, commitInfo, viewbag);
-
-
-            var hash = RepositoryHandler.GetHashOfLatestCommit(repository, $"pages/{pagePath}", rivision);
-            var key = $"{lecture.Owner.Account}/{lecture.Name}/{pagePath}:{rivision}:{hash}";
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"@model {model.GetType().FullName}");
-            //sb.AppendLine("@{ DisableEncoding = true; }");
-            sb.Append(RepositoryHandler.ReadTextFile(repository, $"pages/{pagePath}", rivision));
-
-            var page = await RazorBuilder.CompileAsync(key, sb.ToString(), model, viewbag);
+            var page = await ContentsBuilder.BuildPageAsync(LectureHandler, user, lecture, rivision, pagePath);
 
             try
             {
