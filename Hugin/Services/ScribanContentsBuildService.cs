@@ -41,7 +41,7 @@ namespace Hugin.Services
             model.Import(huginObject);
             context.PushGlobal(model);
 
-            return await template.RenderAsync(context);
+            return tempalteRender(new TimeSpan(0, 0, 3), 1000000, context, template);
         }
 
         public async Task<string> BuildPageAsync(LectureHandleService lectureHandler, Data.User user, Data.Lecture lecture, string rivision, string pagePath)
@@ -65,7 +65,7 @@ namespace Hugin.Services
             model.Import(huginObject);
             context.PushGlobal(model);
 
-            return await template.RenderAsync(context);
+            return tempalteRender(new TimeSpan(0, 0, 3), 1000000, context, template);
         }
 
         private Scriban.TemplateContext buildContext()
@@ -76,6 +76,19 @@ namespace Hugin.Services
             context.StrictVariables = false;
             context.RegexTimeOut = new TimeSpan(0, 0, 3);
             return context;
+        }
+
+        private string tempalteRender(TimeSpan timeSpan, int maxLength, Scriban.TemplateContext context, Scriban.Template template)
+        {
+            var task = Task.Run(async () => await template.RenderAsync(context));
+            if (task.Wait(timeSpan))
+            {
+                return task.Result;
+            }
+            else
+            {
+                throw new Exception("Render time out");
+            }
         }
 
         private Scriban.Runtime.ScriptObject buildModel(LectureHandleService lectureHandler, Data.Lecture lecture, string rivision, Models.ActivityProfile prof = null)
