@@ -97,6 +97,7 @@ namespace Hugin.Services
             public Models.CommitInfo CommitInfo { get; }
             public string PagePath { get; }
             public string Rivision { get; }
+            public string Root { get; }
             public ScriptObject Model { get; }
 
             public HuginScriptObject(RepositoryHandleService repositoryHandler, LectureHandleService lectureHandler, Models.Repository repository, Data.User user, Data.Lecture lecture, string rivision, string page_path, Models.CommitInfo commitInfo, ScriptObject model)
@@ -109,6 +110,7 @@ namespace Hugin.Services
                 CommitInfo = commitInfo;
                 PagePath = page_path;
                 Rivision = rivision;
+                Root = $"/Page/{lecture.Owner.Account}/{lecture.Name}/{lecture.DefaultBranch}";
                 Model = model;
                 Users = LectureHandler.GetUserAndRoles(lecture).Select(x => new User(x.Item1, x.Item2 == Data.LectureUserRelationship.LectureRole.Student ? Role.Studnet : Role.Staff));
                 User = Users.Where(x => x.Account == user.Account).FirstOrDefault();
@@ -118,6 +120,7 @@ namespace Hugin.Services
             private void addFuncs()
             {
                 Model.Import("is_null_or_whitespace", new Func<string, bool>(string.IsNullOrWhiteSpace));
+                Model.Import("encode_html", new Func<string, string>(EncodeHtml));
                 Model.Import("decode_html", new Func<string, string>(DecodeHtml));
                 Model.Import("get_parameter", new Func<string, object>(GetParameter));
                 Model.Import("date_time_to_string", new Func<DateTime, string>(DateTimeToString));
@@ -130,7 +133,11 @@ namespace Hugin.Services
             }
             private string DecodeHtml(string encoded_html)
             {
-                return encoded_html.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&quot;", "\"").Replace("&amp;", "&");
+                return encoded_html?.Replace("&lt;", "<")?.Replace("&gt;", ">")?.Replace("&quot;", "\"")?.Replace("&amp;", "&");
+            }
+            private string EncodeHtml(string raw_html)
+            {
+                return raw_html?.Replace("<", "&lt;")?.Replace(">", "&gt;")?.Replace("\"", "&quot;")?.Replace("&", "&amp;");
             }
 
             private string DateTimeToString(DateTime dt)
