@@ -118,6 +118,7 @@ namespace Hugin.Services
             private void addFuncs()
             {
                 Model.Import("is_null_or_whitespace", new Func<string, bool>(string.IsNullOrWhiteSpace));
+                Model.Import("decode_html", new Func<string, string>(DecodeHtml));
                 Model.Import("get_parameter", new Func<string, object>(GetParameter));
                 Model.Import("date_time_to_string", new Func<DateTime, string>(DateTimeToString));
                 Model.Import("embed_text_file", new Func<string, string>(EmbedTextFile));
@@ -126,6 +127,10 @@ namespace Hugin.Services
             {
                 var x = ((IDictionary<string, object>)Model);
                 return x.ContainsKey(parameterName) ? x[parameterName] : null;
+            }
+            private string DecodeHtml(string encoded_html)
+            {
+                return encoded_html.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&quot;", "\"").Replace("&amp;", "&");
             }
 
             private string DateTimeToString(DateTime dt)
