@@ -284,7 +284,7 @@ namespace Hugin.Models
             get
             {
                 var dict = new Dictionary<string, string>();
-                foreach(var x in Children)
+                foreach(var x in Children.Where(x => !(x is ActivityFilesFormText)))
                 {
                     dict[x.Name] = x.GetAnswer();
                 }
