@@ -86,7 +86,7 @@ namespace Hugin.Services
             if (task.Wait(timeSpan))
             {
                 var text = task.Result;
-                return text.Substring(Math.Min(maxLength, text.Length));
+                return text.Substring(0, Math.Min(maxLength, text.Length));
             }
             else
             {
