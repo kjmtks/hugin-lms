@@ -1,4 +1,5 @@
-﻿using Scriban.Runtime;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Scriban.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +13,12 @@ namespace Hugin.Services
     public class ScribanContentsBuildService : IContentsBuildService
     {
         private readonly RepositoryHandleService repositoryHandler;
+        private readonly IMemoryCache cache;
 
-        public ScribanContentsBuildService(RepositoryHandleService _repositoryHandler)
+        public ScribanContentsBuildService(RepositoryHandleService _repositoryHandler, IMemoryCache _cache)
         {
             repositoryHandler = _repositoryHandler;
+            cache = _cache;
         }
 
         public async Task<string> BuildActivityAsync(LectureHandleService lectureHandler, Models.ActivityProfile prof, Data.User user, Data.Lecture lecture)
@@ -26,9 +29,13 @@ namespace Hugin.Services
             var sb = new StringBuilder();
             sb.AppendLine("{{ date.format = '%Y-%m-%dT%H:%M:%S' }}");
             sb.Append(raw);
-            var template = Scriban.Template.Parse(sb.ToString());
 
-            var context = new Scriban.TemplateContext();
+            var page_hash = repositoryHandler.GetHashOfLatestCommit(repository, $"pages/{prof.PagePath}", prof.Rivision);
+            var activity_hash = repositoryHandler.GetHashOfLatestCommit(repository, $"activities/{prof.ActivityRef}", prof.Rivision);
+            var key = $"{lecture.Owner.Account}/{lecture.Name}/{prof.PagePath}:{page_hash}/{prof.Number}:{activity_hash}";
+            var template = cache.GetOrCreate(key, x => Scriban.Template.Parse(sb.ToString()));
+
+            var context = buildContext();
             var model = buildModel(lectureHandler, lecture, prof.Rivision, prof);
             var huginObject = new HuginScriptObject(repositoryHandler, lectureHandler, repository, user, lecture, prof.Rivision, prof.Rivision, commitInfo, model);
             model.Import(huginObject);
@@ -45,9 +52,13 @@ namespace Hugin.Services
             var sb = new StringBuilder();
             sb.AppendLine("{{ date.format = '%Y-%m-%dT%H:%M:%S' }}");
             sb.Append(raw);
-            var template = Scriban.Template.Parse(sb.ToString());
 
-            var context = new Scriban.TemplateContext();
+            var hash = repositoryHandler.GetHashOfLatestCommit(repository, $"pages/{pagePath}", rivision);
+            var key = $"{lecture.Owner.Account}/{lecture.Name}/{pagePath}:{rivision}:{hash}";
+            var template = cache.GetOrCreate(key, x => Scriban.Template.Parse(sb.ToString()));
+
+            var context = buildContext();
+
 
             var model = buildModel(lectureHandler, lecture, rivision);
             var huginObject = new HuginScriptObject(repositoryHandler, lectureHandler, repository, user, lecture, rivision, pagePath, commitInfo, model);
@@ -55,6 +66,16 @@ namespace Hugin.Services
             context.PushGlobal(model);
 
             return await template.RenderAsync(context);
+        }
+
+        private Scriban.TemplateContext buildContext()
+        {
+            var context = new Scriban.TemplateContext();
+            context.LoopLimit = 500;
+            context.RecursiveLimit = 5;
+            context.StrictVariables = false;
+            context.RegexTimeOut = new TimeSpan(0, 0, 3);
+            return context;
         }
 
         private Scriban.Runtime.ScriptObject buildModel(LectureHandleService lectureHandler, Data.Lecture lecture, string rivision, Models.ActivityProfile prof = null)
@@ -123,6 +144,7 @@ namespace Hugin.Services
                 Model.Import("encode_html", new Func<string, string>(EncodeHtml));
                 Model.Import("decode_html", new Func<string, string>(DecodeHtml));
                 Model.Import("get_parameter", new Func<string, object>(GetParameter));
+                Model.Import("has_parameter", new Func<string, bool>(HasParameter));
                 Model.Import("date_time_to_string", new Func<DateTime, string>(DateTimeToString));
                 Model.Import("embed_text_file", new Func<string, string>(EmbedTextFile));
             }
@@ -130,6 +152,10 @@ namespace Hugin.Services
             {
                 var x = ((IDictionary<string, object>)Model);
                 return x.ContainsKey(parameterName) ? x[parameterName] : null;
+            }
+            private bool HasParameter(string parameterName)
+            {
+                return ((IDictionary<string, object>)Model).ContainsKey(parameterName);
             }
             private string DecodeHtml(string encoded_html)
             {
