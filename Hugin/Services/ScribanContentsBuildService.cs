@@ -157,6 +157,7 @@ namespace Hugin.Services
             private void addFuncs()
             {
                 Model.Import("is_null_or_whitespace", new Func<string, bool>(string.IsNullOrWhiteSpace));
+                Model.Import("trim", new Func<string, string>(x => x.Trim()));
                 Model.Import("encode_html", new Func<string, string>(EncodeHtml));
                 Model.Import("decode_html", new Func<string, string>(DecodeHtml));
                 Model.Import("get_parameter", new Func<string, object>(GetParameter));
