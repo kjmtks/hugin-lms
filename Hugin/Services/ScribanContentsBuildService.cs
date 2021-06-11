@@ -68,7 +68,14 @@ namespace Hugin.Services
             {
                 foreach (var p in prof.Parameters)
                 {
-                    model.Add(p.Key, p.Value);
+                    if(model.ContainsKey(p.Key))
+                    {
+                        model[p.Key] = p.Value;
+                    }
+                    else
+                    {
+                        model.Add(p.Key, p.Value);
+                    }
                 }
             }
             return model;
