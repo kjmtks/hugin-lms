@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using AngleSharp.Dom;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
@@ -192,100 +193,26 @@ namespace Hugin.Services
             var options = new AngleSharp.Html.Parser.HtmlParserOptions();
             var parser = new AngleSharp.Html.Parser.HtmlParser(options);
             var doc = parser.ParseDocument(text);
-            return await compileAsync(isMarkDown, controller, doc.Body, user, lecture, rivision, pagepath, 0);
-        }
 
-        private async Task<string> compileAsync(bool isMarkDown, Microsoft.AspNetCore.Mvc.Controller controller, AngleSharp.Dom.IElement element, Data.User user, Data.Lecture lecture, string rivision, string pagepath, int cnt = 0, int depth = 0)
-        {
-            var html = new StringBuilder();
-            var attrs = new StringBuilder();
-
-            foreach (var e in element.ChildNodes)
+            var acts = doc.All.Where(x => x.LocalName == "script" && x.GetAttribute("language") == "activity");
+            foreach (var (act,i) in acts.Select((x,i)=>(x,i)))
             {
-                if (e is AngleSharp.Dom.IElement el)
+                var html = new StringBuilder();
+                var reff = act.GetAttribute("ref")?.Replace("\"", "\\\"");
+                try
                 {
-                    if (controller != null && el.TagName == "SCRIPT" && el.GetAttribute("language") == "activity")
-                    {
-                        var reff = el.GetAttribute("ref")?.Replace("\"", "\\\"");
-                        try
-                        {
-                            var id = Guid.NewGuid();
-                            var parameters = parseParameters(el.InnerHtml);
-                            html.Append(await embedActivityAsync(controller, user, lecture, reff, rivision, pagepath, parameters, cnt));
-                            cnt++;
-                        }
-                        catch (Exception ex)
-                        {  
-                            html.Append($"<article class=\"message is-danger\"><div class=\"message-header\">Activity Error</div><div class=\"message-body\">{ex.Message}</div></article>");
-                        }
-                    }
-                    else if (el.TagName == "IMG")
-                    {
-                        attrs.Clear();
-                        foreach (var attr in el.Attributes.Where(x => x.Name != "alt"))
-                        {
-                            attrs.Append($"{attr.Name}=\"{attr.Value.Replace("\"", "\\\"")}\" ");
-                        }
-                        if (isMarkDown && el.HasAttribute("alt"))
-                        {
-                            var alt = el.GetAttribute("alt").Trim();
-                            if(!string.IsNullOrWhiteSpace(el.GetAttribute("alt")))
-                            {
-                                if (Regex.IsMatch(alt, @"^\^"))
-                                {
-                                    var _alt = Regex.Replace(alt, @"^\^", "");
-                                    html.Append($"<div class=\"page-figure\"><span class=\"page-caption\">{_alt}</span><{el.TagName} {attrs.ToString()} /></div>");
-                                }
-                                else
-                                {
-                                    html.Append($"<div class=\"page-figure\"><{el.TagName} {attrs.ToString()} /><span class=\"page-caption\">{alt}</span></div>");
-                                }
-                            }
-                            else
-                            {
-                                html.Append($"<div class=\"page-figure\"><{el.TagName} {attrs.ToString()} /></div>");
-                            }
-                        }
-                        else
-                        {
-                            html.Append($"<{el.TagName} {attrs.ToString()} />");
-                        }
-                    }
-                    else
-                    {
-                        attrs.Clear();
-                        foreach (var attr in el.Attributes)
-                        {
-                            attrs.Append($"{attr.Name}=\"{attr.Value.Replace("\"", "\\\"")}\" ");
-                        }
-
-                        if (!el.Flags.HasFlag(AngleSharp.Dom.NodeFlags.SelfClosing))
-                        {
-                            html.Append($"<{el.TagName} {attrs.ToString()}>");
-                            html.Append(await compileAsync(isMarkDown, controller, el, user, lecture, rivision, pagepath, cnt, depth + 1));
-                            html.Append($"</{el.TagName}>");
-                        }
-                        else
-                        {
-                            html.Append($"<{el.TagName} {attrs.ToString()} />");
-                        }
-                    }
-
+                    var id = Guid.NewGuid();
+                    var parameters = parseParameters(act.InnerHtml);
+                    html.Append(await embedActivityAsync(controller, user, lecture, reff, rivision, pagepath, parameters, i));
                 }
-                else if (e is AngleSharp.Dom.IComment)
+                catch (Exception ex)
                 {
-                    // Comment Element
+                    html.Append($"<article class=\"message is-danger\"><div class=\"message-header\">Activity Error</div><div class=\"message-body\">{ex.Message}</div></article>");
                 }
-                else
-                {
-                    html.Append(escapeForXml(e.TextContent));
-                }
+                act.OuterHtml = html.ToString();
             }
-            return html.ToString();
+            return doc.DocumentElement.OuterHtml;
         }
-
-
-
 
 
 
