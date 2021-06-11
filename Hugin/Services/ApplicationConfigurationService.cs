@@ -17,8 +17,17 @@ namespace Hugin.Services
 
         public string GetAppDataPath() => Environment.GetEnvironmentVariable("APP_DATA_PATH");
         public string GetAppSecretKey() => Environment.GetEnvironmentVariable("APP_SECRET_KEY");
-        public string GetEncryptKey() => "e5HzQN6Ctzmaiw9Et9cTZUBaRcZx5Rcj";
+        public string GetEncryptKey() => Environment.GetEnvironmentVariable("APP_SECRET_KEY").Substring(Math.Min(32, Environment.GetEnvironmentVariable("APP_SECRET_KEY").Length));
         public string GetAppURL() => Environment.GetEnvironmentVariable("APP_URL");
+
+        public int GetRenderTimeLimit() {
+            var x = Environment.GetEnvironmentVariable("RENDER_TIME_LIMIT");
+            if(!string.IsNullOrWhiteSpace(x) && !int.TryParse(x, out var s))
+            {
+                return s;
+            }
+            return 3;
+        }
 
         public string GetAppName() => Environment.GetEnvironmentVariable("APP_NAME") ?? "Hugin";
         public string GetAppDescription() => Environment.GetEnvironmentVariable("APP_DESCRIPTION") ?? "";

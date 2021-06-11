@@ -12,11 +12,13 @@ namespace Hugin.Services
 
     public class ScribanContentsBuildService : IContentsBuildService
     {
+        private readonly ApplicationConfigurationService config;
         private readonly RepositoryHandleService repositoryHandler;
         private readonly IMemoryCache cache;
 
-        public ScribanContentsBuildService(RepositoryHandleService _repositoryHandler, IMemoryCache _cache)
+        public ScribanContentsBuildService(ApplicationConfigurationService _config, RepositoryHandleService _repositoryHandler, IMemoryCache _cache)
         {
+            config = _config;
             repositoryHandler = _repositoryHandler;
             cache = _cache;
         }
@@ -41,7 +43,7 @@ namespace Hugin.Services
             model.Import(huginObject);
             context.PushGlobal(model);
 
-            return tempalteRender(new TimeSpan(0, 0, 3), 1000000, context, template);
+            return tempalteRender(new TimeSpan(0, 0, config.GetRenderTimeLimit()), 1000000, context, template);
         }
 
         public async Task<string> BuildPageAsync(LectureHandleService lectureHandler, Data.User user, Data.Lecture lecture, string rivision, string pagePath)
@@ -65,7 +67,7 @@ namespace Hugin.Services
             model.Import(huginObject);
             context.PushGlobal(model);
 
-            return tempalteRender(new TimeSpan(0, 0, 3), 1000000, context, template);
+            return tempalteRender(new TimeSpan(0, 0, config.GetRenderTimeLimit()), 1000000, context, template);
         }
 
         private Scriban.TemplateContext buildContext()
@@ -74,7 +76,7 @@ namespace Hugin.Services
             context.LoopLimit = 500;
             context.RecursiveLimit = 5;
             context.StrictVariables = false;
-            context.RegexTimeOut = new TimeSpan(0, 0, 3);
+            context.RegexTimeOut = new TimeSpan(0, 0, config.GetRenderTimeLimit());
             return context;
         }
 
@@ -83,7 +85,8 @@ namespace Hugin.Services
             var task = Task.Run(async () => await template.RenderAsync(context));
             if (task.Wait(timeSpan))
             {
-                return task.Result;
+                var text = task.Result;
+                return text.Substring(Math.Min(maxLength, text.Length));
             }
             else
             {

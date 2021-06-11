@@ -13,6 +13,7 @@ services:
       TZ: Asia/Tokyo
       DB_CONNECTION_STR: "Host=db; Database=hugin-dev; Port=5432; Username=hugin; Password=password"
       APP_SECRET_KEY: "your-secret-key(need-32-characters)"
+      RENDER_TIME_LIMIT: 10
       APP_DATA_PATH: /app-data
       APP_NAME: Hugin
       APP_DESCRIPTION: ""

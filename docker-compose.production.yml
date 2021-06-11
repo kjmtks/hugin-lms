@@ -15,6 +15,7 @@ services:
       APP_SECRET_KEY: "your-secret-key(need-32-characters)"
       APP_DATA_PATH: /app-data
       APP_NAME: Hugin
+      RENDER_TIME_LIMIT: 10
       APP_DESCRIPTION: ""
       
       # SUB_DIR: "/hugin"

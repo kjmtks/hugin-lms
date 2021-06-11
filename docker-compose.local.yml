@@ -16,6 +16,7 @@ services:
       APP_DATA_PATH: /app-data
       APP_NAME: Hugin
       APP_DESCRIPTION: ""
+      RENDER_TIME_LIMIT: 10
            
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
