@@ -132,6 +132,17 @@
             @foreach (var (file, i) in Model.Activity.Files.Children.Select((x, i) => (x, i)))
             {
                 <div class="content tab-content @(i == 0 ? "is-active" : "")" data-content-name="@file.Name">
+                    @if (file is Hugin.Models.ActivityFilesBlockly block)
+                    {
+                        <div class="activity-blockly" data-prefix="@Model.Id-">
+                            <div id="@Model.Id-blocklyDiv" style="height: 480px; width: 100%;"></div>
+                            <xml id="@Model.Id-toolbox" style="display: none">
+                                <block type="controls_repeat"></block>
+                                <block type="text"></block>
+                                <block type="text_print"></block>
+                            </xml>
+                        </div>
+                    }
                     @if (file is Hugin.Models.ActivityFilesText text)
                     {
                         @if (text.ReadOnly)

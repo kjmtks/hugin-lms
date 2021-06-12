@@ -161,6 +161,7 @@ namespace Hugin.Models
     [Serializable]
     public partial class ActivityFiles
     {
+        [XmlElement("Blockly", typeof(ActivityFilesBlockly))]
         [XmlElement("Code", typeof(ActivityFilesCode))]
         [XmlElement("Text", typeof(ActivityFilesText))]
         [XmlElement("String", typeof(ActivityFilesString))]
@@ -168,6 +169,53 @@ namespace Hugin.Models
         [XmlElement("Form", typeof(ActivityFilesForm))]
         public object[] Files { get; set; }
         public IEnumerable<IActivityFile> Children { get { return this.Files.Cast<IActivityFile>(); } }
+    }
+
+    [Serializable]
+    public partial class ActivityFilesBlockly : IActivityFile
+    {
+        public string Default { get; set; }
+
+        public string Answer { get; set; }
+
+        public bool HasAnswer() { return !string.IsNullOrWhiteSpace(Answer); }
+        public bool HasDefault() { return !string.IsNullOrWhiteSpace(Default); }
+
+        [XmlAttribute]
+        public string Name { get; set; }
+        [XmlAttribute]
+        public string Label { get; set; }
+
+        [XmlAttribute]
+        public string CodeFile { get; set; }
+
+        public ActivityFilesBlocklyToolboxes Toolboxes { get; set; }
+
+        [XmlAttribute]
+        public bool ReadOnly { get; set; } = false;
+        [XmlAttribute]
+        public bool Submit { get; set; } = false;
+    }
+
+    [Serializable]
+    public partial class ActivityFilesBlocklyToolboxes
+    {
+        [XmlElement("Category", typeof(ActivityFilesBlocklyCategory))]
+        [XmlElement("Toolbox", typeof(ActivityFilesBlocklyToolbox))]
+        public object[] Toolboxes { get; set; }
+        public IEnumerable<IActivityFilesBlocklyToolbox> Children { get { return this.Toolboxes.Cast<IActivityFilesBlocklyToolbox>(); } }
+    }
+    public interface IActivityFilesBlocklyToolbox { }
+    public partial class ActivityFilesBlocklyCategory : IActivityFilesBlocklyToolbox
+    {
+        [XmlAttribute]
+        public string Name { get; set; }
+        public ActivityFilesBlocklyToolboxes Children { get; set; }
+    }
+    public partial class ActivityFilesBlocklyToolbox : IActivityFilesBlocklyToolbox
+    {
+        [XmlAttribute]
+        public string Type { get; set; }
     }
 
     [Serializable]

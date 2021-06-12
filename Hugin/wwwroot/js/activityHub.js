@@ -25,6 +25,28 @@ function selectTab(activityId, tab) {
     });
 }
 
+function buildBlockly(prefix) {
+    Blockly.inject(prefix + "blocklyDiv", {
+        toolbox: document.getElementById(prefix + "toolbox"),
+        maxBlocks: 3,
+        grid: {
+            spacing: 18,
+            length: 3,
+            colour: '#ccc',
+            snap: true,
+        },
+        trashcan: true,
+        zoom: {
+            controls: true,
+            wheel: true,
+            startScale: 1.0,
+            maxScale: 3,
+            minScale: 0.3,
+            scaleSpeed: 1.2,
+        },
+    });
+}
+
 function disableServerActions() {
     document.querySelectorAll(".activity-action-button").forEach(button => {
         button.setAttribute("disabled", "true");
@@ -422,6 +444,16 @@ connection.start().then(function () {
         });
 
         requestAction(connection, "SendDiscardRequest", id, profile);
+
+
+        activity.querySelectorAll(".activity-blockly").forEach(block => {
+            var prefix = block.getAttribute("data-prefix");
+            console.log(prefix);
+
+            buildBlockly(prefix);
+            // TODO
+        });
+
 
         connection
             .invoke("SendActivityStatus", id, profile)
