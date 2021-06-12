@@ -185,11 +185,18 @@ namespace Hugin.Models
         public string Name { get; set; }
         [XmlAttribute]
         public string Label { get; set; }
+        [XmlAttribute]
+        public string Height { get; set; } = "480px";
 
         [XmlAttribute]
         public string CodeFile { get; set; }
 
-        public ActivityFilesBlocklyToolboxes Toolboxes { get; set; }
+        [XmlAttribute]
+        public int MaxBlocks { get; set; } = 0;
+
+        [XmlElement("Toolbox", typeof(ActivityFilesBlocklyItem))]
+        public ActivityFilesBlocklyItem Toolbox { get; set; }
+        public string BlockDefinition { get; set; }
 
         [XmlAttribute]
         public bool ReadOnly { get; set; } = false;
@@ -198,21 +205,25 @@ namespace Hugin.Models
     }
 
     [Serializable]
-    public partial class ActivityFilesBlocklyToolboxes
+    public partial class ActivityFilesBlocklyItem
     {
         [XmlElement("Category", typeof(ActivityFilesBlocklyCategory))]
-        [XmlElement("Toolbox", typeof(ActivityFilesBlocklyToolbox))]
-        public object[] Toolboxes { get; set; }
-        public IEnumerable<IActivityFilesBlocklyToolbox> Children { get { return this.Toolboxes.Cast<IActivityFilesBlocklyToolbox>(); } }
+        [XmlElement("Block", typeof(ActivityFilesBlocklyBlock))]
+        public object[] Items { get; set; } = new object[] { };
+        public IEnumerable<IActivityFilesBlocklyItem> Children { get { return this.Items.Cast<IActivityFilesBlocklyItem>(); } }
     }
-    public interface IActivityFilesBlocklyToolbox { }
-    public partial class ActivityFilesBlocklyCategory : IActivityFilesBlocklyToolbox
+    public interface IActivityFilesBlocklyItem { }
+    public partial class ActivityFilesBlocklyCategory : IActivityFilesBlocklyItem
     {
         [XmlAttribute]
         public string Name { get; set; }
-        public ActivityFilesBlocklyToolboxes Children { get; set; }
+        [XmlAttribute]
+        public string Colour { get; set; }
+
+        [XmlElement("Block")]
+        public ActivityFilesBlocklyBlock[] Children { get; set; } = new ActivityFilesBlocklyBlock[] { };
     }
-    public partial class ActivityFilesBlocklyToolbox : IActivityFilesBlocklyToolbox
+    public partial class ActivityFilesBlocklyBlock : IActivityFilesBlocklyItem
     {
         [XmlAttribute]
         public string Type { get; set; }

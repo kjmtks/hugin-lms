@@ -25,10 +25,15 @@ function selectTab(activityId, tab) {
     });
 }
 
-function buildBlockly(prefix) {
-    Blockly.inject(prefix + "blocklyDiv", {
+var blocklies = {};
+
+function buildBlockly(dom) {
+    var maxBlocks = parseInt(dom.getAttribute("data-max-blocks"));
+    var prefix = dom.getAttribute("data-prefix");
+    var definition = dom.querySelector(".block-definition").value;
+    blocklies[prefix] = Blockly.inject(prefix + "blocklyDiv", {
         toolbox: document.getElementById(prefix + "toolbox"),
-        maxBlocks: 3,
+        maxBlocks: maxBlocks,
         grid: {
             spacing: 18,
             length: 3,
@@ -45,6 +50,7 @@ function buildBlockly(prefix) {
             scaleSpeed: 1.2,
         },
     });
+    Blockly.defineBlocksWithJsonArray(JSON.parse(definition));
 }
 
 function disableServerActions() {
@@ -95,6 +101,7 @@ function setFileNameToFileUpload(file) {
 async function getFileValues(activity) {
     var textfiles = {};
     var binaryfiles = {};
+    var blocklyfiles = {};
 
     activity.querySelectorAll(".activity-file").forEach(file => {
         textfiles[file.getAttribute("data-name")] = file.value;
@@ -107,6 +114,16 @@ async function getFileValues(activity) {
             binaryfiles[inp.getAttribute("data-name")] = await readFile(inp);
         }
     }
+
+    activity.querySelectorAll(".activity-blockly").forEach(file => {
+        var prefix = file.getAttribute("data-prefix");
+        var data = {};
+        var xml = Blockly.Xml.workspaceToDom(blocklies[prefix]);
+        data["xml"] = Blockly.Xml.domToText(xml);
+        data["code-body"] = Blockly.Python.workspaceToCode(blocklies[prefix]);
+        data["code-filename"] = file.getAttribute("data-code-filename");
+        blocklyfiles[file.getAttribute("data-name")] = JSON.stringify(data);
+    });
 
     activity.querySelectorAll(".activity-file-form").forEach(form => {
         var data = {};
@@ -123,7 +140,7 @@ async function getFileValues(activity) {
         });
         textfiles[form.getAttribute("data-name")] = JSON.stringify(data);
     });
-    return [textfiles, binaryfiles];
+    return [textfiles, binaryfiles, blocklyfiles];
 }
 
 
@@ -350,6 +367,17 @@ connection.on("ReceiveActionResult", function (activityId, message, errorMessage
                 file.value = null;
             }
         });
+        activity.querySelectorAll(".activity-blockly").forEach(block => {
+            var x = block.getAttribute("data-name");
+            if (data[x] != null) {
+                var prefix = block.getAttribute("data-prefix");
+                var ws = blocklies[prefix];
+                var xml = Blockly.Xml.textToDom(data[x]);
+                console.log(xml)
+                ws.clear();
+                Blockly.Xml.domToWorkspace(xml, ws);
+            }
+        });
         activity.querySelectorAll(".activity-file-form").forEach(form => {
             var name = form.getAttribute("data-name");
             var obj = JSON.parse(data[name]);
@@ -370,7 +398,7 @@ connection.on("ReceiveActionResult", function (activityId, message, errorMessage
 
 function simpleAction(connection, action, activityId, profile, data) {
     connection
-        .invoke(action, activityId, profile, data[0], data[1])
+        .invoke(action, activityId, profile, data[0], data[1], data[2])
         .catch(function (err) {
             return console.error(err.toString());
         });
@@ -379,7 +407,7 @@ function submitAction(connection, action, activityId, profile, data) {
     var msg = document.getElementById(activityId).querySelector(".submit-comment");
     var message = msg.value;
     connection
-        .invoke(action, activityId, profile, data[0], data[1], message)
+        .invoke(action, activityId, profile, data[0], data[1], data[2], message)
         .catch(function (err) {
             return console.error(err.toString());
         });
@@ -447,10 +475,7 @@ connection.start().then(function () {
 
 
         activity.querySelectorAll(".activity-blockly").forEach(block => {
-            var prefix = block.getAttribute("data-prefix");
-            console.log(prefix);
-
-            buildBlockly(prefix);
+            buildBlockly(block);
             // TODO
         });
 

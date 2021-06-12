@@ -99,7 +99,7 @@ namespace Hugin.Hubs
 
         }
 
-        public async Task SendSaveRequest(string activityId, string activityProfile, Dictionary<string, string> textfiles, Dictionary<string, string> binaryfiles)
+        public async Task SendSaveRequest(string activityId, string activityProfile, Dictionary<string, string> textfiles, Dictionary<string, string> binaryfiles, Dictionary<string, string> blocklyfiles)
         {
             var requestedAt = DateTime.Now;
 
@@ -109,7 +109,7 @@ namespace Hugin.Hubs
             {
                 var commitMessage = $"Save: {lecture.Owner.Account}/{lecture.Name}/{activity.Name}";
 
-                var result = !string.IsNullOrWhiteSpace(ActivityHandler.SaveActivity(lecture, user, activity, commitMessage, textfiles, binaryfiles));
+                var result = !string.IsNullOrWhiteSpace(ActivityHandler.SaveActivity(lecture, user, activity, commitMessage, textfiles, binaryfiles, blocklyfiles));
 
                 using (var scope = ServiceScopeFactory.CreateScope())
                 {
@@ -145,7 +145,7 @@ namespace Hugin.Hubs
             }
         }
 
-        public async Task SendRunRequest(string activityId, string activityProfile, Dictionary<string, string> textfiles, Dictionary<string, string> binaryfiles)
+        public async Task SendRunRequest(string activityId, string activityProfile, Dictionary<string, string> textfiles, Dictionary<string, string> binaryfiles, IDictionary<string, string> blocklyfiles)
         {
             var requestedAt = DateTime.Now;
 
@@ -161,7 +161,7 @@ namespace Hugin.Hubs
 
                 var additionalFiles = new StringBuilder();
 
-                var result = await ActivityHandler.SaveAndRunActivityAsync(lecture, user, activity, commitMessageBeforeRun, textfiles, binaryfiles,
+                var result = await ActivityHandler.SaveAndRunActivityAsync(lecture, user, activity, commitMessageBeforeRun, textfiles, binaryfiles, blocklyfiles,
                     onSaveErrorOccurCallback: async () =>
                     {
                         await Clients.Caller.SendAsync("ReceiveActionResult", activityId, null, Localizer["SaveError"].Value);
@@ -245,7 +245,7 @@ namespace Hugin.Hubs
             }
         }
 
-        public async Task SendValidateRequest(string activityId, string activityProfile, Dictionary<string, string> textfiles, Dictionary<string, string> binaryfiles)
+        public async Task SendValidateRequest(string activityId, string activityProfile, Dictionary<string, string> textfiles, Dictionary<string, string> binaryfiles, IDictionary<string, string> blocklyfiles)
         {
             var requestedAt = DateTime.Now;
 
@@ -260,7 +260,7 @@ namespace Hugin.Hubs
                 var summary = new StringBuilder();
                 var lazies = new List<string>();
 
-                var result = await ActivityHandler.SaveAndValidateActivityAsync(lecture, user, activity, commitMessageBeforeValidate, textfiles, binaryfiles,
+                var result = await ActivityHandler.SaveAndValidateActivityAsync(lecture, user, activity, commitMessageBeforeValidate, textfiles, binaryfiles, blocklyfiles,
                     onSaveErrorOccurCallback: async () =>
                     {
                         await Clients.Caller.SendAsync("ReceiveActionResult", activityId, null, Localizer["SaveError"].Value);
@@ -324,7 +324,7 @@ namespace Hugin.Hubs
 
 
 
-        public async Task SendSubmitRequest(string activityId, string activityProfile, Dictionary<string, string> textfiles, Dictionary<string, string> binaryfiles, string submitMessage)
+        public async Task SendSubmitRequest(string activityId, string activityProfile, Dictionary<string, string> textfiles, Dictionary<string, string> binaryfiles, IDictionary<string, string> blocklyfiles, string submitMessage)
         {
             var requestedAt = DateTime.Now;
 
@@ -385,7 +385,7 @@ namespace Hugin.Hubs
                     commitMessage.AppendLine(fn);
                 }
 
-                var hash = ActivityHandler.SaveActivity(lecture, user, activity, commitMessage.ToString(), textfiles, binaryfiles);
+                var hash = ActivityHandler.SaveActivity(lecture, user, activity, commitMessage.ToString(), textfiles, binaryfiles, blocklyfiles);
                 var result = !string.IsNullOrWhiteSpace(hash);
 
                 if (result && profile.Rivision == lecture.DefaultBranch)
@@ -489,7 +489,7 @@ namespace Hugin.Hubs
                 var repository = RepositoryHandler.GetLectureUserDataRepository(lecture, user.Account);
                 var dict = new Dictionary<string, string>();
                 var initialized = RepositoryHandler.IsInitialized(repository);
-                foreach (var x in activity.Files.Children)
+                foreach (var x in activity.Files.Children.Where(x => !(x is Models.ActivityFilesUpload)))
                 {
                     var path = $"home/{activity.Directory}/{x.Name}";
                     if (initialized && RepositoryHandler.Exists(repository, path, "master"))

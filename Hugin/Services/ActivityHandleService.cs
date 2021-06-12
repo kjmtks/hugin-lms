@@ -48,13 +48,13 @@ namespace Hugin.Services
             return (profile, lecture, user, activity, xml);
         }
         public string SaveActivity(Data.Lecture lecture, Data.User user, Activity activity, string commitMessage,
-            IDictionary<string, string> textfiles, IDictionary<string, string> binaryfiles)
+            IDictionary<string, string> textfiles, IDictionary<string, string> binaryfiles, IDictionary<string, string> blocklyfiles)
         {
-            return save(lecture, user, activity, commitMessage, textfiles, binaryfiles);
+            return save(lecture, user, activity, commitMessage, textfiles, binaryfiles, blocklyfiles);
         }
 
         public async Task<bool> SaveAndRunActivityAsync(Data.Lecture lecture, Data.User user, Activity activity, string commitMessageBeforeRun,
-            IDictionary<string, string> textfiles, IDictionary<string, string> binaryfiles,
+            IDictionary<string, string> textfiles, IDictionary<string, string> binaryfiles, IDictionary<string, string> blocklyfiles,
             Func<Task> onSaveErrorOccurCallback = null,
             Func<IHubContext<ActivityHub>, string, Task> stdoutCallback = null,
             Func<IHubContext<ActivityHub>, string, Task> stderrCallback = null,
@@ -62,7 +62,7 @@ namespace Hugin.Services
             Func<IHubContext<ActivityHub>, string, Task> summaryCallback = null,
             Func<IHubContext<ActivityHub>, int, Task> doneCallback = null)
         {
-            var result = !string.IsNullOrWhiteSpace(save(lecture, user, activity, commitMessageBeforeRun, textfiles, binaryfiles));
+            var result = !string.IsNullOrWhiteSpace(save(lecture, user, activity, commitMessageBeforeRun, textfiles, binaryfiles, blocklyfiles));
             if(!result)
             {
                 await onSaveErrorOccurCallback?.Invoke();
@@ -106,11 +106,11 @@ namespace Hugin.Services
         }
 
         public async Task<bool> SaveAndValidateActivityAsync(Data.Lecture lecture, Data.User user, Activity activity, string commitMessageBeforeValidate,
-            IDictionary<string, string> textfiles, IDictionary<string, string> binaryfiles,
+            IDictionary<string, string> textfiles, IDictionary<string, string> binaryfiles, IDictionary<string, string> blocklyfiles,
             Func<Task> onSaveErrorOccurCallback = null,
             Func<IHubContext<ActivityHub>, bool, Task> doneCallback = null)
         {
-            var result = !string.IsNullOrWhiteSpace(save(lecture, user, activity, commitMessageBeforeValidate, textfiles, binaryfiles));
+            var result = !string.IsNullOrWhiteSpace(save(lecture, user, activity, commitMessageBeforeValidate, textfiles, binaryfiles, blocklyfiles));
             if (!result)
             {
                 await onSaveErrorOccurCallback?.Invoke();
@@ -183,7 +183,7 @@ namespace Hugin.Services
         }
 
         private string save(Data.Lecture lecture, Data.User user, Activity activity, string commitMessage,
-            IDictionary<string, string> textfiles, IDictionary<string, string> binaryfiles)
+            IDictionary<string, string> textfiles, IDictionary<string, string> binaryfiles, IDictionary<string, string> blocklyfiles)
         {
             var userRepository = RepositoryHandler.GetLectureUserDataRepository(lecture, user.Account);
             return RepositoryHandler.DoWithLock(userRepository, r =>
@@ -207,10 +207,21 @@ namespace Hugin.Services
                         var str = binaryfiles[key].Split(",", 2);
                         ys.Add(path, Convert.FromBase64String(str[1]));
                     }
+                    var zs = new Dictionary<string, string>();
+                    foreach (var key in blocklyfiles.Keys.Where(x => allowedFiles.Contains(x)))
+                    {
+                        var path = $"home/{activity.ToPath(key)}";
+                        var json = blocklyfiles[key];
+                        var data = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+                        var codeFilename = data["code-filename"];
+                        xs.Add($"home/{activity.ToPath(key)}", data["xml"]);
+                        xs.Add($"home/{activity.ToPath(codeFilename)}", data["code-body"]);
+                    }
+
                     RepositoryHandler.SaveAndSync(r, "master", xs, ys, commitMessage, user.DisplayName, user.Email, user.Uid + 1000);
                     return RepositoryHandler.GetHashOfLatestCommit(r, "", "master");
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     return null;
                 }

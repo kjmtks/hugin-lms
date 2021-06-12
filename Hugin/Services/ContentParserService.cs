@@ -207,7 +207,7 @@ namespace Hugin.Services
                 }
                 catch (Exception ex)
                 {
-                    html.Append($"<article class=\"message is-danger\"><div class=\"message-header\">Activity Error</div><div class=\"message-body\">{ex.Message}</div></article>");
+                    html.Append($"<article class=\"message is-danger\"><div class=\"message-header\">Activity Error</div><div class=\"message-body\"><p>{ex.Message}</p><p>{ex.StackTrace}</p></div></article>");
                 }
                 act.OuterHtml = html.ToString();
             }
