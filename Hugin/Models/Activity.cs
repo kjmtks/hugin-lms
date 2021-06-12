@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
 using Hugin.Services;
+using System.Text;
 
 namespace Hugin.Models
 {
@@ -194,8 +195,18 @@ namespace Hugin.Models
         [XmlAttribute]
         public int MaxBlocks { get; set; } = 0;
 
-        [XmlElement("Toolbox", typeof(ActivityFilesBlocklyItem))]
-        public ActivityFilesBlocklyItem Toolbox { get; set; }
+        public string GetToolboxHtml()
+        {
+            var sb = new StringBuilder();
+            foreach(var t in Toolbox as System.Xml.XmlNode[])
+            {
+                sb.AppendLine(t.OuterXml);
+            }
+            return sb.ToString();
+        }
+
+        [XmlElement]
+        public object Toolbox { get; set; }
         public string BlockDefinition { get; set; }
 
         [XmlAttribute]
@@ -203,32 +214,12 @@ namespace Hugin.Models
         [XmlAttribute]
         public bool Submit { get; set; } = false;
     }
-
     [Serializable]
-    public partial class ActivityFilesBlocklyItem
+    public partial class ActivityFilesBlockToolbox
     {
-        [XmlElement("Category", typeof(ActivityFilesBlocklyCategory))]
-        [XmlElement("Block", typeof(ActivityFilesBlocklyBlock))]
-        public object[] Items { get; set; } = new object[] { };
-        public IEnumerable<IActivityFilesBlocklyItem> Children { get { return this.Items.Cast<IActivityFilesBlocklyItem>(); } }
+        [XmlText]
+        public string Body { get; set; }
     }
-    public interface IActivityFilesBlocklyItem { }
-    public partial class ActivityFilesBlocklyCategory : IActivityFilesBlocklyItem
-    {
-        [XmlAttribute]
-        public string Name { get; set; }
-        [XmlAttribute]
-        public string Colour { get; set; }
-
-        [XmlElement("Block")]
-        public ActivityFilesBlocklyBlock[] Children { get; set; } = new ActivityFilesBlocklyBlock[] { };
-    }
-    public partial class ActivityFilesBlocklyBlock : IActivityFilesBlocklyItem
-    {
-        [XmlAttribute]
-        public string Type { get; set; }
-    }
-
     [Serializable]
     public partial class ActivityFilesCode : IActivityFile
     {

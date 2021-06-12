@@ -137,30 +137,7 @@
                         <div class="activity-blockly" data-name="@block.Name" data-code-filename="@block.CodeFile" data-prefix="@Model.Id-" data-max-blocks="@block.MaxBlocks">
                             <textarea style="display: none;" class="block-definition">@block.BlockDefinition</textarea>
                             <div id="@Model.Id-blocklyDiv" style="height: @block.Height; width: 100%;"></div>
-                            <xml id="@Model.Id-toolbox" style="display: none">
-                                @if(block.Toolbox !=null)
-                                { 
-                                    @foreach (var item in block.Toolbox.Children)
-                                    {
-                                        if (item is Hugin.Models.ActivityFilesBlocklyCategory category)
-                                        {
-                                            <category name="@category.Name" colour="@category.Colour">
-                                                @if(category.Children != null)
-                                                {
-                                                    @foreach (var blk2 in category.Children.Where(x => !string.IsNullOrWhiteSpace(x.Type)))
-                                                    {
-                                                        <block type="@blk2.Type"></block>
-                                                    }
-                                                }
-                                            </category>
-                                        }
-                                        if (item is Hugin.Models.ActivityFilesBlocklyBlock blk && !string.IsNullOrWhiteSpace(blk.Type))
-                                        {
-                                            <block type="@blk.Type"></block>
-                                        }
-                                    }
-                                }
-                            </xml>
+                            <xml id="@Model.Id-toolbox" style="display: none">@Html.Raw(block.GetToolboxHtml())</xml>
                         </div>
                     }
                     @if (file is Hugin.Models.ActivityFilesText text)
