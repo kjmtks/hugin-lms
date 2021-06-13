@@ -145,13 +145,15 @@ namespace Hugin.Hubs
             }
         }
 
-        public async Task SendRunRequest(string activityId, string activityProfile, Dictionary<string, string> textfiles, Dictionary<string, string> binaryfiles, IDictionary<string, string> blocklyfiles)
+        public async Task SendRunRequest(string activityId, string activityProfile, string runnerName, Dictionary<string, string> textfiles, Dictionary<string, string> binaryfiles, IDictionary<string, string> blocklyfiles)
         {
             var requestedAt = DateTime.Now;
 
             var (profile, lecture, user, activity, _) = await ActivityHandler.DecryptProfileAsync(activityProfile);
 
-            if (PermissionProvider.CanShowActivity(lecture, user, activity) && activity.UseRun())
+            var runner = activity.Runners.Runners.Where(x => x.Name == runnerName).FirstOrDefault();
+
+            if (PermissionProvider.CanShowActivity(lecture, user, activity) && runner != null)
             {
                 var commitMessageBeforeRun = $"SaveForRun: {lecture.Owner.Account}/{lecture.Name}/{activity.Name}";
                 var connectionId = Context.ConnectionId;
@@ -161,7 +163,7 @@ namespace Hugin.Hubs
 
                 var additionalFiles = new StringBuilder();
 
-                var result = await ActivityHandler.SaveAndRunActivityAsync(lecture, user, activity, commitMessageBeforeRun, textfiles, binaryfiles, blocklyfiles,
+                var result = await ActivityHandler.SaveAndRunActivityAsync(lecture, user, activity, runner, commitMessageBeforeRun, textfiles, binaryfiles, blocklyfiles,
                     onSaveErrorOccurCallback: async () =>
                     {
                         await Clients.Caller.SendAsync("ReceiveActionResult", activityId, null, Localizer["SaveError"].Value);
@@ -231,7 +233,7 @@ namespace Hugin.Hubs
                                 });
                             }
                         }
-                        await context.Clients.Client(connectionId).SendAsync("ReceiveActionPermissions", activityId, true, activity.Flags.CanSubmitBeforeAccept || false);
+                        await context.Clients.Client(connectionId).SendAsync("ReceiveActionPermissions", activityId, activity.Flags.CanValidateBeforeRun || !runner.Auxiliary, activity.Flags.CanSubmitBeforeAccept);
                         await context.Clients.Client(connectionId).SendAsync("ReceiveActionResult", activityId, null, null, null);
                     });
                 if (!result)

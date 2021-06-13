@@ -28,28 +28,11 @@ function selectTab(activityId, tab) {
 var blocklies = {};
 
 function buildBlockly(dom) {
-    var maxBlocks = parseInt(dom.getAttribute("data-max-blocks"));
     var prefix = dom.getAttribute("data-prefix");
+    var configure = JSON.parse( dom.querySelector(".blockly-configure").value );
     var definition = dom.querySelector(".block-definition").value;
-    blocklies[prefix] = Blockly.inject(prefix + "blocklyDiv", {
-        toolbox: document.getElementById(prefix + "toolbox"),
-        maxBlocks: maxBlocks,
-        grid: {
-            spacing: 18,
-            length: 3,
-            colour: '#ccc',
-            snap: true,
-        },
-        trashcan: true,
-        zoom: {
-            controls: true,
-            wheel: true,
-            startScale: 1.0,
-            maxScale: 3,
-            minScale: 0.3,
-            scaleSpeed: 1.2,
-        },
-    });
+    var base = { toolbox: document.getElementById(prefix + "toolbox") };
+    blocklies[prefix] = Blockly.inject(prefix + "blocklyDiv", { ...base, ...configure });
     Blockly.defineBlocksWithJsonArray(JSON.parse(definition));
 }
 
@@ -373,7 +356,6 @@ connection.on("ReceiveActionResult", function (activityId, message, errorMessage
                 var prefix = block.getAttribute("data-prefix");
                 var ws = blocklies[prefix];
                 var xml = Blockly.Xml.textToDom(data[x]);
-                console.log(xml)
                 ws.clear();
                 Blockly.Xml.domToWorkspace(xml, ws);
             }
@@ -396,14 +378,22 @@ connection.on("ReceiveActionResult", function (activityId, message, errorMessage
     }
 });
 
-function simpleAction(connection, action, activityId, profile, data) {
+function simpleAction(connection, action, activityId, profile, args, data) {
     connection
         .invoke(action, activityId, profile, data[0], data[1], data[2])
         .catch(function (err) {
             return console.error(err.toString());
         });
 }
-function submitAction(connection, action, activityId, profile, data) {
+function runAction(connection, action, activityId, profile, args, data) {
+    connection
+        .invoke(action, activityId, profile, args["runner-name"], data[0], data[1], data[2])
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
+}
+
+function submitAction(connection, action, activityId, profile, args, data) {
     var msg = document.getElementById(activityId).querySelector(".submit-comment");
     var message = msg.value;
     connection
@@ -414,7 +404,7 @@ function submitAction(connection, action, activityId, profile, data) {
     msg.value = "";
     modalOff("submit-modal-" + activityId);
 }
-function requestAction(connection, action, activityId, profile) {
+function requestAction(connection, action, activityId, profile, args) {
     connection
         .invoke(action, activityId, profile)
         .catch(function (err) {
@@ -436,7 +426,7 @@ connection.onclose(function () {
 connection.start().then(function () {
     var actions = {
         ".activity-save": { name: "SendSaveRequest", event: simpleAction, send_data: true },
-        ".activity-run": { name: "SendRunRequest", event: simpleAction, send_data: true },
+        ".activity-run": { name: "SendRunRequest", event: runAction, send_data: true },
         ".activity-load-test": { name: "SendLoadTestRequest", event: simpleAction, send_data: true },
         ".activity-submit": { name: "SendSubmitRequest", event: submitAction, send_data: true },
         ".activity-validate": { name: "SendValidateRequest", event: simpleAction, send_data: true },
@@ -452,6 +442,8 @@ connection.start().then(function () {
         var profile = activity.getAttribute("data-profile");
         Object.keys(actions).forEach(key => {
             activity.querySelectorAll(key).forEach(x => {
+                var args = {};
+                args["runner-name"] = x.getAttribute("data-runner-name");
                 x.addEventListener("click", function (event) {
                     if (enbaleAction) {
                         disableServerActions();
@@ -459,11 +451,11 @@ connection.start().then(function () {
                         var action = actions[key];
                         if (action.send_data) {
                             getFileValues(activity).then((data) => {
-                                action.event(connection, action.name, id, profile, data)
+                                action.event(connection, action.name, id, profile, args, data)
                             });
                         }
                         else {
-                            action.event(connection, action.name, id, profile)
+                            action.event(connection, action.name, id, profile, args)
                         }
                         event.preventDefault();
                     }
@@ -476,7 +468,6 @@ connection.start().then(function () {
 
         activity.querySelectorAll(".activity-blockly").forEach(block => {
             buildBlockly(block);
-            // TODO
         });
 
 

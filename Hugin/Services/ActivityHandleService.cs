@@ -53,7 +53,7 @@ namespace Hugin.Services
             return save(lecture, user, activity, commitMessage, textfiles, binaryfiles, blocklyfiles);
         }
 
-        public async Task<bool> SaveAndRunActivityAsync(Data.Lecture lecture, Data.User user, Activity activity, string commitMessageBeforeRun,
+        public async Task<bool> SaveAndRunActivityAsync(Data.Lecture lecture, Data.User user, Activity activity, ActivityRunner runner, string commitMessageBeforeRun,
             IDictionary<string, string> textfiles, IDictionary<string, string> binaryfiles, IDictionary<string, string> blocklyfiles,
             Func<Task> onSaveErrorOccurCallback = null,
             Func<IHubContext<ActivityHub>, string, Task> stdoutCallback = null,
@@ -76,7 +76,7 @@ namespace Hugin.Services
                     var sandbox = SandboxHandler.Set.Where(x => x.LectureId == lecture.Id && x.Name == activity.Sandbox).Include(x => x.Lecture).ThenInclude(x => x.Owner).AsNoTracking().FirstOrDefault();
                     if(sandbox != null)
                     {
-                        var command = $"cd ~/{activity.Directory}; {activity.Run}";
+                        var command = $"cd ~/{activity.Directory}; {runner.Commands}";
                         Executor.EnqueueExecution(user, sandbox,
                             $"Run activity {lecture.Owner.Account}/{lecture.Name}/{activity.Name}",
                             program: "/bin/bash",

@@ -56,7 +56,7 @@ namespace Hugin.Models
         public string Tags { get; set; }
         public ActivityFlags Flags { get; set; }
         public ActivityFiles Files { get; set; }
-        public string Run { get; set; }
+        public ActivityRunners Runners { get; set; }
         public ActivityLimits Limits { get; set; }
         public ActivityValidations Validations { get; set; }
 
@@ -71,10 +71,6 @@ namespace Hugin.Models
         public bool UseDiscard()
         {
             return this.Flags.UseDiscard;
-        }
-        public bool UseRun()
-        {
-            return this.Run != null;
         }
         public bool UseValidate()
         {
@@ -109,7 +105,6 @@ namespace Hugin.Models
         }
     }
 
-
     [Serializable]
     public partial class ActivityDescription
     {
@@ -119,7 +114,28 @@ namespace Hugin.Models
         public string Text { get; set; }
     }
 
+    [Serializable]
+    public partial class ActivityRunners
+    {
+        [XmlElement("Runner")]
+        public ActivityRunner[] Runners { get; set; }
+    }
 
+    [Serializable]
+    public partial class ActivityRunner
+    {
+        [XmlAttribute("Name")]
+        public string Name { get; set; }
+        [XmlAttribute("Subject")]
+        public string Subject { get; set; }
+        [XmlAttribute("Icon")]
+        public string Icon { get; set; }
+
+        [XmlAttribute("Auxiliary")]
+        public bool Auxiliary { get; set; } = true;
+        [XmlText]
+        public string Commands { get; set; }
+    }
 
     [Serializable]
     public partial class ActivityFlags
@@ -192,8 +208,7 @@ namespace Hugin.Models
         [XmlAttribute]
         public string CodeFile { get; set; }
 
-        [XmlAttribute]
-        public int MaxBlocks { get; set; } = 0;
+        public string Configure { get; set; }
 
         public string GetToolboxHtml()
         {
