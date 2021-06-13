@@ -372,6 +372,9 @@
   <data name="Grade" xml:space="preserve">
     <value>Grade</value>
   </data>
+  <data name="HideCode" xml:space="preserve">
+    <value>Hide Code</value>
+  </data>
   <data name="Home" xml:space="preserve">
     <value>Home</value>
   </data>
@@ -602,6 +605,9 @@
   </data>
   <data name="ShowAnswer" xml:space="preserve">
     <value>Show Answer</value>
+  </data>
+  <data name="ShowCode" xml:space="preserve">
+    <value>Show Code</value>
   </data>
   <data name="ShowHistory" xml:space="preserve">
     <value>Show Submit History</value>

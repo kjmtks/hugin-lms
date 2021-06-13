@@ -372,6 +372,9 @@
   <data name="Grade" xml:space="preserve">
     <value>得点</value>
   </data>
+  <data name="HideCode" xml:space="preserve">
+    <value>コードを非表示</value>
+  </data>
   <data name="Home" xml:space="preserve">
     <value>ホーム</value>
   </data>
@@ -602,6 +605,9 @@
   </data>
   <data name="ShowAnswer" xml:space="preserve">
     <value>解答をセット</value>
+  </data>
+  <data name="ShowCode" xml:space="preserve">
+    <value>コードを表示</value>
   </data>
   <data name="ShowHistory" xml:space="preserve">
     <value>提出履歴を確認</value>
