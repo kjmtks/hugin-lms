@@ -34,6 +34,38 @@ function buildBlockly(dom) {
     var base = { toolbox: document.getElementById(prefix + "toolbox") };
     blocklies[prefix] = Blockly.inject(prefix + "blocklyDiv", { ...base, ...configure });
     Blockly.defineBlocksWithJsonArray(JSON.parse(definition));
+
+    var codearea = dom.querySelector(".blockly-script-textarea");
+    if (codearea != null) {
+        blocklies[prefix].addChangeListener(function (event) {
+            if (event.type == Blockly.Events.BLOCK_CHANGE
+                || event.type == Blockly.Events.BLOCK_MOVE
+                || event.type == Blockly.Events.BLOCK_DELETE
+                || event.type == Blockly.Events.BLOCK_CREATE) {
+                if (codearea != null && codearea.style.display != "inline") {
+                    codearea.innerText = Blockly.Python.workspaceToCode(blocklies[prefix]);
+                    hljs.highlightBlock(codearea);
+                }
+            }
+        });
+    }
+
+    dom.querySelectorAll(".blockly-show-script-area").forEach(button => {
+        button.addEventListener("click", function (event) {
+            var x = dom.querySelector(".blockly-script-area");
+            x.style.height = (dom.offsetHeight / 2) + "px";
+            x.style.display = "inline-block";
+            dom.querySelector(".blockly-script-area-button").style.display = "none";
+        });
+    });
+    dom.querySelectorAll(".blockly-hide-script-area").forEach(button => {
+        button.addEventListener("click", function (event) {
+            dom.querySelector(".blockly-script-area").style.display = "none";
+            dom.querySelector(".blockly-script-area-button").style.display = "inline-block";
+        });
+    });
+
+    
 }
 
 function disableServerActions() {

@@ -208,6 +208,9 @@ namespace Hugin.Models
         [XmlAttribute]
         public string CodeFile { get; set; }
 
+        [XmlAttribute]
+        public bool UseCodeViewer { get; set; } = true;
+
         public string Configure { get; set; }
 
         public string GetToolboxHtml()

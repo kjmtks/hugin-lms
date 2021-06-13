@@ -155,11 +155,21 @@
                 <div class="content tab-content @(i == 0 ? "is-active" : "")" data-content-name="@file.Name">
                     @if (file is Hugin.Models.ActivityFilesBlockly block)
                     {
-                    <div class="activity-blockly" data-name="@block.Name" data-code-filename="@block.CodeFile" data-prefix="@Model.Id-">
+                    <div class="activity-blockly" style="position: relative;" data-name="@block.Name" data-code-filename="@block.CodeFile" data-prefix="@Model.Id-">
                         <textarea style="display: none;" class="block-definition">@block.BlockDefinition</textarea>
                         <textarea style="display: none;" class="blockly-configure">@block.Configure</textarea>
                         <div id="@Model.Id-blocklyDiv" style="height: @block.Height; width: 100%;"></div>
                         <xml id="@Model.Id-toolbox" style="display: none">@Html.Raw(block.GetToolboxHtml())</xml>
+                        @if(block.UseCodeViewer)
+                        {
+                            <div class="blockly-script-area-button" style="position: absolute; top: 0; right: 0; text-align: right;">
+                                <a href="javascript: void(0);" style="width: 200px" class="blockly-show-script-area button">コードを表示</a>
+                            </div>
+                            <div class="blockly-script-area" style="display: none; position: absolute; width: 30%; top: 0; right: 0; text-align: right;">
+                                <a href="javascript: void(0);" style="width: 200px" class="blockly-hide-script-area button">コードを非表示</a>
+                                <pre class="tt" style="width: 100%; height:100%; padding: 5px;  text-align: left;"><code style="width: 100%; height: 100%;" class="blockly-script-textarea python"></code></pre>
+                            </div>
+                        }
                     </div>
                     }
                     @if (file is Hugin.Models.ActivityFilesText text)

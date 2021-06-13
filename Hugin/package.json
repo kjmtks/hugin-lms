@@ -11,6 +11,7 @@
     "bulma-extensions": "^6.2.7",
     "chart.js": "^3.2.1",
     "flatpickr": "^4.6.9",
+    "highlightjs": "^9.16.2",
     "mathjax": "^3.1.4"
   }
 }
