@@ -119,7 +119,7 @@
                                                 <div class="control">
                                                     <div class="select is-small">
                                                         <select class="pull-account">
-                                                            @foreach (var u in LectureHandler.GetUsers(lecture))
+                                                            @foreach (var u in LectureHandler.GetUsers(lecture).OrderBy(x => x.Account).ToList())
                                                             { 
                                                                 <option value="@u.Account">@u.DisplayName</option>
                                                             }
