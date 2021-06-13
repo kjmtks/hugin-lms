@@ -540,6 +540,9 @@
   <data name="Pending" xml:space="preserve">
     <value>Pending</value>
   </data>
+  <data name="PullFromOtherUser" xml:space="preserve">
+    <value>Pull Data</value>
+  </data>
   <data name="Reject" xml:space="preserve">
     <value>Reject</value>
   </data>

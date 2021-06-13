@@ -411,6 +411,14 @@ function requestAction(connection, action, activityId, profile, args) {
             return console.error(err.toString());
         });
 }
+function pullAction(connection, action, activityId, profile, args) {
+    var account = document.getElementById(activityId).querySelector(".pull-account");
+    connection
+        .invoke(action, activityId, account.value, profile)
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
+}
 
 connection.onclose(function () {
     console.log("Disconnected");
@@ -433,6 +441,7 @@ connection.start().then(function () {
         ".activity-discard": { name: "SendDiscardRequest", event: requestAction, send_data: false },
         ".activity-reset": { name: "SendResetRequest", event: requestAction, send_data: false },
         ".activity-answer": { name: "SendAnswerRequest", event: requestAction, send_data: false },
+        ".activity-pull": { name: "SendPullRequest", event: pullAction, send_data: false },
         ".activity-activity-xml": { name: "SendActivityXmlRequest", event: requestAction, send_data: false },
     };
 

@@ -3,7 +3,7 @@
 @using Microsoft.AspNetCore.Mvc.Localization;
 @inject IHtmlLocalizer<Hugin.Lang> Localizer;
 @inject Hugin.Services.PermissionProviderService PermissionProvider;
-@inject Hugin.Services.SubmissionHandleService SubmissionHandler;
+@inject Hugin.Services.LectureHandleService LectureHandler;
 
 <div id="@Model.Activity.Name" style="padding: 1em;">
     <div class="activity box" id="@Model.Id" data-profile="@Model.EncryptedProfile" data-directory="@Model.Activity.Directory">
@@ -113,6 +113,24 @@
                                     }
                                     @if (PermissionProvider.CanMarkSubmission(Model.Profile.LectureOwnerAccount, Model.Profile.LectureName, Model.Profile.UserAccount))
                                     {
+                                        var lecture = LectureHandler.Set.Include(x => x.Owner).Where(x => x.Name == Model.Profile.LectureName && x.Owner.Account == Model.Profile.LectureOwnerAccount).FirstOrDefault();
+                                        <div class="dropdown-item">
+                                            <div class="field has-addons">
+                                                <div class="control">
+                                                    <div class="select is-small">
+                                                        <select class="pull-account">
+                                                            @foreach (var u in LectureHandler.GetUsers(lecture))
+                                                            { 
+                                                                <option value="@u.Account">@u.DisplayName</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="control">
+                                                    <a class="button is-info is-small activity-action-button activity-pull">@Localizer["PullFromOtherUser"]</a>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <a class="dropdown-item" target="_blank" href="/LectureAdmin/@(Model.Profile.LectureOwnerAccount)/@(Model.Profile.LectureName)/Submissions/@(Model.Activity.Name)">@Localizer["GoToFeedback"]</a>
                                     }
                                     @if (PermissionProvider.CanReadLectureContentsRepository(Model.Profile.LectureOwnerAccount, Model.Profile.LectureName, Model.Profile.UserAccount))

@@ -559,6 +559,36 @@ namespace Hugin.Hubs
                 await Clients.Caller.SendAsync("ReceiveActionResult", activityId, null, null, null);
             }
         }
+        public async Task SendPullRequest(string activityId, string userAccount, string activityProfile)
+        {
+            var (_, lecture, user, activity, _) = await ActivityHandler.DecryptProfileAsync(activityProfile);
+
+            await Clients.Caller.SendAsync("ReceiveActionPermissions", activityId, activity.Flags.CanValidateBeforeRun, activity.Flags.CanSubmitBeforeAccept && activity.Flags.CanSubmitBeforeRun);
+            if (PermissionProvider.CanMarkSubmission(lecture, user))
+            {
+                var repository = RepositoryHandler.GetLectureUserDataRepository(lecture, userAccount);
+                var dict = new Dictionary<string, string>();
+                var initialized = RepositoryHandler.IsInitialized(repository);
+                foreach (var x in activity.Files.Children.Where(x => !(x is Models.ActivityFilesUpload)))
+                {
+                    var path = $"home/{activity.Directory}/{x.Name}";
+                    if (initialized && RepositoryHandler.Exists(repository, path, "master"))
+                    {
+                        dict[x.Name] = RepositoryHandler.ReadTextFile(repository, path, "master");
+                    }
+                    else
+                    {
+                        dict[x.Name] = x.HasDefault() ? x.Default : null;
+                    }
+                }
+                var json = System.Text.Json.JsonSerializer.Serialize(dict);
+                await Clients.Caller.SendAsync("ReceiveActionResult", activityId, null, null, json);
+            }
+            else
+            {
+                await Clients.Caller.SendAsync("ReceiveActionResult", activityId, null, null, null);
+            }
+        }
         public async Task SendActivityXmlRequest(string activityId, string activityProfile)
         {
             var (_, _, _, _, xml) = await ActivityHandler.DecryptProfileAsync(activityProfile);

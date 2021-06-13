@@ -540,6 +540,9 @@
   <data name="Pending" xml:space="preserve">
     <value>保留</value>
   </data>
+  <data name="PullFromOtherUser" xml:space="preserve">
+    <value>読み込み</value>
+  </data>
   <data name="Reject" xml:space="preserve">
     <value>不合格</value>
   </data>
