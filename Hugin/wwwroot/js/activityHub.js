@@ -35,7 +35,7 @@ function buildBlockly(dom) {
     blocklies[prefix] = Blockly.inject(prefix + "blocklyDiv", { ...base, ...configure });
     Blockly.defineBlocksWithJsonArray(JSON.parse(definition));
 
-    var codearea = dom.querySelector(".blockly-script-textarea");
+    var codearea = dom.querySelector(".blockly-script-textarea code");
     if (codearea != null) {
         blocklies[prefix].addChangeListener(function (event) {
             if (event.type == Blockly.Events.BLOCK_CHANGE
@@ -43,7 +43,13 @@ function buildBlockly(dom) {
                 || event.type == Blockly.Events.BLOCK_DELETE
                 || event.type == Blockly.Events.BLOCK_CREATE) {
                 if (codearea != null && codearea.style.display != "inline") {
-                    codearea.innerText = Blockly.Python.workspaceToCode(blocklies[prefix]);
+                    hljs.configure({
+                        tabReplace: '  ',
+                        useBR: true,
+                        languages: ['python']
+                    });
+                    var code = Blockly.Python.workspaceToCode(blocklies[prefix]);
+                    codearea.innerText = code;
                     hljs.highlightBlock(codearea);
                 }
             }
