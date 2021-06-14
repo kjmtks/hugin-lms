@@ -91,8 +91,8 @@ function onStartDraw() {
         });
         fitSize();
         canvas.style.pointerEvents = "auto";
-        canvas.style.zIndex = baseIndexZ + 1;
-        menu.style.zIndex = baseIndexZ + 2;
+        canvas.style.zIndex = baseIndexZ + 100;
+        menu.style.zIndex = baseIndexZ + 1001;
         isPainting = true;
     }
     function paintOff() {
