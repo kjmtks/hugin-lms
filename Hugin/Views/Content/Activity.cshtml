@@ -176,22 +176,22 @@
                     {
                         @if (text.ReadOnly)
                         {
-                            <textarea class="textarea tt activity-file" data-name="@text.Name" maxlength="@text.Maxlength" readonly rows="6"></textarea>
+                            <textarea class="textarea tt activity-file" style="resize: vertical;" data-name="@text.Name" maxlength="@text.Maxlength" readonly rows="6"></textarea>
                         }
                         else
                         {
-                            <textarea class="textarea tt activity-file" data-name="@text.Name" maxlength="@text.Maxlength" rows="6"></textarea>
+                            <textarea class="textarea tt activity-file" style="resize: vertical;" data-name="@text.Name" maxlength="@text.Maxlength" rows="6"></textarea>
                         }
                     }
                     @if (file is Hugin.Models.ActivityFilesCode code)
                     {
                         @if (code.ReadOnly)
                         {
-                            <textarea class="textarea tt activity-file" data-name="@code.Name" maxlength="@code.Maxlength" readonly rows="6"></textarea>
+                            <textarea class="textarea tt activity-file" style="resize: vertical;" data-name="@code.Name" maxlength="@code.Maxlength" readonly rows="6"></textarea>
                         }
                         else
                         {
-                            <textarea class="textarea tt activity-file" data-name="@code.Name" maxlength="@code.Maxlength" rows="6"></textarea>
+                            <textarea class="textarea tt activity-file" style="resize: vertical;" data-name="@code.Name" maxlength="@code.Maxlength" rows="6"></textarea>
                         }
                     }
                     @if (file is Hugin.Models.ActivityFilesUpload fileUpload)
