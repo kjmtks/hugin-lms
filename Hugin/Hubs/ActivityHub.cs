@@ -13,8 +13,6 @@ using Microsoft.AspNetCore.Mvc.Localization;
 
 namespace Hugin.Hubs
 {
-
-
     [Authorize]
     public class ActivityHub : Hub
     {
@@ -27,6 +25,8 @@ namespace Hugin.Hubs
         public readonly OnlineStatusService OnlineStatus;
         private readonly SubmissionHandleService SubmissionHandler;
         private readonly IHtmlLocalizer<Hugin.Lang> Localizer;
+
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> StdinDictionary = new System.Collections.Concurrent.ConcurrentDictionary<string, string>();
         public ActivityHub(IHtmlLocalizer<Hugin.Lang> localizer, PermissionProviderService permissionProvider, IServiceScopeFactory serviceScopeFactory, ActivityHandleService activityHandler, SubmissionHandleService submissionHandler, RepositoryHandleService repositoryHandler, SubmissionNotifierService submissionNotifier, ActivityActionStatusService activityActionStatus, OnlineStatusService onlineStatus)
         {
             Localizer = localizer;
@@ -163,6 +163,7 @@ namespace Hugin.Hubs
 
                 var additionalFiles = new StringBuilder();
 
+                var running = true;
                 var result = await ActivityHandler.SaveAndRunActivityAsync(lecture, user, activity, runner, commitMessageBeforeRun, textfiles, binaryfiles, blocklyfiles,
                     onSaveErrorOccurCallback: async () =>
                     {
@@ -197,8 +198,26 @@ namespace Hugin.Hubs
                             summary.AppendLine(data);
                         });
                     },
+                    stdinCallback: async (context) =>
+                    {
+                        var key = Guid.NewGuid().ToString("N").Substring(0, 32);
+                        await context.Clients.Client(connectionId).SendAsync("ReceiveRequestStdin", key);
+                        return await Task.Run(() =>
+                        {
+                            while (running)
+                            {
+                                if (StdinDictionary.TryRemove(key, out var val))
+                                {
+                                    return val;
+                                }
+                                System.Threading.Thread.Sleep(100);
+                            }
+                            return "";
+                        });
+                    },
                     doneCallback: async (context, code) =>
                     {
+                        running = false;
                         var commitMessageAfterRun = $"Run: {lecture.Owner.Account}/{lecture.Name}/{activity.Name}";
                         RepositoryHandler.CommitAll(userRepository, "master", $"Run: {lecture.Owner.Account}/{lecture.Name}/{activity.Name}", user.DisplayName, user.Email);
                         RepositoryHandler.PushToBare(userRepository, "master");
@@ -324,6 +343,12 @@ namespace Hugin.Hubs
             }
         }
 
+
+
+        public async Task SendStdin(string stdinKey, string stdin)
+        {
+            StdinDictionary.TryAdd(stdinKey, stdin);
+        }
 
 
         public async Task SendSubmitRequest(string activityId, string activityProfile, Dictionary<string, string> textfiles, Dictionary<string, string> binaryfiles, IDictionary<string, string> blocklyfiles, string submitMessage)
