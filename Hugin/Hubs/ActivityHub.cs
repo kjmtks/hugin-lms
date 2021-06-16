@@ -26,6 +26,7 @@ namespace Hugin.Hubs
         private readonly SubmissionHandleService SubmissionHandler;
         private readonly IHtmlLocalizer<Hugin.Lang> Localizer;
 
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> IOKeyStore = new System.Collections.Concurrent.ConcurrentDictionary<string, string>();
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> StdinDictionary = new System.Collections.Concurrent.ConcurrentDictionary<string, string>();
         public ActivityHub(IHtmlLocalizer<Hugin.Lang> localizer, PermissionProviderService permissionProvider, IServiceScopeFactory serviceScopeFactory, ActivityHandleService activityHandler, SubmissionHandleService submissionHandler, RepositoryHandleService repositoryHandler, SubmissionNotifierService submissionNotifier, ActivityActionStatusService activityActionStatus, OnlineStatusService onlineStatus)
         {
@@ -163,6 +164,7 @@ namespace Hugin.Hubs
 
                 var additionalFiles = new StringBuilder();
 
+
                 var running = true;
                 var result = await ActivityHandler.SaveAndRunActivityAsync(lecture, user, activity, runner, commitMessageBeforeRun, textfiles, binaryfiles, blocklyfiles,
                     onSaveErrorOccurCallback: async () =>
@@ -200,13 +202,11 @@ namespace Hugin.Hubs
                     },
                     stdinCallback: async (context) =>
                     {
-                        var key = Guid.NewGuid().ToString("N").Substring(0, 32);
-                        await context.Clients.Client(connectionId).SendAsync("ReceiveRequestStdin", key);
                         return await Task.Run(() =>
                         {
                             while (running)
                             {
-                                if (StdinDictionary.TryRemove(key, out var val))
+                                if (StdinDictionary.TryRemove(activityId, out var val))
                                 {
                                     return val;
                                 }
@@ -345,9 +345,9 @@ namespace Hugin.Hubs
 
 
 
-        public async Task SendStdin(string stdinKey, string stdin)
+        public async Task SendStdin(string activityId, string stdin)
         {
-            StdinDictionary.TryAdd(stdinKey, stdin);
+            StdinDictionary.TryAdd(activityId, stdin);
         }
 
 

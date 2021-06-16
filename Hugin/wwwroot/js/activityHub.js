@@ -26,6 +26,7 @@ function selectTab(activityId, tab) {
 }
 
 var blocklies = {};
+var terminals = {};
 
 function buildBlockly(dom) {
     var prefix = dom.getAttribute("data-prefix");
@@ -107,6 +108,10 @@ function hideMessages(activityId) {
         .forEach(x => {
             x.innerText = "";
         });
+
+    var term = terminals[activityId];
+    term.running = true;
+    term.clear();
 
     activity.querySelector(".activity-figures").innerText = "";
     activity.querySelector(".activity-figures").style.display = "none";
@@ -302,30 +307,32 @@ connection.on("ReceiveActivityXmlResult", function (activityId, xml) {
 
 connection.on("ReceiveStdout", function (activityId, data) {
     if (data != null) {
-        document.getElementById(activityId)
-            .querySelector(".messages").style.display = "block";
-        var x = document.getElementById(activityId).querySelector(".meesage-activity-stdout");
-        x.style.display = "block";
-        x.querySelector(".activity-stdout").innerHTML += data?.replace(/&/g, "&amp;")?.replace(/</g, "&lt;")?.replace(/>/g, "&gt;");
+        var term = terminals[activityId];
+        if (data == "\n") {
+            term.write("\r\n");
+        }
+        else {
+            term.write(data);
+        }
     }
 });
 connection.on("ReceiveStderr", function (activityId, data) {
     if (data != null) {
-        document.getElementById(activityId)
-            .querySelector(".messages").style.display = "block";
-        var x = document.getElementById(activityId).querySelector(".meesage-activity-stderr");
-        x.style.display = "block";
-        x.querySelector(".activity-stderr").innerHTML += data?.replace(/&/g, "&amp;")?.replace(/</g, "&lt;")?.replace(/>/g, "&gt;") + "\n";
+        var term = terminals[activityId];
+        if (data == "\n") {
+            term.write("\r\n");
+        }
+        else {
+            term.write("\x1B[33m");
+            term.write(data);
+            term.write("\x1B[0m");
+        }
     }
 });
-connection.on("ReceiveRequestStdin", function (stdinKey) {
-    var inp = prompt();
-    if (inp != null) { inp == ""; }
-    connection
-        .invoke("SendStdin", stdinKey, inp)
-        .catch(function (err) {
-            return console.error(err.toString());
-        });
+
+var stdinKey = "";
+connection.on("ReceiveRequestStdin", function (_stdinKey) {
+    stdinKey = _stdinKey;
 });
 connection.on("ReceiveCommand", function (activityId, data) {
     if (data != null) {
@@ -375,6 +382,10 @@ connection.on("ReceiveCommand", function (activityId, data) {
 connection.on("ReceiveActionResult", function (activityId, message, errorMessage, json) {
     enableServerActions();
     var activity = document.getElementById(activityId);
+
+    var term = terminals[activityId];
+    term.running = false;
+
     if (message != null) {
         activity.querySelector(".messages").style.display = "block";
         var x = activity.querySelector(".meesage-activity-message");
@@ -526,6 +537,29 @@ connection.start().then(function () {
             buildBlockly(block);
         });
 
+        // TODO
+        activity.querySelectorAll(".terminal").forEach(terminalDiv => {
+            var term = new Terminal();
+            terminals[activity.id] = term;
+            term.open(terminalDiv);
+            term.curr_line = '';
+            term.running = false;
+            term.onData(e => {
+                if (term.running) {
+                    term.write(e);
+                    term.curr_line += e;
+                    if (e == '\r') {
+                        term.write('\r\n$ ');
+                        connection
+                            .invoke("SendStdin", activity.id, term.curr_line)
+                            .catch(function (err) {
+                                return console.error(err.toString());
+                            });
+                        term.curr_line = '';
+                    }
+                }
+            });
+        });
 
         connection
             .invoke("SendActivityStatus", id, profile)

@@ -448,7 +448,7 @@ namespace Hugin.Services
                     {
                         Task.Run(() =>
                         {
-                            var remaind = limit.StdoutLength;
+                            var remaind = limit == null ? 0 : limit.StdoutLength;
                             var count = 0;
                             var sb = new System.Text.StringBuilder();
                             while (!proc.StandardOutput.EndOfStream)
@@ -478,7 +478,7 @@ namespace Hugin.Services
                         });
                         Task.Run(() =>
                         {
-                            var remaind = limit.StderrLength;
+                            var remaind = limit == null ? 0 : limit.StderrLength;
                             var count = 0;
                             var sb = new System.Text.StringBuilder();
                             while (!proc.StandardError.EndOfStream)
@@ -535,17 +535,14 @@ namespace Hugin.Services
                                 {
                                     while (!proc.HasExited && running)
                                     {
-                                        foreach (ProcessThread thread in proc.Threads)
-                                        {
-                                            if (thread.ThreadState == System.Diagnostics.ThreadState.Wait && !proc.HasExited && running)
-                                            {
-                                                if(thread.WaitReason == ThreadWaitReason.UserRequest)
-                                                {
-                                                    proc.StandardInput.WriteLine(await stdinCallback(HubContext));
-                                                }
-                                            }
-                                        }
-                                        Thread.Sleep(100);
+                                        var c = await stdinCallback(HubContext);
+                                        //if (c == "\r")
+                                        //{
+                                        //    c = "\n";
+                                        //}
+                                        proc.StandardInput.WriteLine(c);
+                                        // proc.StandardInput.Flush();
+                                        Thread.Sleep(1);
                                     }
                                 }
                                 catch (Exception e)
