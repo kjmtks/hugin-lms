@@ -199,7 +199,7 @@ namespace Hugin.Services
             {
                 try
                 {
-                    await ExecuteAsync(user, sandbox, stdin,
+                    await ExecuteAsync(user, sandbox, "/bin/bash", null, stdin,
                         (_, x) => stdoutCallback?.Invoke(x),
                         (_, x) => stderrCallback?.Invoke(x),
                         (_, x) => cmdCallback?.Invoke(x),
