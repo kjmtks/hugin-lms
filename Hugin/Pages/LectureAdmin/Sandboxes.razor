@@ -402,7 +402,7 @@
         output = "";
         var description = $"Run command ";
         output += $"$ {command}{Environment.NewLine}";
-        Executor.EnqueueExecution(User, Sandbox, description, sudo: true, program: "/bin/bash", stdin: command, stdoutCallback: stdoutCallback, stderrCallback: stderrCallback, doneCallback: (_) => doneCallback());
+        Executor.EnqueueExecution(User, Sandbox, description, sudo: true, stdin: command, stdoutCallback: stdoutCallback, stderrCallback: stderrCallback, doneCallback: (_) => doneCallback());
         command = null;
         StateHasChanged();
     }

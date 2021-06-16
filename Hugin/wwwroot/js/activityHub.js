@@ -318,6 +318,15 @@ connection.on("ReceiveStderr", function (activityId, data) {
         x.querySelector(".activity-stderr").innerHTML += data?.replace(/&/g, "&amp;")?.replace(/</g, "&lt;")?.replace(/>/g, "&gt;") + "\n";
     }
 });
+connection.on("ReceiveRequestStdin", function (stdinKey) {
+    var inp = prompt();
+    if (inp != null) { inp == ""; }
+    connection
+        .invoke("SendStdin", stdinKey, inp)
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
+});
 connection.on("ReceiveCommand", function (activityId, data) {
     if (data != null) {
 

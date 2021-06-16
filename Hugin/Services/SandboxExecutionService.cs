@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.SignalR;
 using Hugin.Hubs;
 using Hugin.Data;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text;
 
 namespace Hugin.Services
 {
@@ -185,13 +186,12 @@ namespace Hugin.Services
             Data.User user,
             Data.Sandbox sandbox,
             string description = null,
-            string program = "/bin/bash",
-            string args = "",
             string stdin = null,
             Func<string, Task> stdoutCallback = null,
             Func<string, Task> stderrCallback = null,
             Func<string, Task> cmdCallback = null,
             Func<string, Task> summaryCallback = null,
+            Func<IHubContext<ActivityHub>, Task<string>> stdinCallback = null,
             Func<int, Task> doneCallback = null,
             Models.ResourceLimits limit = null,
             bool sudo = false)
@@ -200,11 +200,12 @@ namespace Hugin.Services
             {
                 try
                 {
-                    await ExecuteAsync(user, sandbox, program, args, stdin,
+                    await ExecuteAsync(user, sandbox, stdin,
                         (_, x) => stdoutCallback?.Invoke(x),
                         (_, x) => stderrCallback?.Invoke(x),
                         (_, x) => cmdCallback?.Invoke(x),
                         (_, x) => summaryCallback?.Invoke(x),
+                        x => stdinCallback?.Invoke(x),
                         (_, x) => doneCallback?.Invoke(x),
                         limit, sudo);
                 }
@@ -220,13 +221,12 @@ namespace Hugin.Services
             Data.User user,
             Data.Sandbox sandbox,
             string description = null,
-            string program = "/bin/bash",
-            string args = "",
             string stdin = null,
             Func<IHubContext<ActivityHub>, string, Task> stdoutCallback = null,
             Func<IHubContext<ActivityHub>, string, Task> stderrCallback = null,
             Func<IHubContext<ActivityHub>, string, Task> cmdCallback = null,
             Func<IHubContext<ActivityHub>, string, Task> summaryCallback = null,
+            Func<IHubContext<ActivityHub>, Task<string>> stdinCallback = null,
             Func<IHubContext<ActivityHub>, int, Task> doneCallback = null,
             Models.ResourceLimits limit = null,
             bool sudo = false)
@@ -235,7 +235,7 @@ namespace Hugin.Services
             {
                 try
                 {
-                    await ExecuteAsync(user, sandbox, program, args, stdin, stdoutCallback, stderrCallback, cmdCallback, summaryCallback, doneCallback, limit, sudo);
+                    await ExecuteAsync(user, sandbox, stdin, stdoutCallback, stderrCallback, cmdCallback, summaryCallback, stdinCallback, doneCallback, limit, sudo);
                 }
                 catch(Exception e)
                 {
@@ -307,13 +307,12 @@ namespace Hugin.Services
         public async Task ExecuteAsync(
             Data.User user,
             Data.Sandbox sandbox,
-            string program = "/bin/bash",
-            string args = "",
             string stdin = null,
             Func<IHubContext<ActivityHub>, string, Task> stdoutCallback = null,
             Func<IHubContext<ActivityHub>, string, Task> stderrCallback = null,
             Func<IHubContext<ActivityHub>, string, Task> cmdCallback = null,
             Func<IHubContext<ActivityHub>, string, Task> summaryCallback = null,
+            Func<IHubContext<ActivityHub>, Task<string>> stdinCallback = null,
             Func<IHubContext<ActivityHub>, int, Task> doneCallback = null,
             Models.ResourceLimits limit = null,
             bool sudo = false,
@@ -328,11 +327,14 @@ namespace Hugin.Services
             await Task.Run(() => {
                 var directoryPath = onSandbox ? FilePathResolver.GetSandboxDirectoryPath(sandbox) : "";
                 var userId = user.Uid + 1000;
+                var fifoname0 = Guid.NewGuid().ToString("N").Substring(0, 32);
                 var fifoname1 = Guid.NewGuid().ToString("N").Substring(0, 32);
                 var fifoname2 = Guid.NewGuid().ToString("N").Substring(0, 32);
 
                 if (onSandbox)
                 {
+                    Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
+                    Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                     Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                     Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                     Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname2}").WaitForExit();
@@ -340,14 +342,15 @@ namespace Hugin.Services
                 }
 
                 var (account, home) = sudo ? ("root", "/") : (user.Account, $"/home/{user.Account}");
+                lineBuffered = false;
 
-                (program, args) = (limit, onSandbox) switch
+                var (program, args) = (limit, onSandbox) switch
                 {
                     (null, true)
-                    => ("/bin/bash", $"-c \"HOME={home} chroot --userspec {account}:{account} {directoryPath} {program} {args}\""),
+                    => ("/bin/bash", $"-c \"HOME={home} chroot --userspec {account}:{account} {directoryPath} /bin/bash /var/tmp/{fifoname0}\""),
                     (Models.ResourceLimits, true)
-                    => ("/bin/bash", $"-c \"{makeUlimitCommand(limit, $"HOME={home}")} chroot --userspec {account}:{account} {directoryPath} {program} {args}\""),
-                    _ => (program, args),
+                    => ("/bin/bash", $"-c \"{makeUlimitCommand(limit, $"HOME={home}")} chroot --userspec {account}:{account} {directoryPath} /bin/bash /var/tmp/{fifoname0}\""),
+                    _ => ("/bin/bash", $"/var/tmp/{fifoname0}"),
                 };
 
                 var mainProc = Task.Run(() => {
@@ -363,6 +366,8 @@ namespace Hugin.Services
                     proc.StartInfo.RedirectStandardError = true;
                     proc.StartInfo.CreateNoWindow = true;
                     proc.StartInfo.UseShellExecute = false;
+                    proc.EnableRaisingEvents = true;
+
 
                     var errorClosed = new ManualResetEvent(false);
                     var outputClosed = new ManualResetEvent(false);
@@ -439,7 +444,7 @@ namespace Hugin.Services
                     }
                     proc.Start();
 
-                    if(!lineBuffered)
+                    if (!lineBuffered)
                     {
                         Task.Run(() =>
                         {
@@ -505,13 +510,54 @@ namespace Hugin.Services
 
                     try
                     {
-                        proc.StandardInput.WriteLine(stdin);
-                        proc.StandardInput.Close();
-                        if(lineBuffered)
+                        var p = new Process();
+                        p.StartInfo.FileName = "/bin/bash";
+                        p.StartInfo.Arguments = $"-c \"cat - > {directoryPath}/var/tmp/{fifoname0}\"";
+                        p.StartInfo.RedirectStandardInput = true;
+                        p.StartInfo.CreateNoWindow = true;
+                        p.StartInfo.UseShellExecute = false;
+                        p.Start();
+                        p.StandardInput.WriteLine(stdin);
+                        p.StandardInput.Close();
+                        p.WaitForExit();
+                        p.Close();
+
+                        if (lineBuffered)
                         {
                             if (stdoutCallback != null) { proc.BeginOutputReadLine(); }
                             if (stderrCallback != null) { proc.BeginErrorReadLine(); }
                         }
+                        bool running = true;
+                        if (stdinCallback != null)
+                        {
+                            Task.Run(async () => {
+                                try
+                                {
+                                    while (!proc.HasExited && running)
+                                    {
+                                        foreach (ProcessThread thread in proc.Threads)
+                                        {
+                                            if (thread.ThreadState == System.Diagnostics.ThreadState.Wait && !proc.HasExited && running)
+                                            {
+                                                if(thread.WaitReason == ThreadWaitReason.UserRequest)
+                                                {
+                                                    proc.StandardInput.WriteLine(await stdinCallback(HubContext));
+                                                }
+                                            }
+                                        }
+                                        Thread.Sleep(100);
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                }
+                            });
+                        }
+                        proc.Exited += (_, _) =>
+                        {
+                            running = false;
+                        };
+
                         var waitTime = 10000;
                         if (limit != null)
                         {
@@ -522,6 +568,7 @@ namespace Hugin.Services
                         {
                             proc.WaitForExit();
                         }
+                        proc.StandardInput.Close();
                         if (!ManualResetEvent.WaitAll( waits, waitTime))
                         {
                             var errorMsg = $"Hugin System error: STDOUT/ERR wait timeout";
@@ -544,6 +591,7 @@ namespace Hugin.Services
                 {
                     var tokenSource = new CancellationTokenSource();
                     var token = tokenSource.Token;
+
                     if (onSandbox && File.Exists($"{directoryPath}/var/tmp/{fifoname1}"))
                     {
                         var observer = Task.Run(() =>
@@ -608,6 +656,7 @@ namespace Hugin.Services
                 {
                     if (onSandbox)
                     {
+                        Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                         Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                         Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname2}").WaitForExit();
                     }

@@ -60,6 +60,7 @@ namespace Hugin.Services
             Func<IHubContext<ActivityHub>, string, Task> stderrCallback = null,
             Func<IHubContext<ActivityHub>, string, Task> cmdCallback = null,
             Func<IHubContext<ActivityHub>, string, Task> summaryCallback = null,
+            Func<IHubContext<ActivityHub>, Task<string>> stdinCallback = null,
             Func<IHubContext<ActivityHub>, int, Task> doneCallback = null)
         {
             var result = !string.IsNullOrWhiteSpace(save(lecture, user, activity, commitMessageBeforeRun, textfiles, binaryfiles, blocklyfiles));
@@ -79,13 +80,13 @@ namespace Hugin.Services
                         var command = $"cd ~/{activity.Directory}; {runner.Commands}";
                         Executor.EnqueueExecution(user, sandbox,
                             $"Run activity {lecture.Owner.Account}/{lecture.Name}/{activity.Name}",
-                            program: "/bin/bash",
                             sudo: false,
                             stdin: command,
                             stdoutCallback: stdoutCallback,
                             stderrCallback: stderrCallback,
                             cmdCallback: cmdCallback,
                             summaryCallback: summaryCallback,
+                            stdinCallback: stdinCallback,
                             doneCallback: doneCallback,
                             limit: new ResourceLimits
                             {
@@ -133,7 +134,7 @@ namespace Hugin.Services
                                     var stdout = new StringBuilder();
                                     var stderr = new StringBuilder();
                                     var command = $"cd ~/{activity.Directory}; {validation.Run}";
-                                    await Executor.ExecuteAsync(user, sandbox, program: "/bin/bash", stdin: command, sudo: false,
+                                    await Executor.ExecuteAsync(user, sandbox, stdin: command, sudo: false,
                                     stdoutCallback: async (_, data) =>
                                     {
                                         stdout.AppendLine(data);
