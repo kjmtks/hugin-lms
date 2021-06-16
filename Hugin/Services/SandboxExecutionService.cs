@@ -316,7 +316,8 @@ namespace Hugin.Services
             Func<IHubContext<ActivityHub>, string, Task> summaryCallback = null,
             Func<IHubContext<ActivityHub>, int, Task> doneCallback = null,
             Models.ResourceLimits limit = null,
-            bool sudo = false)
+            bool sudo = false,
+            bool lineBuffered = true)
         {
             bool onSandbox = sandbox != null;
             if (!sudo && onSandbox)
@@ -349,7 +350,6 @@ namespace Hugin.Services
                     _ => (program, args),
                 };
 
-
                 var mainProc = Task.Run(() => {
                     var proc = new Process();
                     proc.StartInfo.FileName = "stdbuf";
@@ -370,101 +370,148 @@ namespace Hugin.Services
                     errorClosed.Reset();
                     outputClosed.Reset();
 
-                    /*
-                    if (stdoutCallback != null)
+                    if(lineBuffered)
                     {
-                        if (limit?.StdoutLength != null && limit.StdoutLength > 0)
+                        if (stdoutCallback != null)
                         {
-                            var remaind = limit.StdoutLength;
-                            proc.OutputDataReceived += (o, e) =>
+                            if (limit?.StdoutLength != null && limit.StdoutLength > 0)
                             {
-                                if (remaind > 0 && !string.IsNullOrEmpty(e.Data))
+                                var remaind = limit.StdoutLength;
+                                proc.OutputDataReceived += (o, e) =>
                                 {
-                                    if (e.Data.Length <= remaind)
+                                    if (remaind > 0 && !string.IsNullOrEmpty(e.Data))
                                     {
-                                        stdoutCallback?.Invoke(HubContext, e.Data);
-                                        remaind -= (uint)e.Data.Length;
+                                        if (e.Data.Length <= remaind)
+                                        {
+                                            stdoutCallback?.Invoke(HubContext, e.Data);
+                                            remaind -= (uint)e.Data.Length;
+                                        }
+                                        else
+                                        {
+                                            stdoutCallback?.Invoke(HubContext, $"{e.Data.Substring(0, (int)remaind)}{Environment.NewLine}");
+                                            remaind = 0;
+                                        }
                                     }
-                                    else
-                                    {
-                                        stdoutCallback?.Invoke(HubContext, e.Data.Substring(0, (int)remaind));
-                                        remaind = 0;
-                                    }
-                                }
-                                outputClosed.Set();
-                            };
+                                    outputClosed.Set();
+                                };
+                            }
+                            else
+                            {
+                                proc.OutputDataReceived += (o, e) => { stdoutCallback?.Invoke(HubContext, $"{e.Data}{Environment.NewLine}"); outputClosed.Set(); };
+                            }
                         }
                         else
                         {
-                            proc.OutputDataReceived += (o, e) => { stdoutCallback?.Invoke(HubContext, e.Data); outputClosed.Set(); };
+                            outputClosed.Set();
                         }
-                    }
-                    else
-                    {
-                        outputClosed.Set();
-                    }
-                    */
-                    if (stderrCallback != null)
-                    {
-                        if (limit?.StderrLength != null && limit.StderrLength > 0)
+                        if (stderrCallback != null)
                         {
-                            var remaind = limit.StderrLength;
-                            proc.ErrorDataReceived += (o, e) =>
+                            if (limit?.StderrLength != null && limit.StderrLength > 0)
                             {
-                                if (remaind > 0 && !string.IsNullOrEmpty(e.Data))
+                                var remaind = limit.StderrLength;
+                                proc.ErrorDataReceived += (o, e) =>
                                 {
-                                    if (e.Data.Length <= remaind)
+                                    if (remaind > 0 && !string.IsNullOrEmpty(e.Data))
                                     {
-                                        stderrCallback?.Invoke(HubContext, e.Data);
-                                        remaind -= (uint)e.Data.Length;
+                                        if (e.Data.Length <= remaind)
+                                        {
+                                            stderrCallback?.Invoke(HubContext, e.Data);
+                                            remaind -= (uint)e.Data.Length;
+                                        }
+                                        else
+                                        {
+                                            stderrCallback?.Invoke(HubContext, $"{e.Data.Substring(0, (int)remaind)}{Environment.NewLine}");
+                                            remaind = 0;
+                                        }
                                     }
-                                    else
-                                    {
-                                        stderrCallback?.Invoke(HubContext, e.Data.Substring(0, (int)remaind));
-                                        remaind = 0;
-                                    }
-                                }
-                                errorClosed.Set();
-                            };
+                                    errorClosed.Set();
+                                };
+                            }
+                            else
+                            {
+                                proc.ErrorDataReceived += (o, e) => { stderrCallback?.Invoke(HubContext, $"{e.Data}{Environment.NewLine}"); errorClosed.Set(); };
+                            }
                         }
                         else
                         {
-                            proc.ErrorDataReceived += (o, e) => { stderrCallback?.Invoke(HubContext, e.Data); errorClosed.Set(); };
+                            errorClosed.Set();
                         }
-                    }
-                    else
-                    {
-                        errorClosed.Set();
                     }
                     proc.Start();
 
-                    //if (stdoutCallback != null) { proc.BeginOutputReadLine(); }
-                    Task.Run(() => 
+                    if(!lineBuffered)
                     {
-                        var sb = new System.Text.StringBuilder();
-                        while(!proc.StandardOutput.EndOfStream)
+                        Task.Run(() =>
                         {
-                            var d = proc.StandardOutput.Read();
-                            if(d >= 0)
+                            var remaind = limit.StdoutLength;
+                            var count = 0;
+                            var sb = new System.Text.StringBuilder();
+                            while (!proc.StandardOutput.EndOfStream)
                             {
-                                var c = (char)d;
-                                sb.Append(c);
-                                if (!Char.IsHighSurrogate(c))
+                                var d = proc.StandardOutput.Read();
+                                if (d >= 0)
                                 {
-                                    stdoutCallback?.Invoke(HubContext, sb.ToString());
-                                    sb.Clear();
+                                    if (remaind > 0)
+                                    {
+                                        count++;
+                                        if(remaind <= count)
+                                        {
+                                            break;
+                                        }
+                                    }
+
+                                    var c = (char)d;
+                                    sb.Append(c);
+                                    if (!Char.IsHighSurrogate(c))
+                                    {
+                                        stdoutCallback?.Invoke(HubContext, sb.ToString());
+                                        sb.Clear();
+                                    }
                                 }
                             }
-                        }
-                        outputClosed.Set();
-                    });
+                            outputClosed.Set();
+                        });
+                        Task.Run(() =>
+                        {
+                            var remaind = limit.StderrLength;
+                            var count = 0;
+                            var sb = new System.Text.StringBuilder();
+                            while (!proc.StandardError.EndOfStream)
+                            {
+                                var d = proc.StandardError.Read();
+                                if (d >= 0)
+                                {
+                                    if (remaind > 0)
+                                    {
+                                        count++;
+                                        if (remaind <= count)
+                                        {
+                                            break;
+                                        }
+                                    }
+
+                                    var c = (char)d;
+                                    sb.Append(c);
+                                    if (!Char.IsHighSurrogate(c))
+                                    {
+                                        stderrCallback?.Invoke(HubContext, sb.ToString());
+                                        sb.Clear();
+                                    }
+                                }
+                            }
+                            errorClosed.Set();
+                        });
+                    }
 
                     try
                     {
                         proc.StandardInput.WriteLine(stdin);
                         proc.StandardInput.Close();
-                        //if (stdoutCallback != null) { proc.BeginOutputReadLine(); }
-                        if (stderrCallback != null) { proc.BeginErrorReadLine(); }
+                        if(lineBuffered)
+                        {
+                            if (stdoutCallback != null) { proc.BeginOutputReadLine(); }
+                            if (stderrCallback != null) { proc.BeginErrorReadLine(); }
+                        }
                         var waitTime = 10000;
                         if (limit != null)
                         {
