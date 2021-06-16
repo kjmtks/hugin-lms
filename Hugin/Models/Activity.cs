@@ -215,6 +215,10 @@ namespace Hugin.Models
 
         public string GetToolboxHtml()
         {
+            if(Toolbox == null)
+            {
+                return "";
+            }
             var sb = new StringBuilder();
             foreach(var t in Toolbox as System.Xml.XmlNode[])
             {

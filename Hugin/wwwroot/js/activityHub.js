@@ -306,7 +306,7 @@ connection.on("ReceiveStdout", function (activityId, data) {
             .querySelector(".messages").style.display = "block";
         var x = document.getElementById(activityId).querySelector(".meesage-activity-stdout");
         x.style.display = "block";
-        x.querySelector(".activity-stdout").innerHTML += data?.replace(/&/g, "&amp;")?.replace(/</g, "&lt;")?.replace(/>/g, "&gt;") + "\n";
+        x.querySelector(".activity-stdout").innerHTML += data?.replace(/&/g, "&amp;")?.replace(/</g, "&lt;")?.replace(/>/g, "&gt;");
     }
 });
 connection.on("ReceiveStderr", function (activityId, data) {

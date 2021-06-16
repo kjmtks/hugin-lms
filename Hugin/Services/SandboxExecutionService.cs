@@ -370,6 +370,7 @@ namespace Hugin.Services
                     errorClosed.Reset();
                     outputClosed.Reset();
 
+                    /*
                     if (stdoutCallback != null)
                     {
                         if (limit?.StdoutLength != null && limit.StdoutLength > 0)
@@ -402,6 +403,7 @@ namespace Hugin.Services
                     {
                         outputClosed.Set();
                     }
+                    */
                     if (stderrCallback != null)
                     {
                         if (limit?.StderrLength != null && limit.StderrLength > 0)
@@ -435,11 +437,33 @@ namespace Hugin.Services
                         errorClosed.Set();
                     }
                     proc.Start();
+
+                    //if (stdoutCallback != null) { proc.BeginOutputReadLine(); }
+                    Task.Run(() => 
+                    {
+                        var sb = new System.Text.StringBuilder();
+                        while(!proc.StandardOutput.EndOfStream)
+                        {
+                            var d = proc.StandardOutput.Read();
+                            if(d >= 0)
+                            {
+                                var c = (char)d;
+                                sb.Append(c);
+                                if (!Char.IsHighSurrogate(c))
+                                {
+                                    stdoutCallback?.Invoke(HubContext, sb.ToString());
+                                    sb.Clear();
+                                }
+                            }
+                        }
+                        outputClosed.Set();
+                    });
+
                     try
                     {
                         proc.StandardInput.WriteLine(stdin);
                         proc.StandardInput.Close();
-                        if (stdoutCallback != null) { proc.BeginOutputReadLine(); }
+                        //if (stdoutCallback != null) { proc.BeginOutputReadLine(); }
                         if (stderrCallback != null) { proc.BeginErrorReadLine(); }
                         var waitTime = 10000;
                         if (limit != null)
