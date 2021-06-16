@@ -191,6 +191,7 @@ namespace Hugin.Services
             Func<string, Task> stderrCallback = null,
             Func<string, Task> cmdCallback = null,
             Func<string, Task> summaryCallback = null,
+            Func<IHubContext<ActivityHub>, Task<string>> stdinCallback = null,
             Func<int, Task> doneCallback = null,
             Models.ResourceLimits limit = null,
             bool sudo = false)
@@ -199,11 +200,12 @@ namespace Hugin.Services
             {
                 try
                 {
-                    await ExecuteAsync(user, sandbox, "/bin/bash", null, stdin,
+                    await ExecuteAsync(user, sandbox, stdin,
                         (_, x) => stdoutCallback?.Invoke(x),
                         (_, x) => stderrCallback?.Invoke(x),
                         (_, x) => cmdCallback?.Invoke(x),
                         (_, x) => summaryCallback?.Invoke(x),
+                        x => stdinCallback?.Invoke(x),
                         (_, x) => doneCallback?.Invoke(x),
                         limit, sudo);
                 }
@@ -233,7 +235,7 @@ namespace Hugin.Services
             {
                 try
                 {
-                    await ExecuteActivityAsync(user, sandbox, stdin, stdoutCallback, stderrCallback, cmdCallback, summaryCallback, stdinCallback, doneCallback, limit, sudo, false);
+                    await ExecuteAsync(user, sandbox, stdin, stdoutCallback, stderrCallback, cmdCallback, summaryCallback, stdinCallback, doneCallback, limit, sudo, false);
                 }
                 catch(Exception e)
                 {
@@ -301,247 +303,8 @@ namespace Hugin.Services
                 }
             }
         }
+
         public async Task ExecuteAsync(
-            Data.User user,
-            Data.Sandbox sandbox,
-            string program = "/bin/bash",
-            string args = "",
-            string stdin = null,
-            Func<IHubContext<ActivityHub>, string, Task> stdoutCallback = null,
-            Func<IHubContext<ActivityHub>, string, Task> stderrCallback = null,
-            Func<IHubContext<ActivityHub>, string, Task> cmdCallback = null,
-            Func<IHubContext<ActivityHub>, string, Task> summaryCallback = null,
-            Func<IHubContext<ActivityHub>, int, Task> doneCallback = null,
-            Models.ResourceLimits limit = null,
-            bool sudo = false)
-        {
-            bool onSandbox = sandbox != null;
-            if (!sudo && onSandbox)
-            {
-                MountIfUnmounted(user, sandbox);
-            }
-
-            await Task.Run(() => {
-                var directoryPath = onSandbox ? FilePathResolver.GetSandboxDirectoryPath(sandbox) : "";
-                var userId = user.Uid + 1000;
-                var fifoname1 = Guid.NewGuid().ToString("N").Substring(0, 32);
-                var fifoname2 = Guid.NewGuid().ToString("N").Substring(0, 32);
-
-                if (onSandbox)
-                {
-                    Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname1}").WaitForExit();
-                    Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname1}").WaitForExit();
-                    Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname2}").WaitForExit();
-                    Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname2}").WaitForExit();
-                }
-
-                var (account, home) = sudo ? ("root", "/") : (user.Account, $"/home/{user.Account}");
-
-                (program, args) = (limit, onSandbox) switch
-                {
-                    (null, true)
-                    => ("/bin/bash", $"-c \"HOME={home} chroot --userspec {account}:{account} {directoryPath} {program} {args}\""),
-                    (Models.ResourceLimits, true)
-                    => ("/bin/bash", $"-c \"{makeUlimitCommand(limit, $"HOME={home}")} chroot --userspec {account}:{account} {directoryPath} {program} {args}\""),
-                    _ => (program, args),
-                };
-
-
-                var mainProc = Task.Run(() => {
-                    var proc = new Process();
-                    proc.StartInfo.FileName = "stdbuf";
-                    proc.StartInfo.Arguments = $"-o0 -e0 -i0 {program} {args}";
-
-                    proc.StartInfo.Environment["CMD"] = $"/var/tmp/{fifoname1}";
-                    proc.StartInfo.Environment["SUMMARY"] = $"/var/tmp/{fifoname2}";
-
-                    proc.StartInfo.RedirectStandardInput = true;
-                    proc.StartInfo.RedirectStandardOutput = true;
-                    proc.StartInfo.RedirectStandardError = true;
-                    proc.StartInfo.CreateNoWindow = true;
-                    proc.StartInfo.UseShellExecute = false;
-
-                    var errorClosed = new ManualResetEvent(false);
-                    var outputClosed = new ManualResetEvent(false);
-                    ManualResetEvent[] waits = { outputClosed, errorClosed };
-                    errorClosed.Reset();
-                    outputClosed.Reset();
-
-                    if (stdoutCallback != null)
-                    {
-                        if (limit?.StdoutLength != null && limit.StdoutLength > 0)
-                        {
-                            var remaind = limit.StdoutLength;
-                            proc.OutputDataReceived += (o, e) =>
-                            {
-                                if (remaind > 0 && !string.IsNullOrEmpty(e.Data))
-                                {
-                                    if (e.Data.Length <= remaind)
-                                    {
-                                        stdoutCallback?.Invoke(HubContext, e.Data);
-                                        remaind -= (uint)e.Data.Length;
-                                    }
-                                    else
-                                    {
-                                        stdoutCallback?.Invoke(HubContext, e.Data.Substring(0, (int)remaind));
-                                        remaind = 0;
-                                    }
-                                }
-                                outputClosed.Set();
-                            };
-                        }
-                        else
-                        {
-                            proc.OutputDataReceived += (o, e) => { stdoutCallback?.Invoke(HubContext, e.Data); outputClosed.Set(); };
-                        }
-                    }
-                    else
-                    {
-                        outputClosed.Set();
-                    }
-                    if (stderrCallback != null)
-                    {
-                        if (limit?.StderrLength != null && limit.StderrLength > 0)
-                        {
-                            var remaind = limit.StderrLength;
-                            proc.ErrorDataReceived += (o, e) =>
-                            {
-                                if (remaind > 0 && !string.IsNullOrEmpty(e.Data))
-                                {
-                                    if (e.Data.Length <= remaind)
-                                    {
-                                        stderrCallback?.Invoke(HubContext, e.Data);
-                                        remaind -= (uint)e.Data.Length;
-                                    }
-                                    else
-                                    {
-                                        stderrCallback?.Invoke(HubContext, e.Data.Substring(0, (int)remaind));
-                                        remaind = 0;
-                                    }
-                                }
-                                errorClosed.Set();
-                            };
-                        }
-                        else
-                        {
-                            proc.ErrorDataReceived += (o, e) => { stderrCallback?.Invoke(HubContext, e.Data); errorClosed.Set(); };
-                        }
-                    }
-                    else
-                    {
-                        errorClosed.Set();
-                    }
-                    proc.Start();
-                    try
-                    {
-                        proc.StandardInput.WriteLine(stdin);
-                        proc.StandardInput.Close();
-                        if (stdoutCallback != null) { proc.BeginOutputReadLine(); }
-                        if (stderrCallback != null) { proc.BeginErrorReadLine(); }
-                        var waitTime = 10000;
-                        if (limit != null)
-                        {
-                            waitTime = (int)(limit.CpuTime + 5) * 1000;
-                            proc.WaitForExit(waitTime);
-                        }
-                        else
-                        {
-                            proc.WaitForExit();
-                        }
-                        if (!ManualResetEvent.WaitAll(waits, waitTime))
-                        {
-                            var errorMsg = $"Hugin System error: STDOUT/ERR wait timeout";
-                            stderrCallback?.Invoke(HubContext, errorMsg);
-                        }
-                        doneCallback?.Invoke(HubContext, proc.ExitCode);
-                    }
-                    catch (Exception e)
-                    {
-                        stderrCallback?.Invoke(HubContext, e?.Message);
-                        doneCallback?.Invoke(HubContext, -1);
-                    }
-                    finally
-                    {
-                        proc.Close();
-                    }
-                });
-
-                try
-                {
-                    var tokenSource = new CancellationTokenSource();
-                    var token = tokenSource.Token;
-                    if (onSandbox && File.Exists($"{directoryPath}/var/tmp/{fifoname1}"))
-                    {
-                        var observer = Task.Run(() =>
-                        {
-                            using (var r = new StreamReader($"{directoryPath}/var/tmp/{fifoname1}"))
-                            {
-                                while (!token.IsCancellationRequested)
-                                {
-                                    if (!r.EndOfStream)
-                                    {
-                                        var t = r.ReadLineAsync();
-                                        t.Wait(token);
-                                        if (t.Result != null)
-                                        {
-                                            cmdCallback?.Invoke(HubContext, t.Result);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                }
-                            }
-                        }, token);
-                    }
-                    if (onSandbox && File.Exists($"{directoryPath}/var/tmp/{fifoname2}"))
-                    {
-                        var observer = Task.Run(() =>
-                        {
-                            using (var r = new StreamReader($"{directoryPath}/var/tmp/{fifoname2}"))
-                            {
-                                while (!token.IsCancellationRequested)
-                                {
-                                    if (!r.EndOfStream)
-                                    {
-                                        var t = r.ReadLineAsync();
-                                        t.Wait(token);
-                                        if (t.Result != null)
-                                        {
-                                            summaryCallback?.Invoke(HubContext, t.Result);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                }
-                            }
-                        }, token);
-                    }
-
-                    mainProc.Wait();
-
-                    tokenSource.Cancel();
-                }
-                catch (Exception e)
-                {
-                    stderrCallback?.Invoke(HubContext, e?.Message);
-                    doneCallback?.Invoke(HubContext, -1);
-                }
-                finally
-                {
-                    if (onSandbox)
-                    {
-                        Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname1}").WaitForExit();
-                        Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname2}").WaitForExit();
-                    }
-                }
-            });
-        }
-
-        public async Task ExecuteActivityAsync(
             Data.User user,
             Data.Sandbox sandbox,
             string stdin = null,
@@ -569,10 +332,9 @@ namespace Hugin.Services
                 var fifoname1 = $"{r}-cmd";
                 var fifoname2 = $"{r}-smr";
 
+                Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                 if (onSandbox)
                 {
-                    Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
-                    Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                     Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                     Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                     Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname2}").WaitForExit();
@@ -884,9 +646,9 @@ namespace Hugin.Services
                 }
                 finally
                 {
+                    Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                     if (onSandbox)
                     {
-                        Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                         Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                         Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname2}").WaitForExit();
                     }
