@@ -210,7 +210,7 @@ namespace Hugin.Hubs
                                 {
                                     return val;
                                 }
-                                System.Threading.Thread.Sleep(100);
+                                System.Threading.Thread.Sleep(1);
                             }
                             return "";
                         });
@@ -321,15 +321,13 @@ namespace Hugin.Hubs
                         }
                         if(result)
                         {
-                            await context.Clients.Client(connectionId).SendAsync("ReceiveStdout", activityId, Localizer["Accept"].Value);
                             await context.Clients.Client(connectionId).SendAsync("ReceiveActionPermissions", activityId, null, true);
-                            await context.Clients.Client(connectionId).SendAsync("ReceiveActionResult", activityId, null, null, null);
+                            await context.Clients.Client(connectionId).SendAsync("ReceiveActionResult", activityId, Localizer["Accept"].Value, null, null);
                         }
                         else
                         {
-                            await context.Clients.Client(connectionId).SendAsync("ReceiveStderr", activityId, Localizer["Reject"].Value);
                             await context.Clients.Client(connectionId).SendAsync("ReceiveActionPermissions", activityId, null, activity.Flags.CanSubmitBeforeAccept || false);
-                            await context.Clients.Client(connectionId).SendAsync("ReceiveActionResult", activityId, null, null, null);
+                            await context.Clients.Client(connectionId).SendAsync("ReceiveActionResult", activityId, null, Localizer["Reject"].Value, null);
                         }
                     });
                 if (!result)

@@ -112,6 +112,7 @@ function hideMessages(activityId) {
     var term = terminals[activityId];
     term.running = true;
     term.clear();
+    activity.querySelector(".terminal").style.display = "none";
 
     activity.querySelector(".activity-figures").innerText = "";
     activity.querySelector(".activity-figures").style.display = "none";
@@ -308,7 +309,8 @@ connection.on("ReceiveActivityXmlResult", function (activityId, xml) {
 connection.on("ReceiveStdout", function (activityId, data) {
     if (data != null) {
         var term = terminals[activityId];
-        if (data == "\n") {
+        document.getElementById(activityId).querySelector(".terminal").style.display = "block";
+        if (data == "\n\r" || data == "\r\n" || data == "\n" || data == "\r") {
             term.write("\r\n");
         }
         else {
@@ -319,21 +321,19 @@ connection.on("ReceiveStdout", function (activityId, data) {
 connection.on("ReceiveStderr", function (activityId, data) {
     if (data != null) {
         var term = terminals[activityId];
-        if (data == "\n") {
+        document.getElementById(activityId).querySelector(".terminal").style.display = "block";
+        if (data == "\n\r" || data == "\r\n" || data == "\n" || data == "\r") {
             term.write("\r\n");
         }
         else {
-            term.write("\x1B[33m");
+            term.write("\x1B[31m");
             term.write(data);
             term.write("\x1B[0m");
         }
     }
 });
 
-var stdinKey = "";
-connection.on("ReceiveRequestStdin", function (_stdinKey) {
-    stdinKey = _stdinKey;
-});
+
 connection.on("ReceiveCommand", function (activityId, data) {
     if (data != null) {
 
@@ -537,19 +537,28 @@ connection.start().then(function () {
             buildBlockly(block);
         });
 
-        // TODO
         activity.querySelectorAll(".terminal").forEach(terminalDiv => {
-            var term = new Terminal();
+            var term = new Terminal({
+                RendererType: 'canvas',
+                theme: {
+                    background: 'white',
+                    foreground: 'black',
+                    cursor: 'black',
+                    fontFamily: 'Lucida Console, monospace, Courier New, Courier',
+                    fontSize: 14,
+                }
+            });
+
             terminals[activity.id] = term;
             term.open(terminalDiv);
             term.curr_line = '';
             term.running = false;
+                       
             term.onData(e => {
                 if (term.running) {
                     term.write(e);
-                    term.curr_line += e;
                     if (e == '\r') {
-                        term.write('\r\n$ ');
+                        term.write('\r\n');
                         connection
                             .invoke("SendStdin", activity.id, term.curr_line)
                             .catch(function (err) {
@@ -557,8 +566,12 @@ connection.start().then(function () {
                             });
                         term.curr_line = '';
                     }
+                    else {
+                        term.curr_line += e;
+                    }
                 }
             });
+            
         });
 
         connection

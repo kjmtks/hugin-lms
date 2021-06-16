@@ -392,7 +392,7 @@ namespace Hugin.Services
                                         }
                                         else
                                         {
-                                            stdoutCallback?.Invoke(HubContext, $"{e.Data.Substring(0, (int)remaind)}{Environment.NewLine}");
+                                            stdoutCallback?.Invoke(HubContext, e.Data.Substring(0, (int)remaind));
                                             remaind = 0;
                                         }
                                     }
@@ -401,7 +401,7 @@ namespace Hugin.Services
                             }
                             else
                             {
-                                proc.OutputDataReceived += (o, e) => { stdoutCallback?.Invoke(HubContext, $"{e.Data}{Environment.NewLine}"); outputClosed.Set(); };
+                                proc.OutputDataReceived += (o, e) => { stdoutCallback?.Invoke(HubContext, e.Data); outputClosed.Set(); };
                             }
                         }
                         else
@@ -534,14 +534,7 @@ namespace Hugin.Services
                                 {
                                     while (!proc.HasExited && running)
                                     {
-                                        var c = await stdinCallback(HubContext);
-                                        //if (c == "\r")
-                                        //{
-                                        //    c = "\n";
-                                        //}
-                                        proc.StandardInput.WriteLine(c);
-                                        // proc.StandardInput.Flush();
-                                        Thread.Sleep(1);
+                                        proc.StandardInput.WriteLine(await stdinCallback(HubContext));
                                     }
                                 }
                                 catch (Exception e)
