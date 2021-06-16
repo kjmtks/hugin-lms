@@ -235,7 +235,7 @@ namespace Hugin.Services
             {
                 try
                 {
-                    await ExecuteAsync(user, sandbox, stdin, stdoutCallback, stderrCallback, cmdCallback, summaryCallback, stdinCallback, doneCallback, limit, sudo);
+                    await ExecuteAsync(user, sandbox, stdin, stdoutCallback, stderrCallback, cmdCallback, summaryCallback, stdinCallback, doneCallback, limit, sudo, false);
                 }
                 catch(Exception e)
                 {
@@ -331,10 +331,10 @@ namespace Hugin.Services
                 var fifoname1 = Guid.NewGuid().ToString("N").Substring(0, 32);
                 var fifoname2 = Guid.NewGuid().ToString("N").Substring(0, 32);
 
+                Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
+                Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                 if (onSandbox)
                 {
-                    Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
-                    Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                     Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                     Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                     Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname2}").WaitForExit();
@@ -342,7 +342,6 @@ namespace Hugin.Services
                 }
 
                 var (account, home) = sudo ? ("root", "/") : (user.Account, $"/home/{user.Account}");
-                lineBuffered = false;
 
                 var (program, args) = (limit, onSandbox) switch
                 {
@@ -425,7 +424,7 @@ namespace Hugin.Services
                                         }
                                         else
                                         {
-                                            stderrCallback?.Invoke(HubContext, $"{e.Data.Substring(0, (int)remaind)}{Environment.NewLine}");
+                                            stderrCallback?.Invoke(HubContext, e.Data.Substring(0, (int)remaind));
                                             remaind = 0;
                                         }
                                     }
@@ -434,7 +433,7 @@ namespace Hugin.Services
                             }
                             else
                             {
-                                proc.ErrorDataReceived += (o, e) => { stderrCallback?.Invoke(HubContext, $"{e.Data}{Environment.NewLine}"); errorClosed.Set(); };
+                                proc.ErrorDataReceived += (o, e) => { stderrCallback?.Invoke(HubContext, e.Data); errorClosed.Set(); };
                             }
                         }
                         else
@@ -651,9 +650,9 @@ namespace Hugin.Services
                 }
                 finally
                 {
+                    Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                     if (onSandbox)
                     {
-                        Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                         Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                         Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname2}").WaitForExit();
                     }
