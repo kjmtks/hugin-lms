@@ -564,20 +564,23 @@ namespace Hugin.Services
             await Task.Run(() => {
                 var directoryPath = onSandbox ? FilePathResolver.GetSandboxDirectoryPath(sandbox) : "";
                 var userId = user.Uid + 1000;
-                var fifoname0 = Guid.NewGuid().ToString("N").Substring(0, 32);
-                var fifoname1 = Guid.NewGuid().ToString("N").Substring(0, 32);
-                var fifoname2 = Guid.NewGuid().ToString("N").Substring(0, 32);
+                var r = Guid.NewGuid().ToString("N").Substring(0, 32);
+                var fifoname0 = $"{r}-pg";
+                var fifoname1 = $"{r}-cmd";
+                var fifoname2 = $"{r}-smr";
 
-                Process.Start("id").WaitForExit();
-                Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
-                Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                 if (onSandbox)
                 {
+                    Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
+                    Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                     Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                     Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                     Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname2}").WaitForExit();
                     Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname2}").WaitForExit();
+                    Process.Start("ls", $"-la {directoryPath}/var/tmp/").WaitForExit();
                 }
+
+                Console.WriteLine($"chown {userId} {directoryPath}/var/tmp/{fifoname0}");
 
                 var (account, home) = sudo ? ("root", "/") : (user.Account, $"/home/{user.Account}");
 
@@ -881,15 +884,11 @@ namespace Hugin.Services
                 }
                 finally
                 {
-                    Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                     if (onSandbox)
                     {
+                        Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                         Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                         Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname2}").WaitForExit();
-                    }
-                    else
-                    {
-                        Process.Start("rm", $"/var/tmp/{fifoname0}").WaitForExit();
                     }
 
                 }
