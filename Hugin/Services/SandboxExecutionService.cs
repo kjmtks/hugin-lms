@@ -331,14 +331,18 @@ namespace Hugin.Services
                 var fifoname1 = Guid.NewGuid().ToString("N").Substring(0, 32);
                 var fifoname2 = Guid.NewGuid().ToString("N").Substring(0, 32);
 
-                Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
-                Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                 if (onSandbox)
                 {
+                    Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
+                    Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                     Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                     Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                     Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname2}").WaitForExit();
                     Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname2}").WaitForExit();
+                }
+                else
+                {
+                    Process.Start("mkfifo", $"/var/tmp/{fifoname0}").WaitForExit();
                 }
 
                 var (account, home) = sudo ? ("root", "/") : (user.Account, $"/home/{user.Account}");
@@ -511,7 +515,14 @@ namespace Hugin.Services
                     {
                         var p = new Process();
                         p.StartInfo.FileName = "/bin/bash";
-                        p.StartInfo.Arguments = $"-c \"cat - > {directoryPath}/var/tmp/{fifoname0}\"";
+                        if (onSandbox)
+                        {
+                            p.StartInfo.Arguments = $"-c \"cat - > {directoryPath}/var/tmp/{fifoname0}\"";
+                        }
+                        else
+                        {
+                            p.StartInfo.Arguments = $"-c \"cat - > /var/tmp/{fifoname0}\"";
+                        }
                         p.StartInfo.RedirectStandardInput = true;
                         p.StartInfo.CreateNoWindow = true;
                         p.StartInfo.UseShellExecute = false;
@@ -643,12 +654,17 @@ namespace Hugin.Services
                 }
                 finally
                 {
-                    Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                     if (onSandbox)
                     {
+                        Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname0}").WaitForExit();
                         Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                         Process.Start("rm", $"{directoryPath}/var/tmp/{fifoname2}").WaitForExit();
                     }
+                    else
+                    {
+                        Process.Start("rm", $"/var/tmp/{fifoname0}").WaitForExit();
+                    }
+
                 }
             });
         }
