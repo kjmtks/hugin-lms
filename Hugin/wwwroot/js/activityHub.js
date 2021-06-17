@@ -112,6 +112,7 @@ function hideMessages(activityId) {
     var term = terminals[activityId];
     term.running = true;
     term.clear();
+    term.write('\x1b[H\x1b[2J');
     activity.querySelector(".terminal").style.display = "none";
 
     activity.querySelector(".activity-figures").innerText = "";
@@ -298,11 +299,14 @@ connection.on("ReceiveActionPermissions", function (activityId, canValidate, can
 
 connection.on("ReceiveActivityXmlResult", function (activityId, xml) {
     if (xml != null) {
-        document.getElementById(activityId)
-            .querySelector(".messages").style.display = "block";
-        var x = document.getElementById(activityId).querySelector(".meesage-activity-stdout");
-        x.style.display = "block";
-        x.querySelector(".activity-stdout").innerText = xml;
+        var term = terminals[activityId];
+        document.getElementById(activityId).querySelector(".terminal").style.display = "block";
+        if (xml == "\n\r" || xml == "\r\n" || xml == "\n" || xml == "\r") {
+            term.write("\r\n");
+        }
+        else {
+            term.write(xml);
+        }
     }
 });
 
@@ -322,14 +326,10 @@ connection.on("ReceiveStderr", function (activityId, data) {
     if (data != null) {
         var term = terminals[activityId];
         document.getElementById(activityId).querySelector(".terminal").style.display = "block";
-        if (data == "\n\r" || data == "\r\n" || data == "\n" || data == "\r") {
-            term.write("\r\n");
-        }
-        else {
-            term.write("\x1B[31m");
-            term.write(data);
-            term.write("\x1B[0m");
-        }
+        data = data?.replace(/[\r\n]+/g, "\r\n");
+        term.write("\x1B[31m");
+        term.write(data);
+        term.write("\x1B[0m");
     }
 });
 
@@ -387,16 +387,20 @@ connection.on("ReceiveActionResult", function (activityId, message, errorMessage
     term.running = false;
 
     if (message != null) {
-        activity.querySelector(".messages").style.display = "block";
-        var x = activity.querySelector(".meesage-activity-message");
-        x.style.display = "block";
-        x.querySelector(".activity-message").innerHTML += message?.replace(/&/g, "&amp;")?.replace(/</g, "&lt;")?.replace(/>/g, "&gt;") + "\n";
+        var term = terminals[activityId];
+        document.getElementById(activityId).querySelector(".terminal").style.display = "block";
+        message = message?.replace(/[\r\n]+/g, "\r\n");
+        term.write("\x1B[94m");
+        term.write(message);
+        term.write("\x1B[0m");
     }
     if (errorMessage != null) {
-        activity.querySelector(".messages").style.display = "block";
-        var x = activity.querySelector(".meesage-activity-error-message");
-        x.style.display = "block";
-        x.querySelector(".activity-error-message").innerHTML += errorMessage?.replace(/&/g, "&amp;")?.replace(/</g, "&lt;")?.replace(/>/g, "&gt;") + "\n";
+        var term = terminals[activityId];
+        document.getElementById(activityId).querySelector(".terminal").style.display = "block";
+        errorMessage = errorMessage?.replace(/[\r\n]+/g, "\r\n");
+        term.write("\x1B[31m");
+        term.write(errorMessage);
+        term.write("\x1B[0m");
     }
     if (json != null) {
         var data = JSON.parse(json);
@@ -540,12 +544,13 @@ connection.start().then(function () {
         activity.querySelectorAll(".terminal").forEach(terminalDiv => {
             var term = new Terminal({
                 RendererType: 'canvas',
+                rows: 10,
+                fontFamily: 'Lucida Console, monospace, Courier New, Courier',
+                fontSize: 14,
                 theme: {
                     background: 'white',
                     foreground: 'black',
                     cursor: 'black',
-                    fontFamily: 'Lucida Console, monospace, Courier New, Courier',
-                    fontSize: 14,
                 }
             });
 
@@ -553,6 +558,7 @@ connection.start().then(function () {
             term.open(terminalDiv);
             term.curr_line = '';
             term.running = false;
+            console.log(term);
                        
             term.onData(e => {
                 if (term.running) {

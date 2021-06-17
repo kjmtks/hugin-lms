@@ -339,10 +339,8 @@ namespace Hugin.Services
                     Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname1}").WaitForExit();
                     Process.Start("mkfifo", $"{directoryPath}/var/tmp/{fifoname2}").WaitForExit();
                     Process.Start("chown", $"{userId} {directoryPath}/var/tmp/{fifoname2}").WaitForExit();
-                    Process.Start("ls", $"-la {directoryPath}/var/tmp/").WaitForExit();
                 }
 
-                Console.WriteLine($"chown {userId} {directoryPath}/var/tmp/{fifoname0}");
 
                 var (account, home) = sudo ? ("root", "/") : (user.Account, $"/home/{user.Account}");
 
@@ -537,7 +535,11 @@ namespace Hugin.Services
                                 {
                                     while (!proc.HasExited && running)
                                     {
-                                        proc.StandardInput.WriteLine(await stdinCallback(HubContext));
+                                        var inp = await stdinCallback(HubContext);
+                                        if(!proc.HasExited && running)
+                                        {
+                                            proc.StandardInput.WriteLine(inp);
+                                        }
                                     }
                                 }
                                 catch (Exception e)
@@ -578,7 +580,6 @@ namespace Hugin.Services
                         proc.Close();
                     }
                 });
-
                 try
                 {
                     var tokenSource = new CancellationTokenSource();
