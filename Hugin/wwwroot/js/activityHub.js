@@ -558,7 +558,6 @@ connection.start().then(function () {
             term.open(terminalDiv);
             term.curr_line = '';
             term.running = false;
-            console.log(term);
                        
             term.onData(e => {
                 if (term.running) {
