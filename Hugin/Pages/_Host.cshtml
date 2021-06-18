@@ -23,7 +23,7 @@
     <script src="/node_modules/@@fortawesome/fontawesome-free/js/all.min.js"></script>
     <script src="/node_modules/flatpickr/dist/flatpickr.min.js"></script>
     <script src="/node_modules/chart.js/dist/chart.min.js"></script>
-    <script src="/node_modules/ace-min-noconflict/ace.js"></script>
+    <script src="/node_modules/ace-builds/src/ace.js"></script>
 
     <script src="/_content/BlazorInputFile/inputfile.js"></script>
     <script src="/js/activityActionChart.js"></script>
@@ -33,16 +33,31 @@
     <script>
         function setupAceEditor(id, mode) {
             var editor = ace.edit(id);
+            editor.setTheme("ace/theme/github");
             editor.getSession().setMode("ace/mode/" + mode);
+            editor.setFontSize(14);
+            editor.setOptions({
+                enableBasicAutocompletion: true,
+                enableSnippets: true,
+                enableLiveAutocompletion: true,
+                fontFamily: 'Lucida Console, monospace, Courier New, Courier'
+            });
             editor.resize();
         }
         function getTextFromAceEditor(id) { return ace.edit(id).getValue(); }
         function setTextToAceEditor(id, text) { ace.edit(id).setValue(text); }
     </script>
     <style type="text/css">
+        .ace-editor, #embedded_ace_code {
+            height: 275px;
+            border: 1px solid #DDD;
+            border-radius: 4px;
+            border-bottom-right-radius: 0px;
+            margin-top: 5px;
+        }
+
         .ace-editor {
-            margin: 0;
-            padding: 0;
+            margin-bottom: 0px;
         }
     </style>
 
