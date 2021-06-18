@@ -23,12 +23,28 @@
     <script src="/node_modules/@@fortawesome/fontawesome-free/js/all.min.js"></script>
     <script src="/node_modules/flatpickr/dist/flatpickr.min.js"></script>
     <script src="/node_modules/chart.js/dist/chart.min.js"></script>
+    <script src="/node_modules/ace-min-noconflict/ace.js"></script>
 
     <script src="/_content/BlazorInputFile/inputfile.js"></script>
     <script src="/js/activityActionChart.js"></script>
     <script src="/js/paint.js"></script>
     <script src="/js/site.js"></script>
 
+    <script>
+        function setupAceEditor(id, mode) {
+            var editor = ace.edit(id);
+            editor.getSession().setMode("ace/mode/" + mode);
+            editor.resize();
+        }
+        function getTextFromAceEditor(id) { return ace.edit(id).getValue(); }
+        function setTextToAceEditor(id, text) { ace.edit(id).setValue(text); }
+    </script>
+    <style type="text/css">
+        .ace-editor {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
 
     <script>
         function modalOn(targetId) {

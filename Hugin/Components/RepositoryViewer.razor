@@ -122,11 +122,11 @@
                         <div class="control">
                             @if (canEdit)
                             {
-                                <textarea class="textarea tt" rows="30" @bind="textBody"></textarea>
+                                <div id="ace-textarea" class="ace-editor tttt" style="height: 50em"></div>
                             }
                             else
                             {
-                                <textarea class="textarea tt" readonly rows="30" @bind="textBody"></textarea>
+                                <textarea class="textarea tt" readonly style="height: 50em" @bind="textBody"></textarea>
                             }
                         </div>
                     </div>
@@ -318,6 +318,15 @@
         update();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(isTextFile && canEdit && GetChildren(Current).Count() == 0)
+        {
+            await JS.InvokeVoidAsync("setupAceEditor", $"ace-textarea", Models.ContentTypeProvider.GetLangType(Current));
+            await JS.InvokeVoidAsync("setTextToAceEditor", $"ace-textarea", textBody);
+        }
+    }
+
     private void update()
     {
 
@@ -482,10 +491,14 @@
         var file = $"{Repository.GetNonBaredFullPath(Rivision)}{Current}";
         var msg = string.IsNullOrEmpty(commitMessage) ? "No commit message." : commitMessage;
         commitMessage = "";
-        RepositoryHandler.DoWithLock(Repository, r =>
+        RepositoryHandler.DoWithLock(Repository, async r =>
         {
             try
             {
+                if (isTextFile && canEdit && GetChildren(Current).Count() == 0)
+                {
+                    textBody = await JS.InvokeAsync<string>("getTextFromAceEditor", $"ace-textarea");
+                }
                 normalMessage = RepositoryHandler.SaveTextAndSync(r, Rivision, Current, textBody, msg, LoginUser.DisplayName, LoginUser.Email);
             }
             catch (Exception e)

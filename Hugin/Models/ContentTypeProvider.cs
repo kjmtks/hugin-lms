@@ -47,5 +47,37 @@ namespace Hugin.Models
             }
             return contentType;
         }
+        public static string GetLangType(string path, string defaultType = "text")
+        {
+            var provider = new FileExtensionContentTypeProvider();
+            provider.Mappings[".txt"] = "text";
+            provider.Mappings[".md"] = "markdown";
+            provider.Mappings[".css"] = "css";
+            provider.Mappings[".js"] = "javascript";
+            provider.Mappings[".htm"] = "html";
+            provider.Mappings[".html"] = "html";
+            provider.Mappings[".py"] = "python";
+            provider.Mappings[".c"] = "c";
+            provider.Mappings[".h"] = "c";
+            provider.Mappings[".cpp"] = "c";
+            provider.Mappings[".hs"] = "haskell";
+            provider.Mappings[".cs"] = "csharp";
+            provider.Mappings[".gitignore"] = "gitignore";
+            provider.Mappings[".m"] = "matlab";
+            provider.Mappings[".r"] = "r";
+            provider.Mappings[".pl"] = "perl";
+            provider.Mappings[".java"] = "java";
+            provider.Mappings[".rs"] = "rust";
+            provider.Mappings[".keep"] = "text";
+            provider.Mappings[".rb"] = "ruby";
+            provider.Mappings[".tex"] = "tex";
+            provider.Mappings[".svg"] = "svg";
+            provider.Mappings[".xml"] = "xml";
+            if (!provider.TryGetContentType(path, out var contentType))
+            {
+                contentType = defaultType;
+            }
+            return contentType;
+        }
     }
 }
