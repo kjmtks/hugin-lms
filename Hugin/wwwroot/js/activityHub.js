@@ -25,20 +25,34 @@ function selectTab(activityId, tab) {
     });
 }
 
+var blocklyDivs = {};
 var blocklies = {};
 var terminals = {};
 
 function buildBlockly(dom) {
     var prefix = dom.getAttribute("data-prefix");
-    var configure = JSON.parse( dom.querySelector(".blockly-configure").value );
-    var definition = dom.querySelector(".block-definition").value;
+    var configure = JSON.parse(dom.querySelector(".blockly-configure").value);
     var base = { toolbox: document.getElementById(prefix + "toolbox") };
-    blocklies[prefix] = Blockly.inject(prefix + "blocklyDiv", { ...base, ...configure });
-    Blockly.defineBlocksWithJsonArray(JSON.parse(definition));
+
+    var blockly = Object.create(Blockly);
+
+    blocklyDivs[prefix] = blockly.inject(prefix + "blocklyDiv", { ...base, ...configure });
+
+    var definition = dom.querySelector(".block-definition").value;
+    blockly.defineBlocksWithJsonArray(JSON.parse(definition));
+
+    dom.querySelectorAll(".block-generator").forEach(dom => {
+        var name = dom.getAttribute("data-name");
+        var def = dom.value;
+        var f = eval(def);
+        blockly.Python[name] = (block) => { return f(blockly, block); };
+    });
+    blocklies[prefix] = blockly;
+
 
     var codearea = dom.querySelector(".blockly-script-textarea code");
     if (codearea != null) {
-        blocklies[prefix].addChangeListener(function (event) {
+        blocklyDivs[prefix].addChangeListener(function (event) {
             if (event.type == Blockly.Events.BLOCK_CHANGE
                 || event.type == Blockly.Events.BLOCK_MOVE
                 || event.type == Blockly.Events.BLOCK_DELETE
@@ -49,7 +63,7 @@ function buildBlockly(dom) {
                         useBR: true,
                         languages: ['python']
                     });
-                    var code = Blockly.Python.workspaceToCode(blocklies[prefix]);
+                    var code = blocklies[prefix].Python.workspaceToCode(blocklyDivs[prefix]);
                     codearea.innerText = code;
                     hljs.highlightBlock(codearea);
                 }
@@ -146,9 +160,9 @@ async function getFileValues(activity) {
     activity.querySelectorAll(".activity-blockly").forEach(file => {
         var prefix = file.getAttribute("data-prefix");
         var data = {};
-        var xml = Blockly.Xml.workspaceToDom(blocklies[prefix]);
+        var xml = Blockly.Xml.workspaceToDom(blocklyDivs[prefix]);
         data["xml"] = Blockly.Xml.domToText(xml);
-        data["code-body"] = Blockly.Python.workspaceToCode(blocklies[prefix]);
+        data["code-body"] = blocklies[prefix].Python.workspaceToCode(blocklyDivs[prefix]);
         data["code-filename"] = file.getAttribute("data-code-filename");
         blocklyfiles[file.getAttribute("data-name")] = JSON.stringify(data);
     });
@@ -416,7 +430,7 @@ connection.on("ReceiveActionResult", function (activityId, message, errorMessage
             var x = block.getAttribute("data-name");
             if (data[x] != null) {
                 var prefix = block.getAttribute("data-prefix");
-                var ws = blocklies[prefix];
+                var ws = blocklyDivs[prefix];
                 var xml = Blockly.Xml.textToDom(data[x]);
                 ws.clear();
                 Blockly.Xml.domToWorkspace(xml, ws);

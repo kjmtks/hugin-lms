@@ -51,25 +51,6 @@
     </script>
     <script async src="~/node_modules/mathjax/es5/tex-svg-full.js"></script>
 
-    <script>
-        function modalOn(targetId) {
-            var modal = document.getElementById(targetId);
-            if (modal != null) {
-                modal.classList.add("is-active")
-            }
-        }
-        function modalOff(targetId) {
-            var modal = document.getElementById(targetId);
-            if (modal != null) {
-                modal.classList.remove("is-active")
-            }
-        }
-        function scrollToBottom(targetId) {
-            var obj = document.getElementById(targetId);
-            obj.scrollTop = obj.scrollHeight;
-        }
-    </script>
-
 
     <style>
         @Html.Raw(ViewData["Style"])

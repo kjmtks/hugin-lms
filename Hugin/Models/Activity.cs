@@ -231,11 +231,26 @@ namespace Hugin.Models
         public object Toolbox { get; set; }
         public string BlockDefinition { get; set; }
 
+        [XmlElement("Generator")]
+        public ActivityFilesBlocklyGenerator[] Generators { get; set; }
+
         [XmlAttribute]
         public bool ReadOnly { get; set; } = false;
         [XmlAttribute]
         public bool Submit { get; set; } = false;
     }
+
+
+    [Serializable]
+    public partial class ActivityFilesBlocklyGenerator
+    {
+        [XmlAttribute]
+        public string Name { get; set; }
+        [XmlText]
+        public string Definition { get; set; }
+    }
+    
+
     [Serializable]
     public partial class ActivityFilesBlockToolbox
     {

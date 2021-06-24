@@ -34,6 +34,7 @@
         function setupAceEditor(id, mode) {
             var editor = ace.edit(id);
             editor.setTheme("ace/theme/github");
+            mode = "hugin_page";
             editor.getSession().setMode("ace/mode/" + mode);
             editor.setFontSize(14);
             editor.setOptions({

@@ -157,6 +157,13 @@
                     {
                     <div class="activity-blockly" style="position: relative;" data-name="@block.Name" data-code-filename="@block.CodeFile" data-prefix="@Model.Id-">
                         <textarea style="display: none;" class="block-definition">@block.BlockDefinition</textarea>
+                        @if(block.Generators != null)
+                        { 
+                            @foreach(var g in block.Generators)
+                            { 
+                                <textarea style="display: none;" class="block-generator" data-name="@g.Name">@g.Definition</textarea>
+                            }
+                        }
                         <textarea style="display: none;" class="blockly-configure">@block.Configure</textarea>
                         <div id="@Model.Id-blocklyDiv" style="height: @block.Height; width: 100%;"></div>
                         <xml id="@Model.Id-toolbox" style="display: none">@Html.Raw(block.GetToolboxHtml())</xml>
