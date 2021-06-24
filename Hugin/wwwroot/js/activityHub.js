@@ -38,13 +38,21 @@ function buildBlockly(dom) {
 
     blocklyDivs[prefix] = blockly.inject(prefix + "blocklyDiv", { ...base, ...configure });
 
-    var definition = dom.querySelector(".block-definition").value;
-    blockly.defineBlocksWithJsonArray(JSON.parse(definition));
+    var customBlocks = {};
+    var definitions = [];
+    dom.querySelectorAll(".block-definition").forEach(d => {
+        var number = d.getAttribute("data-custom-block-number");
+        var definition = JSON.parse(d.value);
+        customBlocks[number] = definition.type;
+        definitions.push(definition);
+    });
+    blockly.defineBlocksWithJsonArray(definitions);
 
-    dom.querySelectorAll(".block-generator").forEach(dom => {
-        var name = dom.getAttribute("data-name");
-        var def = dom.value;
-        var f = eval(def);
+    dom.querySelectorAll(".block-generator").forEach(d => {
+        var number = d.getAttribute("data-custom-block-number");
+        var name = customBlocks[number];
+        var generator = d.value;
+        var f = eval(generator);
         blockly.Python[name] = (block) => { return f(blockly, block); };
     });
     blocklies[prefix] = blockly;

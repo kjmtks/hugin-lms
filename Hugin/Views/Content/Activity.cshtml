@@ -156,12 +156,12 @@
                     @if (file is Hugin.Models.ActivityFilesBlockly block)
                     {
                     <div class="activity-blockly" style="position: relative;" data-name="@block.Name" data-code-filename="@block.CodeFile" data-prefix="@Model.Id-">
-                        <textarea style="display: none;" class="block-definition">@block.BlockDefinition</textarea>
-                        @if(block.Generators != null)
+                        @if(block.Blocks != null)
                         { 
-                            @foreach(var g in block.Generators)
+                            @foreach(var (b, j) in block.Blocks.Select((x,i) => (x,i)))
                             { 
-                                <textarea style="display: none;" class="block-generator" data-name="@g.Name">@g.Definition</textarea>
+                                <textarea style="display: none;" class="block-definition" data-custom-block-number="@j">@b.Definition</textarea>
+                                <textarea style="display: none;" class="block-generator" data-custom-block-number="@j">@b.Generator</textarea>
                             }
                         }
                         <textarea style="display: none;" class="blockly-configure">@block.Configure</textarea>
