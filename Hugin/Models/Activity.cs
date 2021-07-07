@@ -54,7 +54,7 @@ namespace Hugin.Models
 
         public string Directory { get; set; }
         public string Tags { get; set; }
-        public ActivityFlags Flags { get; set; }
+        public ActivityOptions Options { get; set; }
         public ActivityFiles Files { get; set; }
         public ActivityRunners Runners { get; set; }
         public ActivityLimits Limits { get; set; }
@@ -62,15 +62,15 @@ namespace Hugin.Models
 
         public bool UseSave()
         {
-            return this.Flags.UseSave;
+            return this.Options.UseSave;
         }
         public bool UseReset()
         {
-            return this.Flags.UseReset;
+            return this.Options.UseReset;
         }
         public bool UseDiscard()
         {
-            return this.Flags.UseDiscard;
+            return this.Options.UseDiscard;
         }
         public bool UseValidate()
         {
@@ -138,7 +138,7 @@ namespace Hugin.Models
     }
 
     [Serializable]
-    public partial class ActivityFlags
+    public partial class ActivityOptions
     {
         public bool UseMarkdown { get; set; } = true;
         public bool UseStdout { get; set; } = true;
@@ -150,7 +150,7 @@ namespace Hugin.Models
         public bool CanSubmitBeforeRun { get; set; } = true;
         public bool CanValidateBeforeRun { get; set; } = true;
         public bool CanSubmitAfterDeadline { get; set; } = false;
-        public bool ConfirmAutomatically { get; set; } = false;
+        public string DefaultSubmitStatus { get; set; } = "submitted";
     }
 
     [Serializable]

@@ -141,7 +141,7 @@ namespace Hugin.Hubs
                         });
                     }
                 }
-                await Clients.Caller.SendAsync("ReceiveActionPermissions", activityId, activity.Flags.CanValidateBeforeRun, activity.Flags.CanSubmitBeforeAccept && activity.Flags.CanSubmitBeforeRun);
+                await Clients.Caller.SendAsync("ReceiveActionPermissions", activityId, activity.Options.CanValidateBeforeRun, activity.Options.CanSubmitBeforeAccept && activity.Options.CanSubmitBeforeRun);
                 await Clients.Caller.SendAsync("ReceiveActionResult", activityId, result ? Localizer["Success"].Value : null, !result ? Localizer["Failed"].Value : null, null);
             }
         }
@@ -252,7 +252,7 @@ namespace Hugin.Hubs
                                 });
                             }
                         }
-                        await context.Clients.Client(connectionId).SendAsync("ReceiveActionPermissions", activityId, activity.Flags.CanValidateBeforeRun || !runner.Auxiliary, activity.Flags.CanSubmitBeforeAccept);
+                        await context.Clients.Client(connectionId).SendAsync("ReceiveActionPermissions", activityId, activity.Options.CanValidateBeforeRun || !runner.Auxiliary, activity.Options.CanSubmitBeforeAccept);
                         await context.Clients.Client(connectionId).SendAsync("ReceiveActionResult", activityId, null, null, null);
                     });
                 if (!result)
@@ -326,7 +326,7 @@ namespace Hugin.Hubs
                         }
                         else
                         {
-                            await context.Clients.Client(connectionId).SendAsync("ReceiveActionPermissions", activityId, null, activity.Flags.CanSubmitBeforeAccept || false);
+                            await context.Clients.Client(connectionId).SendAsync("ReceiveActionPermissions", activityId, null, activity.Options.CanSubmitBeforeAccept || false);
                             await context.Clients.Client(connectionId).SendAsync("ReceiveActionResult", activityId, null, Localizer["Reject"].Value, null);
                         }
                     });
@@ -372,7 +372,7 @@ namespace Hugin.Hubs
                     return;
                 }
 
-                if (!activity.Flags.CanSubmitAfterDeadline)
+                if (!activity.Options.CanSubmitAfterDeadline)
                 {
                     if(latest != null)
                     {
@@ -467,6 +467,16 @@ namespace Hugin.Hubs
                         var numOfValidateRejects = activityActionHandler.Set.Where(x => x.ActivityName == activity.Name && x.LectureId == lecture.Id && x.UserId == user.Id && x.ActivityActionType == Models.ActivityActionTypes.ValidationReject).Count();
                         var numOfValidateAccepts = activityActionHandler.Set.Where(x => x.ActivityName == activity.Name && x.LectureId == lecture.Id && x.UserId == user.Id && x.ActivityActionType == Models.ActivityActionTypes.ValidationAccept).Count();
 
+                        var status = activity.Options.DefaultSubmitStatus.ToLower() switch
+                        {
+                            "acceptingresubmit" => Submission.SubmissionState.AcceptingResubmit,
+                            "confirmed" => Submission.SubmissionState.Confirmed,
+                            "deleted" => Submission.SubmissionState.Deleted,
+                            "disqualified" => Submission.SubmissionState.Disqualified,
+                            "requiringresubmit" => Submission.SubmissionState.RequiringResubmit,
+                            _ => Submission.SubmissionState.Submitted
+                        };
+
                         submissionHandler.AddNew(new Submission
                         {
                             LectureId = lecture.Id,
@@ -477,11 +487,11 @@ namespace Hugin.Hubs
                             SubumitComment = submitMessage,
                             Hash = hash,
                             SubmittedFiles = files,
-                            State = activity.Flags.ConfirmAutomatically ? Submission.SubmissionState.Confirmed : Submission.SubmissionState.Submitted,
-                            Grade = activity.Flags.ConfirmAutomatically ? Localizer["OK"].Value : null,
-                            MarkedAt = activity.Flags.ConfirmAutomatically ? DateTime.Now : null,
-                            MarkerUserId = activity.Flags.ConfirmAutomatically ? lecture.OwnerId : null,
-                            FeedbackComment = activity.Flags.ConfirmAutomatically ? Localizer["ConfirmAutomatically"].Value : null,
+                            State = status,
+                            Grade = null,
+                            MarkedAt = (status != Submission.SubmissionState.Submitted) ? DateTime.Now : null,
+                            MarkerUserId = (status != Submission.SubmissionState.Submitted) ? lecture.OwnerId : null,
+                            FeedbackComment = null,
                             Page = profile.PagePath,
                             Count = count + 1,
                             ResubmitDeadline = rd,
@@ -507,7 +517,7 @@ namespace Hugin.Hubs
         {
             var (_, lecture, user, activity, _) = await ActivityHandler.DecryptProfileAsync(activityProfile);
 
-            await Clients.Caller.SendAsync("ReceiveActionPermissions", activityId, activity.Flags.CanValidateBeforeRun, activity.Flags.CanSubmitBeforeAccept && activity.Flags.CanSubmitBeforeRun);
+            await Clients.Caller.SendAsync("ReceiveActionPermissions", activityId, activity.Options.CanValidateBeforeRun, activity.Options.CanSubmitBeforeAccept && activity.Options.CanSubmitBeforeRun);
 
             if (PermissionProvider.CanShowActivity(lecture, user, activity) && activity.UseDiscard())
             {
@@ -538,7 +548,7 @@ namespace Hugin.Hubs
         {
             var (_, lecture, user, activity, _) = await ActivityHandler.DecryptProfileAsync(activityProfile);
 
-            await Clients.Caller.SendAsync("ReceiveActionPermissions", activityId, activity.Flags.CanValidateBeforeRun, activity.Flags.CanSubmitBeforeAccept && activity.Flags.CanSubmitBeforeRun);
+            await Clients.Caller.SendAsync("ReceiveActionPermissions", activityId, activity.Options.CanValidateBeforeRun, activity.Options.CanSubmitBeforeAccept && activity.Options.CanSubmitBeforeRun);
             if (PermissionProvider.CanShowActivity(lecture, user, activity) && activity.UseReset())
             {
                 var dict = new Dictionary<string, string>();
@@ -566,7 +576,7 @@ namespace Hugin.Hubs
         {
             var (_, lecture, user, activity, _) = await ActivityHandler.DecryptProfileAsync(activityProfile);
 
-            await Clients.Caller.SendAsync("ReceiveActionPermissions", activityId, activity.Flags.CanValidateBeforeRun, activity.Flags.CanSubmitBeforeAccept && activity.Flags.CanSubmitBeforeRun);
+            await Clients.Caller.SendAsync("ReceiveActionPermissions", activityId, activity.Options.CanValidateBeforeRun, activity.Options.CanSubmitBeforeAccept && activity.Options.CanSubmitBeforeRun);
             if (PermissionProvider.CanAnswerActivity(lecture, user, activity) && activity.UseAnswer())
             {
                 var dict = new Dictionary<string, string>();
@@ -586,7 +596,7 @@ namespace Hugin.Hubs
         {
             var (_, lecture, user, activity, _) = await ActivityHandler.DecryptProfileAsync(activityProfile);
 
-            await Clients.Caller.SendAsync("ReceiveActionPermissions", activityId, activity.Flags.CanValidateBeforeRun, activity.Flags.CanSubmitBeforeAccept && activity.Flags.CanSubmitBeforeRun);
+            await Clients.Caller.SendAsync("ReceiveActionPermissions", activityId, activity.Options.CanValidateBeforeRun, activity.Options.CanSubmitBeforeAccept && activity.Options.CanSubmitBeforeRun);
             if (PermissionProvider.CanMarkSubmission(lecture, user))
             {
                 var repository = RepositoryHandler.GetLectureUserDataRepository(lecture, userAccount);
