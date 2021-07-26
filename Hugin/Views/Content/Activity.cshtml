@@ -85,7 +85,7 @@
                         }
                         @if (Model.Profile.CanUseSubmit)
                         {
-                            <button data-allow="false" class="button is-outlined is-primary is-rounded activity-action-button activity-submit-button is-small" onclick='modalOn("submit-modal-@Model.Id")' data-tooltip="Save &amp; Submit"><i class="fas fa-upload"></i>&nbsp;@Localizer["Submit"]</button>
+                            <button data-allow="false" class="button is-outlined is-primary is-rounded activity-action-button activity-submit-button is-small" onclick='modalOn("#submit-modal-@Model.Id")' data-tooltip="Save &amp; Submit"><i class="fas fa-upload"></i>&nbsp;@Localizer["Submit"]</button>
                         }
                         <div class="dropdown is-hoverable is-right is-small">
                             <div class="dropdown-trigger">
@@ -105,7 +105,7 @@
                                     }
 
                                     <hr class="dropdown-divider">
-                                    <a class="dropdown-item button-for-show-feedback" style="display: none;" href="javascript: void(0);" onclick='modalOn("feedback-modal-@Model.Id")'>@Localizer["ShowSubmissions"]</a>
+                                    <a class="dropdown-item button-for-show-feedback" style="display: none;" href="javascript: void(0);" onclick='modalOn("#feedback-modal-@Model.Id")'>@Localizer["ShowSubmissions"]</a>
                                     <a class="dropdown-item" href="/MySubmission/@Model.Profile.LectureOwnerAccount/@Model.Profile.LectureName/@Model.Activity.Name">@Localizer["ShowHistory"]</a>
                                     @if (Model.Profile.CanUseAnswer)
                                     {
@@ -361,7 +361,7 @@
                 </section>
                 <footer class="modal-card-foot">
                     <button class="button is-success activity-submit">@Localizer["Submit"]</button>
-                    <button class="button" onclick='modalOff("submit-modal-@Model.Id")'>@Localizer["Cancel"]</button>
+                    <button class="button" onclick='modalOff("#submit-modal-@Model.Id")'>@Localizer["Cancel"]</button>
                 </footer>
             </div>
         </div>
@@ -391,7 +391,7 @@
                     </div>
                 </section>
                 <footer class="modal-card-foot">
-                    <button class="button" onclick='modalOff("feedback-modal-@Model.Id")'>@Localizer["Close"]</button>
+                    <button class="button" onclick='modalOff("#feedback-modal-@Model.Id")'>@Localizer["Close"]</button>
                 </footer>
             </div>
         </div>
